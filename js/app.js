@@ -39,6 +39,12 @@ window.PokeAnalyzer.app = {
             document.getElementById('searchInput').value = item.dataset.name;
             this.run();
         });
+
+        // Comparador
+        document.getElementById('compareBtn').addEventListener('click', () => this.runCompare());
+        document.getElementById('compareInput').addEventListener('keydown', e => {
+            if (e.key === 'Enter') this.runCompare();
+        });
     },
 
     async run() {
@@ -52,6 +58,7 @@ window.PokeAnalyzer.app = {
         }
 
         renderer.resetResults();
+        renderer.hideCompareSection();
         renderer.setSearchBusy(true);
 
         // ── Fase 1: datos del Pokémon ────────────────────────────
@@ -69,6 +76,7 @@ window.PokeAnalyzer.app = {
 
         renderer.hidePokeLoading();
         renderer.renderPokemon(pokemon, evoData);
+        renderer.showCompareSection();
 
         // ── Fase 2: movimientos + habilidades en castellano ────────
         renderer.showAILoading();
@@ -91,6 +99,36 @@ window.PokeAnalyzer.app = {
         }
 
         renderer.setSearchBusy(false);
+    },
+
+    async runCompare() {
+        const { pokeAPI, renderer } = window.PokeAnalyzer;
+
+        if (!this.state.cache?.pokemon) {
+            renderer.showMessage('PRIMERO BUSCA UN POKEMON PARA COMPARAR', 'error');
+            return;
+        }
+
+        const query = document.getElementById('compareInput').value.trim();
+        if (!query) {
+            renderer.showMessage('INGRESA EL NOMBRE DEL POKEMON A COMPARAR', 'error');
+            return;
+        }
+
+        const btn = document.getElementById('compareBtn');
+        btn.disabled = true;
+        btn.textContent = '...';
+        renderer.hideMessage();
+
+        try {
+            const pokemon2 = await pokeAPI._fetchPokemon(query);
+            renderer.renderComparison(this.state.cache.pokemon, pokemon2);
+        } catch (err) {
+            renderer.showMessage(err.message, 'error');
+        }
+
+        btn.disabled = false;
+        btn.textContent = 'VS';
     },
 
     _runAnalysis() {

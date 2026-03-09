@@ -95,7 +95,7 @@ window.PokeAnalyzer.pokeAPI = {
         if (ubersResult.status === 'fulfilled' && ubersResult.value) return ubersResult.value;
 
         // Tiers secundarios (secuencial para no saturar)
-        for (const tier of ['uu', 'ru', 'nu', 'pu']) {
+        for (const tier of ['uu', 'ru', 'nu', 'pu', 'zu', 'lc', 'doublesou', 'monotype']) {
             const result = await this._trySmogonTier(displayName, gen, tier);
             if (result) return result;
         }

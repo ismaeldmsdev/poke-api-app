@@ -1047,7 +1047,10 @@ window.PokeAnalyzer.analyzer = {
         const { tier, sets } = smogonData;
         const setNames = Object.keys(sets);
 
-        const builds = setNames.slice(0, 2).map((setName, i) => {
+        // Mostrar hasta 3 sets de Smogon cuando estén disponibles
+        const maxSets = Math.min(setNames.length, 3);
+
+        const builds = setNames.slice(0, maxSets).map((setName, i) => {
             const s = sets[setName];
 
             // Naturaleza
@@ -1064,7 +1067,8 @@ window.PokeAnalyzer.analyzer = {
             const itemEs = SMOGON_ITEMS_ES[itemEn] ?? itemEn;
 
             // EVs
-            const evs = this._formatSmogonEvs(s.evs ?? {});
+            const evsRaw = Array.isArray(s.evs) ? s.evs[0] : (s.evs ?? {});
+            const evs = this._formatSmogonEvs(evsRaw);
 
             // Movimientos: cada slot es un array de opciones; tomamos la primera
             const moveDefs = (s.moves ?? []).slice(0, 4).map(slotOptions => {
@@ -1079,7 +1083,7 @@ window.PokeAnalyzer.analyzer = {
 
             const label = i === 0
                 ? `${natureEs} — SMOGON ${tier}`
-                : `${natureEs} — ${setName}`;
+                : `${natureEs} — ${setName} (${tier})`;
 
             return {
                 etiqueta: label,
@@ -1092,7 +1096,7 @@ window.PokeAnalyzer.analyzer = {
             };
         });
 
-        // Si Smogon solo tiene 1 set, añadir build dinámico como segundo
+        // Si Smogon tiene menos de 2 sets, añadir build dinámico
         if (builds.length < 2) {
             const dynArr = this._buildDynamic3(pokemon, movesData, abilitiesEs, stats, role, generation);
             const dyn = dynArr[1] ?? dynArr[0];
