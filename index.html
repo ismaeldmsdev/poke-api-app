@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PokeAnalyzer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<header>
+    <div class="logo">
+        <span class="logo-poke">POKE</span><span class="logo-analyzer">ANALYZER</span>
+        <span class="logo-sub">// COMPETITIVE ANALYSIS TOOL //</span>
+    </div>
+</header>
+
+<main>
+
+    <section class="search-section">
+        <p class="search-hint">// NOMBRE O ID DE POKEMON //</p>
+        <div class="search-bar">
+            <input
+                id="searchInput"
+                type="text"
+                class="search-input"
+                placeholder="pikachu, charizard, 25..."
+                autocomplete="off"
+                spellcheck="false"
+            >
+            <button id="searchBtn" class="search-btn">ANALIZAR</button>
+        </div>
+        <p class="gen-label">GENERACION COMPETITIVA</p>
+        <div id="genGrid" class="gen-grid"></div>
+    </section>
+
+    <div id="msgBox" class="msg hidden"></div>
+
+    <div id="pokeLoading" class="loading-wrap hidden">
+        <div class="spinner"></div>
+        <p class="loading-text">CARGANDO DATOS DEL POKEMON...</p>
+    </div>
+
+    <div id="pokeCard" class="poke-card hidden">
+        <div class="poke-top">
+            <div class="sprite-col">
+                <img id="pokeSprite" class="poke-sprite" src="" alt="">
+                <p  id="pokeNum"    class="poke-num"></p>
+            </div>
+            <div class="info-col">
+                <h2 id="pokeName" class="poke-name"></h2>
+                <div id="pokeTypes" class="types-row"></div>
+                <p class="section-title">- BASE STATS -</p>
+                <div id="statsRows"></div>
+                <div class="bst-line">
+                    <span class="bst-lbl">TOTAL BST:</span>
+                    <span id="bstNum" class="bst-num"></span>
+                </div>
+            </div>
+        </div>
+        <div class="sub-section">
+            <p class="section-title">- HABILIDADES -</p>
+            <div id="abilitiesRow" class="pills-row"></div>
+        </div>
+        <div id="evoSection" class="sub-section">
+            <p class="section-title">- CADENA DE EVOLUCION -</p>
+            <div id="evoChain" class="evo-chain"></div>
+        </div>
+    </div>
+
+    <div class="divider">&#9619;&#9619;&#9619;&#9619;&#9619;&#9619;&#9619;&#9619;&#9619;&#9619;&#9619;&#9619;&#9619;&#9619;&#9619;&#9619;&#9619;&#9619;&#9619;&#9619;&#9619;&#9619;&#9619;&#9619;</div>
+
+    <div id="aiLoading" class="loading-wrap hidden">
+        <div class="spinner ai-spin"></div>
+        <p class="loading-text yellow">CALCULANDO ANALISIS COMPETITIVO...</p>
+    </div>
+
+    <div id="aiSection" class="ai-section hidden">
+        <h3 id="aiHeading" class="ai-heading"></h3>
+        <div class="ai-grid">
+            <div id="cardNat" class="ai-card">
+                <p class="ai-card-title">* NATURALEZAS RECOMENDADAS</p>
+                <div id="natContent"></div>
+            </div>
+            <div id="cardHab" class="ai-card">
+                <p class="ai-card-title">* HABILIDAD OPTIMA</p>
+                <div id="habContent"></div>
+            </div>
+            <div id="cardMov1" class="ai-card full">
+                <p class="ai-card-title">* SET 1 — <span id="nat1Label"></span></p>
+                <div id="movContent1" class="move-inner"></div>
+            </div>
+            <div id="cardMov2" class="ai-card full">
+                <p class="ai-card-title">* SET 2 — <span id="nat2Label"></span></p>
+                <div id="movContent2" class="move-inner"></div>
+            </div>
+            <div id="cardRol" class="ai-card">
+                <p class="ai-card-title">* ROL Y FORMATO</p>
+                <div id="rolContent"></div>
+            </div>
+            <div id="cardExtra" class="ai-card">
+                <p class="ai-card-title">* CONSEJO EXTRA</p>
+                <div id="extraContent"></div>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+<footer>
+    POKEANALYZER &copy; 2025 &nbsp;|&nbsp; DATOS: POKEAPI.CO<br>
+    POKEMON ES MARCA REGISTRADA DE NINTENDO / GAME FREAK / CREATURES INC.
+</footer>
+
+<script src="js/config.js"></script>
+<script src="js/pokeapi.js"></script>
+<script src="js/analyzer.js"></script>
+<script src="js/renderer.js"></script>
+<script src="js/app.js"></script>
+
+</body>
+</html>
