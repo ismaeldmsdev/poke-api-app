@@ -74,12 +74,16 @@ window.PokeAnalyzer.app = {
         renderer.showAILoading();
 
         try {
-            const [movesData, abilitiesEs] = await Promise.all([
+            const [movesData, abilitiesEs, smogonData] = await Promise.all([
                 pokeAPI.fetchMovesData(pokemon),
                 pokeAPI.fetchAbilitiesSpanish(pokemon),
+                pokeAPI.fetchSmogonSets(pokemon.name, this.state.selectedGen),
             ]);
 
-            this.state.cache = { pokemon, evoData, movesData, abilitiesEs };
+            this.state.cache = {
+                pokemon, evoData, movesData, abilitiesEs,
+                smogonData, smogonGen: this.state.selectedGen,
+            };
             this._runAnalysis();
         } catch (err) {
             renderer.hideAILoading();
@@ -91,8 +95,11 @@ window.PokeAnalyzer.app = {
 
     _runAnalysis() {
         const { config, analyzer, renderer } = window.PokeAnalyzer;
-        const { pokemon, movesData, abilitiesEs } = this.state.cache;
+        const { pokemon, movesData, abilitiesEs, smogonData, smogonGen } = this.state.cache;
         const generation = config.GENERATIONS.find(g => g.num === this.state.selectedGen);
+
+        // Solo usar datos Smogon si son de la generación actualmente seleccionada
+        const smogon = smogonGen === this.state.selectedGen ? smogonData : null;
 
         renderer.resetAnalysis();
         renderer.showAILoading();
@@ -100,7 +107,7 @@ window.PokeAnalyzer.app = {
         // Usar setTimeout para que el DOM actualice el spinner antes de la tarea síncrona
         setTimeout(() => {
             try {
-                const analysis = analyzer.analyze(pokemon, movesData, abilitiesEs, generation);
+                const analysis = analyzer.analyze(pokemon, movesData, abilitiesEs, generation, smogon);
                 renderer.hideAILoading();
                 renderer.renderAnalysis(analysis, generation);
             } catch (err) {

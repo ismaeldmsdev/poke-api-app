@@ -61,7 +61,16 @@ header {
 }
 .logo-poke     { color: var(--yellow); text-shadow: 0 0 16px var(--glow-y), 2px 2px 0 #886600; }
 .logo-analyzer { color: var(--red);    text-shadow: 0 0 16px var(--glow-r), 2px 2px 0 #660000; }
-.logo-sub      { display: block; font-size: .5em; color: var(--muted); margin-top: 3px; }
+.logo-sub      { display: block; font-size: .5em; color: var(--muted); margin-top: 3px; letter-spacing: 2px; }
+.logo-icon     {
+    color: var(--yellow);
+    display: inline-block;
+    animation: gear-spin 6s linear infinite;
+    text-shadow: 0 0 10px var(--glow-y);
+    margin-right: 4px;
+}
+.logo-icon-r   { margin-right: 0; margin-left: 4px; animation-direction: reverse; }
+@keyframes gear-spin { to { transform: rotate(360deg); } }
 
 .api-row {
     display: flex;
@@ -417,6 +426,56 @@ main { max-width: 940px; margin: 0 auto; padding: 36px 18px 60px; }
 
 /* ── Utility ─────────────────────────────────────────────────── */
 .hidden { display: none !important; }
+
+/* ── Build card meta (naturaleza + objeto + habilidad + EVs) ── */
+.build-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+}
+.build-nature {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 7px;
+    color: var(--yellow);
+    border: 1px solid var(--yellow);
+    background: rgba(255,203,5,.08);
+    padding: 4px 8px;
+    box-shadow: 0 0 6px var(--glow-y);
+}
+.build-item {
+    font-family: 'VT323', monospace;
+    font-size: 18px;
+    color: var(--text);
+    background: var(--inset);
+    border: 1px solid var(--border);
+    padding: 2px 9px;
+}
+.build-ability {
+    font-family: 'VT323', monospace;
+    font-size: 18px;
+    color: #a0b0ff;
+    background: var(--inset);
+    border: 1px solid var(--border);
+    padding: 2px 9px;
+    text-transform: capitalize;
+}
+.build-role {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 6px;
+    color: var(--red);
+    margin-left: auto;
+}
+.build-evs {
+    width: 100%;
+    font-family: 'VT323', monospace;
+    font-size: 17px;
+    color: var(--muted);
+    letter-spacing: 1px;
+}
 
 /* ── Footer ──────────────────────────────────────────────────── */
 footer {

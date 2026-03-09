@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PokeAnalyzer</title>
+    <title>BuildDex</title>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/styles.css">
 </head>
@@ -11,8 +11,11 @@
 
 <header>
     <div class="logo">
-        <span class="logo-poke">POKE</span><span class="logo-analyzer">ANALYZER</span>
-        <span class="logo-sub">// COMPETITIVE ANALYSIS TOOL //</span>
+        <!--<span class="logo-icon">&#9881;</span> -->
+        <span class="logo-poke">BUILD</span><span class="logo-analyzer">DEX</span>
+       <!-- <span class="logo-icon logo-icon-r">&#9881;</span>
+        <span class="logo-sub">// &#9733; ATK &nbsp; DEF &nbsp; VEL &#9733; &nbsp; COMPETITIVE BUILDER //</span>-->
+        <span class="logo-sub">// BUILD COMPETITIVA //</span>
     </div>
 </header>
 
@@ -25,7 +28,7 @@
                 id="searchInput"
                 type="text"
                 class="search-input"
-                placeholder="pikachu, charizard, 25..."
+                placeholder="Charizard, Gengar, Mew..."
                 autocomplete="off"
                 spellcheck="false"
             >
@@ -64,7 +67,7 @@
             <div id="abilitiesRow" class="pills-row"></div>
         </div>
         <div id="evoSection" class="sub-section">
-            <p class="section-title">- CADENA DE EVOLUCION -</p>
+            <p class="section-title">- CADENA DE EVOLUCIÓN -</p>
             <div id="evoChain" class="evo-chain"></div>
         </div>
     </div>
@@ -73,27 +76,23 @@
 
     <div id="aiLoading" class="loading-wrap hidden">
         <div class="spinner ai-spin"></div>
-        <p class="loading-text yellow">CALCULANDO ANALISIS COMPETITIVO...</p>
+        <p class="loading-text yellow">CALCULANDO ANÁLISIS COMPETITIVO...</p>
     </div>
 
     <div id="aiSection" class="ai-section hidden">
         <h3 id="aiHeading" class="ai-heading"></h3>
         <div class="ai-grid">
-            <div id="cardNat" class="ai-card">
-                <p class="ai-card-title">* NATURALEZAS RECOMENDADAS</p>
-                <div id="natContent"></div>
+            <div id="cardBuild1" class="ai-card full">
+                <p class="ai-card-title">* BUILD 1 — <span id="buildLabel1"></span></p>
+                <div id="buildContent1"></div>
             </div>
-            <div id="cardHab" class="ai-card">
-                <p class="ai-card-title">* HABILIDAD OPTIMA</p>
-                <div id="habContent"></div>
+            <div id="cardBuild2" class="ai-card full">
+                <p class="ai-card-title">* BUILD 2 — <span id="buildLabel2"></span></p>
+                <div id="buildContent2"></div>
             </div>
-            <div id="cardMov1" class="ai-card full">
-                <p class="ai-card-title">* SET 1 — <span id="nat1Label"></span></p>
-                <div id="movContent1" class="move-inner"></div>
-            </div>
-            <div id="cardMov2" class="ai-card full">
-                <p class="ai-card-title">* SET 2 — <span id="nat2Label"></span></p>
-                <div id="movContent2" class="move-inner"></div>
+            <div id="cardBuild3" class="ai-card full">
+                <p class="ai-card-title">* BUILD 3 — <span id="buildLabel3"></span></p>
+                <div id="buildContent3"></div>
             </div>
             <div id="cardRol" class="ai-card">
                 <p class="ai-card-title">* ROL Y FORMATO</p>
@@ -109,7 +108,7 @@
 </main>
 
 <footer>
-    POKEANALYZER &copy; 2025 &nbsp;|&nbsp; DATOS: POKEAPI.CO<br>
+    &#9881; BUILD DEX &copy; 2026 &nbsp;|&nbsp; DATOS: POKEAPI.CO<br>
     POKEMON ES MARCA REGISTRADA DE NINTENDO / GAME FREAK / CREATURES INC.
 </footer>
 

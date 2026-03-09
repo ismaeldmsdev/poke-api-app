@@ -1,6 +1,5 @@
 /**
  * renderer.js — Todo lo que toca el DOM.
- * No hace fetch ni contiene lógica de negocio.
  * Expone window.PokeAnalyzer.renderer
  */
 
@@ -8,18 +7,16 @@ window.PokeAnalyzer = window.PokeAnalyzer || {};
 
 window.PokeAnalyzer.renderer = {
 
-    // ── Helpers DOM ──────────────────────────────────────────────
     el:   id => document.getElementById(id),
     show: id => document.getElementById(id).classList.remove('hidden'),
     hide: id => document.getElementById(id).classList.add('hidden'),
 
     showMessage(text, type = 'error') {
         const node = this.el('msgBox');
-        node.className  = `msg msg-${type}`;
+        node.className   = `msg msg-${type}`;
         node.textContent = text;
         this.show('msgBox');
     },
-
     hideMessage() { this.hide('msgBox'); },
 
     setSearchBusy(busy) {
@@ -29,7 +26,6 @@ window.PokeAnalyzer.renderer = {
     },
 
     // ── Selector de generación ────────────────────────────────────
-
     buildGenButtons(generations, activeNum) {
         const grid = this.el('genGrid');
         grid.innerHTML = '';
@@ -50,16 +46,13 @@ window.PokeAnalyzer.renderer = {
     },
 
     // ── Pokémon card ──────────────────────────────────────────────
-
     renderPokemon(pokemon, evoData) {
         const { pokeAPI } = window.PokeAnalyzer;
-
         this._renderHeader(pokemon, pokeAPI);
         this._renderTypes(pokemon);
         this._renderStats(pokemon);
         this._renderAbilities(pokemon);
         this._renderEvoChain(evoData, pokeAPI);
-
         this.show('pokeCard');
         requestAnimationFrame(() => requestAnimationFrame(() => {
             this.el('pokeCard').classList.add('show');
@@ -80,8 +73,7 @@ window.PokeAnalyzer.renderer = {
             .map(t => {
                 const es = TYPE_ES[t.type.name] || t.type.name;
                 return `<span class="type-badge t-${t.type.name}">${es.toUpperCase()}</span>`;
-            })
-            .join('');
+            }).join('');
     },
 
     _renderStats(pokemon) {
@@ -89,7 +81,6 @@ window.PokeAnalyzer.renderer = {
         const container = this.el('statsRows');
         container.innerHTML = '';
         let bst = 0;
-
         pokemon.stats.forEach(s => {
             bst += s.base_stat;
             const meta = STAT_META[s.stat.name] ?? { label: s.stat.name, cls: '' };
@@ -103,7 +94,6 @@ window.PokeAnalyzer.renderer = {
                     </div>
                 </div>`);
         });
-
         this.el('bstNum').textContent = bst;
     },
 
@@ -123,13 +113,10 @@ window.PokeAnalyzer.renderer = {
 
     _renderEvoChain(evoData, pokeAPI) {
         const chain = pokeAPI.flattenEvoChain(evoData.chain);
-
         if (chain.length <= 1) { this.hide('evoSection'); return; }
-
         this.show('evoSection');
         const container = this.el('evoChain');
         container.innerHTML = '';
-
         chain.forEach((evo, i) => {
             const id   = pokeAPI.speciesUrlToId(evo.url);
             const item = document.createElement('div');
@@ -139,7 +126,6 @@ window.PokeAnalyzer.renderer = {
                 <img src="${pokeAPI.staticSpriteUrl(id)}" alt="${evo.name}" loading="lazy">
                 <p class="evo-name">${evo.name}</p>`;
             container.appendChild(item);
-
             if (i < chain.length - 1) {
                 container.insertAdjacentHTML('beforeend', `<span class="evo-arrow">&#9658;</span>`);
             }
@@ -147,52 +133,34 @@ window.PokeAnalyzer.renderer = {
     },
 
     // ── AI Analysis ───────────────────────────────────────────────
-
     renderAnalysis(analysis, generation) {
         this.el('aiHeading').textContent =
             `- ANALISIS GEN ${generation.num}: ${generation.games.toUpperCase()} -`;
 
-        this._renderNatures(analysis.naturalezas ?? []);
-        this._renderAbilityRec(analysis.habilidad ?? {});
-        this._renderMovesetCard('movContent1', 'nat1Label', analysis.moveset_1 ?? [], analysis.naturalezas?.[0]);
-        this._renderMovesetCard('movContent2', 'nat2Label', analysis.moveset_2 ?? [], analysis.naturalezas?.[1]);
+        const builds = analysis.builds ?? [];
+
+        ['cardBuild1','cardBuild2','cardBuild3'].forEach((id, i) => {
+            const build = builds[i];
+            if (build) {
+                this.el(`buildLabel${i + 1}`).textContent = build.etiqueta;
+                this._renderBuildCard(`buildContent${i + 1}`, build);
+                this.el(id).classList.remove('hidden');
+            } else {
+                this.el(id).classList.add('hidden');
+            }
+        });
+
         this._renderRol(analysis.rol, analysis.formato);
         this._renderExtra(analysis.consejo_extra ?? '');
 
         this.show('aiSection');
-        this._animateAICards();
+        this._animateAICards(builds.length);
     },
 
-    _renderNatures(naturalezas) {
-        this.el('natContent').innerHTML = naturalezas.map(n => `
-            <div class="nature-item">
-                <p class="nature-name">${(n.nombre ?? '').toUpperCase()}</p>
-                <p class="nature-reason">${n.razon ?? ''}</p>
-            </div>`).join('');
-    },
-
-    _renderAbilityRec(habilidad) {
-        this.el('habContent').innerHTML = `
-            <div class="ability-rec">
-                <p class="ability-rec-name">${(habilidad.nombre ?? '').toUpperCase()}</p>
-                <p class="ability-rec-reason">${habilidad.razon ?? ''}</p>
-            </div>`;
-    },
-
-    _renderMovesetCard(contentId, labelId, moveset, naturaleza) {
+    _renderBuildCard(contentId, build) {
         const { TYPE_COLORS, TYPE_ES } = window.PokeAnalyzer.config;
-        const label = naturaleza?.nombre && naturaleza.nombre !== 'N/A'
-            ? naturaleza.nombre.toUpperCase()
-            : (labelId === 'nat1Label' ? 'PRINCIPAL' : 'ALTERNATIVO');
 
-        this.el(labelId).textContent = label;
-
-        if (!moveset.length) {
-            this.el(contentId).innerHTML = `<p style="font-family:'VT323',monospace;font-size:17px;color:var(--muted)">Sin movimientos disponibles para esta generación.</p>`;
-            return;
-        }
-
-        this.el(contentId).innerHTML = moveset.map((m, i) => {
+        const movesHtml = (build.moveset ?? []).map((m, i) => {
             const typeKey = (m.tipo ?? '').toLowerCase();
             const colors  = TYPE_COLORS[typeKey] ?? { bg: '#888', fg: '#111' };
             const typeEs  = (TYPE_ES[typeKey] || m.tipo || '').toUpperCase();
@@ -202,14 +170,22 @@ window.PokeAnalyzer.renderer = {
                     <div class="move-body">
                         <div class="move-header">
                             <span class="move-name">${m.movimiento ?? ''}</span>
-                            <span class="move-type" style="background:${colors.bg};color:${colors.fg}">
-                                ${typeEs}
-                            </span>
+                            <span class="move-type" style="background:${colors.bg};color:${colors.fg}">${typeEs}</span>
                         </div>
                         <p class="move-why">${m.razon ?? ''}</p>
                     </div>
                 </div>`;
         }).join('');
+
+        this.el(contentId).innerHTML = `
+            <div class="build-meta">
+                <span class="build-nature">${(build.nature ?? '').toUpperCase()}</span>
+                <span class="build-item">&#9670; ${build.item ?? ''}</span>
+                <span class="build-ability">&#9670; ${build.ability ?? ''}</span>
+                <span class="build-role">${build.role ?? ''}</span>
+                <span class="build-evs">EVs: ${build.evs ?? ''}</span>
+            </div>
+            <div class="move-inner">${movesHtml}</div>`;
     },
 
     _renderRol(rol, formato) {
@@ -222,38 +198,41 @@ window.PokeAnalyzer.renderer = {
         this.el('extraContent').innerHTML = `<p class="extra-text">${consejo}</p>`;
     },
 
-    _animateAICards() {
-        ['cardNat', 'cardHab', 'cardMov1', 'cardMov2', 'cardRol', 'cardExtra'].forEach((id, i) => {
-            setTimeout(() => this.el(id).classList.add('show'), i * 100);
+    _animateAICards(buildCount) {
+        const ids = [];
+        for (let i = 1; i <= buildCount; i++) ids.push(`cardBuild${i}`);
+        ids.push('cardRol', 'cardExtra');
+        ids.forEach((id, i) => {
+            setTimeout(() => {
+                const el = document.getElementById(id);
+                if (el) el.classList.add('show');
+            }, i * 100);
         });
     },
 
     // ── Reset ─────────────────────────────────────────────────────
-
     resetResults() {
         this.hideMessage();
         this.hide('aiSection');
         this.hide('aiLoading');
-
         const card = this.el('pokeCard');
         card.classList.add('hidden');
         card.classList.remove('show');
-
-        ['cardNat', 'cardHab', 'cardMov1', 'cardMov2', 'cardRol', 'cardExtra'].forEach(id => {
-            this.el(id).classList.remove('show');
+        ['cardBuild1','cardBuild2','cardBuild3','cardRol','cardExtra'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.classList.remove('show');
         });
     },
 
-    // Resetea solo el análisis IA (sin tocar la card del Pokémon)
     resetAnalysis() {
         this.hide('aiSection');
         this.hide('aiLoading');
-        ['cardNat', 'cardHab', 'cardMov1', 'cardMov2', 'cardRol', 'cardExtra'].forEach(id => {
-            this.el(id).classList.remove('show');
+        ['cardBuild1','cardBuild2','cardBuild3','cardRol','cardExtra'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.classList.remove('show');
         });
     },
 
-    // ── Estados de carga ──────────────────────────────────────────
     showPokeLoading() { this.show('pokeLoading'); },
     hidePokeLoading() { this.hide('pokeLoading'); },
     showAILoading()   { this.show('aiLoading');   },

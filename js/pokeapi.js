@@ -77,6 +77,91 @@ window.PokeAnalyzer.pokeAPI = {
         return map;
     },
 
+    /**
+     * Busca sets Smogon verificados para un Pokémon en la generación dada.
+     * Consulta los tiers OU + Ubers en paralelo; si no aparece, prueba UU/RU/NU.
+     * @returns {{ tier: string, sets: object } | null}
+     */
+    async fetchSmogonSets(pokemonSlug, generationNum) {
+        const displayName = this._slugToSmogonName(pokemonSlug);
+        const gen = generationNum;
+
+        // Los dos tiers principales en paralelo
+        const [ouResult, ubersResult] = await Promise.allSettled([
+            this._trySmogonTier(displayName, gen, 'ou'),
+            this._trySmogonTier(displayName, gen, 'ubers'),
+        ]);
+        if (ouResult.status === 'fulfilled' && ouResult.value)    return ouResult.value;
+        if (ubersResult.status === 'fulfilled' && ubersResult.value) return ubersResult.value;
+
+        // Tiers secundarios (secuencial para no saturar)
+        for (const tier of ['uu', 'ru', 'nu', 'pu']) {
+            const result = await this._trySmogonTier(displayName, gen, tier);
+            if (result) return result;
+        }
+        return null;
+    },
+
+    async _trySmogonTier(displayName, gen, tier) {
+        try {
+            const res = await fetch(
+                `https://pkmn.github.io/smogon/data/sets/gen${gen}${tier}.json`
+            );
+            if (!res.ok) return null;
+            const data = await res.json();
+            return data[displayName] ? { tier: tier.toUpperCase(), sets: data[displayName] } : null;
+        } catch { return null; }
+    },
+
+    /** Convierte slug de PokéAPI al nombre display que usa Smogon. */
+    _slugToSmogonName(slug) {
+        const SPECIAL = {
+            'mr-mime':        'Mr. Mime',
+            'mime-jr':        'Mime Jr.',
+            'mr-rime':        'Mr. Rime',
+            'flabebe':        'Flabébé',
+            'type-null':      'Type: Null',
+            'jangmo-o':       'Jangmo-o',
+            'hakamo-o':       'Hakamo-o',
+            'kommo-o':        'Kommo-o',
+            'porygon-z':      'Porygon-Z',
+            'tapu-koko':      'Tapu Koko',
+            'tapu-lele':      'Tapu Lele',
+            'tapu-bulu':      'Tapu Bulu',
+            'tapu-fini':      'Tapu Fini',
+            'ho-oh':          'Ho-Oh',
+            'chi-yu':         'Chi-Yu',
+            'chien-pao':      'Chien-Pao',
+            'ting-lu':        'Ting-Lu',
+            'wo-chien':       'Wo-Chien',
+            'great-tusk':     'Great Tusk',
+            'iron-valiant':   'Iron Valiant',
+            'iron-moth':      'Iron Moth',
+            'iron-treads':    'Iron Treads',
+            'iron-hands':     'Iron Hands',
+            'iron-jugulis':   'Iron Jugulis',
+            'iron-thorns':    'Iron Thorns',
+            'iron-bundle':    'Iron Bundle',
+            'iron-boulder':   'Iron Boulder',
+            'iron-crown':     'Iron Crown',
+            'sandy-shocks':   'Sandy Shocks',
+            'scream-tail':    'Scream Tail',
+            'brute-bonnet':   'Brute Bonnet',
+            'flutter-mane':   'Flutter Mane',
+            'slither-wing':   'Slither Wing',
+            'roaring-moon':   'Roaring Moon',
+            'walking-wake':   'Walking Wake',
+            'iron-leaves':    'Iron Leaves',
+            'raging-bolt':    'Raging Bolt',
+            'gouging-fire':   'Gouging Fire',
+            'primarina':      'Primarina',
+            'dragapult':      'Dragapult',
+        };
+        if (SPECIAL[slug]) return SPECIAL[slug];
+        // Título case: "great-tusk" → "Great Tusk"
+        return slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    },
+
     /** Sprite animado Gen V > estático > vacío. */
     getBestSprite(pokemon) {
         return pokemon.sprites?.versions?.['generation-v']?.['black-white']?.animated?.front_default
