@@ -495,19 +495,19 @@ window.PokeAnalyzer = window.PokeAnalyzer || {};
 
 window.PokeAnalyzer.analyzer = {
 
-    async analyze(pokemon, movesData, abilitiesEs, generation, smogonData = null) {
+    async analyze(pokemon, abilitiesEs, generation, smogonData = null) {
         const stats  = this._parseStats(pokemon);
         const role   = this._determineRole(stats);
-        const builds = await this._buildCompetitiveBuilds(pokemon, movesData, abilitiesEs, stats, role, generation, smogonData);
+        const builds = await this._buildCompetitiveBuilds(pokemon, abilitiesEs, stats, role, generation, smogonData);
         const formato    = this._determineFormat(stats, generation);
         const consejo    = this._buildAdvice(pokemon, stats, role, generation);
         return { builds, rol: role.description, formato, consejo_extra: consejo };
     },
 
     /** Genera builds competitivos usando datos de la API Smogon. */
-    async _buildCompetitiveBuilds(pokemon, movesData, abilitiesEs, stats, role, generation, smogonData = null) {
+    async _buildCompetitiveBuilds(pokemon, abilitiesEs, stats, role, generation, smogonData = null) {
         if (smogonData) {
-            return await this._buildFromSmogonAPI(smogonData, pokemon, movesData, abilitiesEs, stats, role, generation);
+            return await this._buildFromSmogonAPI(smogonData, pokemon, abilitiesEs, stats, role, generation);
         }
         // Sin datos de Smogon: devolver build informativo vacío
         return [{
@@ -530,7 +530,7 @@ window.PokeAnalyzer.analyzer = {
      * Los sets de Smogon tienen movimientos en inglés con nombre display (ej. "Draco Meteor").
      * Muestra todos los sets disponibles (hasta 3).
      */
-    async _buildFromSmogonAPI(smogonData, pokemon, movesData, abilitiesEs, stats, role, generation) {
+    async _buildFromSmogonAPI(smogonData, pokemon, abilitiesEs, stats, role, generation) {
         const { NATURE_ES } = window.PokeAnalyzer.config;
         const { tier, sets } = smogonData;
         const setNames = Object.keys(sets);
@@ -575,7 +575,7 @@ window.PokeAnalyzer.analyzer = {
                 return { slug, displayName };
             });
 
-            const moveset = await this._resolveSmogonAPIMoves(moveDefs, movesData);
+            const moveset = await this._resolveSmogonAPIMoves(moveDefs);
 
             const label = i === 0
                 ? `${natureEs} — SMOGON ${tier}`
@@ -596,46 +596,37 @@ window.PokeAnalyzer.analyzer = {
     },
 
     /**
-     * Convierte slug de movimiento Smogon + movesData → formato de salida.
-     * Si el movimiento no está en movesData, lo busca en PokéAPI para obtener el nombre en español.
+     * Traduce movimientos de Smogon al castellano.
+     * NO usa movesData de PokéAPI — toma los moves TAL CUAL de Smogon
+     * y solo traduce el nombre al español.
      */
-    async _resolveSmogonAPIMoves(moveDefs, movesData) {
+    async _resolveSmogonAPIMoves(moveDefs) {
         const { pokeAPI } = window.PokeAnalyzer;
         const results = await Promise.all(moveDefs.map(async ({ slug, displayName }) => {
-            // Buscar primero en movesData (ya descargados)
-            const found = movesData.find(m => m.name === slug);
-            if (found) {
-                return {
-                    movimiento: found.nameEs,
-                    tipo: found.type,
-                    razon: SMOGON_REASONS[slug] ?? `Move Smogon verificado — ${found.nameEs}.`,
-                };
-            }
-
-            // Buscar en diccionario estático
+            // 1. Diccionario estático (rápido, sin red)
             if (SMOGON_NAMES_ES[slug]) {
                 return {
                     movimiento: SMOGON_NAMES_ES[slug],
                     tipo: SMOGON_MOVE_TYPE[slug] ?? 'normal',
-                    razon: SMOGON_REASONS[slug] ?? `Move Smogon verificado — ${SMOGON_NAMES_ES[slug]}.`,
+                    razon: '',
                 };
             }
 
-            // Buscar en PokéAPI on-the-fly
+            // 2. PokéAPI individual (solo para traducción del nombre)
             const fetched = await pokeAPI.fetchMoveSpanish(slug);
             if (fetched) {
                 return {
                     movimiento: fetched.nameEs,
                     tipo: fetched.type,
-                    razon: SMOGON_REASONS[slug] ?? `Move Smogon verificado — ${fetched.nameEs}.`,
+                    razon: '',
                 };
             }
 
-            // Último fallback: nombre display de Smogon tal cual
+            // 3. Fallback: nombre display de Smogon tal cual
             return {
                 movimiento: displayName,
                 tipo: SMOGON_MOVE_TYPE[slug] ?? 'normal',
-                razon: SMOGON_REASONS[slug] ?? `Move Smogon verificado — ${displayName}.`,
+                razon: '',
             };
         }));
         return results;

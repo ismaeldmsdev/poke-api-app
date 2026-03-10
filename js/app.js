@@ -82,14 +82,13 @@ window.PokeAnalyzer.app = {
         renderer.showAILoading();
 
         try {
-            const [movesData, abilitiesEs, smogonData] = await Promise.all([
-                pokeAPI.fetchMovesData(pokemon),
+            const [abilitiesEs, smogonData] = await Promise.all([
                 pokeAPI.fetchAbilitiesSpanish(pokemon),
                 pokeAPI.fetchSmogonSets(pokemon.name, this.state.selectedGen),
             ]);
 
             this.state.cache = {
-                pokemon, evoData, movesData, abilitiesEs,
+                pokemon, evoData, abilitiesEs,
                 smogonData, smogonGen: this.state.selectedGen,
             };
             this._runAnalysis();
@@ -133,7 +132,7 @@ window.PokeAnalyzer.app = {
 
     async _runAnalysis() {
         const { config, analyzer, renderer, pokeAPI } = window.PokeAnalyzer;
-        const { pokemon, movesData, abilitiesEs } = this.state.cache;
+        const { pokemon, abilitiesEs } = this.state.cache;
         const generation = config.GENERATIONS.find(g => g.num === this.state.selectedGen);
 
         renderer.resetAnalysis();
@@ -148,7 +147,7 @@ window.PokeAnalyzer.app = {
                 this.state.cache.smogonGen = this.state.selectedGen;
             }
 
-            const analysis = await analyzer.analyze(pokemon, movesData, abilitiesEs, generation, smogonData);
+            const analysis = await analyzer.analyze(pokemon, abilitiesEs, generation, smogonData);
             renderer.hideAILoading();
             renderer.renderAnalysis(analysis, generation);
         } catch (err) {
