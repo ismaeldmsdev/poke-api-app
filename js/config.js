@@ -63,6 +63,36 @@ window.PokeAnalyzer.config = {
         'Quirky':  'Rara',
     },
 
+    // Efectos de naturaleza sobre stats (+10% / -10%)
+    // up = stat potenciado, down = stat reducido, null = neutra
+    NATURE_EFFECTS: {
+        'Hardy':   null,
+        'Lonely':  { up: 'attack',          down: 'defense' },
+        'Brave':   { up: 'attack',          down: 'speed' },
+        'Adamant': { up: 'attack',          down: 'special-attack' },
+        'Naughty': { up: 'attack',          down: 'special-defense' },
+        'Bold':    { up: 'defense',         down: 'attack' },
+        'Docile':  null,
+        'Relaxed': { up: 'defense',         down: 'speed' },
+        'Impish':  { up: 'defense',         down: 'special-attack' },
+        'Lax':     { up: 'defense',         down: 'special-defense' },
+        'Timid':   { up: 'speed',           down: 'attack' },
+        'Hasty':   { up: 'speed',           down: 'defense' },
+        'Serious': null,
+        'Jolly':   { up: 'speed',           down: 'special-attack' },
+        'Naive':   { up: 'speed',           down: 'special-defense' },
+        'Modest':  { up: 'special-attack',  down: 'attack' },
+        'Mild':    { up: 'special-attack',  down: 'defense' },
+        'Quiet':   { up: 'special-attack',  down: 'speed' },
+        'Bashful': null,
+        'Rash':    { up: 'special-attack',  down: 'special-defense' },
+        'Calm':    { up: 'special-defense', down: 'attack' },
+        'Gentle':  { up: 'special-defense', down: 'defense' },
+        'Sassy':   { up: 'special-defense', down: 'speed' },
+        'Careful': { up: 'special-defense', down: 'special-attack' },
+        'Quirky':  null,
+    },
+
     // Mapa de nombre de generación de PokeAPI → número
     GEN_NUM_MAP: {
         'generation-i':    1, 'generation-ii':   2, 'generation-iii': 3,

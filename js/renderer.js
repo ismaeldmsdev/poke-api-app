@@ -140,8 +140,6 @@ window.PokeAnalyzer.renderer = {
 
     /**
      * Rellena el dropdown con todos los sets disponibles.
-     * @param {Array} allSets - Sets parseados del analyzer
-     * @param {boolean} hasSmogon - Si los datos son de Smogon
      */
     renderSetSelector(allSets, hasSmogon) {
         const dropdown = this.el('setDropdown');
@@ -164,15 +162,70 @@ window.PokeAnalyzer.renderer = {
     /**
      * Renderiza un set individual en la tarjeta de build.
      * Marca la naturaleza con ★ (recomendada por Smogon).
+     * Rellena el dropdown de variación de naturaleza.
      */
     renderSelectedSet(set, hasSmogon) {
         this.el('buildLabel1').textContent = set.tierLabel;
         this._renderBuildCard('buildContent1', set, hasSmogon);
         this.el('cardBuild1').classList.remove('hidden');
-        // Animar la tarjeta
         requestAnimationFrame(() => {
             this.el('cardBuild1').classList.add('show');
         });
+
+        // Rellenar dropdown de variación de naturaleza
+        this._renderNatureDropdown(set.natureEn);
+        this.renderNatureEffect(set.natureEn);
+    },
+
+    // ── Selector de Variación de Naturaleza ───────────────────────
+
+    /**
+     * Rellena el dropdown de naturaleza con las 25 naturalezas.
+     * La recomendada por Smogon aparece marcada con ★.
+     */
+    _renderNatureDropdown(recommendedNatureEn) {
+        const { NATURE_ES } = window.PokeAnalyzer.config;
+        const dropdown = this.el('natureDropdown');
+        dropdown.innerHTML = '';
+
+        Object.entries(NATURE_ES).forEach(([en, es]) => {
+            const option = document.createElement('option');
+            option.value = en;
+            const star = (en === recommendedNatureEn) ? '★ ' : '';
+            option.textContent = `${star}${es} (${en})`;
+            if (en === recommendedNatureEn) option.selected = true;
+            dropdown.appendChild(option);
+        });
+
+        this.show('natureSelector');
+    },
+
+    /**
+     * Muestra los efectos de la naturaleza seleccionada sobre los stats.
+     * +10% en verde, -10% en rojo, neutras sin indicador.
+     */
+    renderNatureEffect(natureEn) {
+        const { NATURE_EFFECTS, NATURE_ES, STAT_META } = window.PokeAnalyzer.config;
+        const box = this.el('natureEffectBox');
+        const effect = NATURE_EFFECTS[natureEn];
+        const natureEs = NATURE_ES[natureEn] ?? natureEn;
+
+        if (!effect) {
+            box.innerHTML = `
+                <span class="nature-eff-title">${natureEs.toUpperCase()}</span>
+                <span class="nature-eff-neutral">Naturaleza neutra — sin modificadores de stats.</span>`;
+            this.show('natureEffectBox');
+            return;
+        }
+
+        const upMeta   = STAT_META[effect.up]   ?? { label: effect.up };
+        const downMeta = STAT_META[effect.down]  ?? { label: effect.down };
+
+        box.innerHTML = `
+            <span class="nature-eff-title">${natureEs.toUpperCase()}</span>
+            <span class="nature-eff-up">+${upMeta.label} (+10%)</span>
+            <span class="nature-eff-down">-${downMeta.label} (-10%)</span>`;
+        this.show('natureEffectBox');
     },
 
     // ── AI Analysis ───────────────────────────────────────────────
@@ -351,6 +404,8 @@ window.PokeAnalyzer.renderer = {
         this.hide('aiSection');
         this.hide('aiLoading');
         this.hide('setSelector');
+        this.hide('natureSelector');
+        this.hide('natureEffectBox');
         const card = this.el('pokeCard');
         card.classList.add('hidden');
         card.classList.remove('show');
@@ -364,6 +419,8 @@ window.PokeAnalyzer.renderer = {
         this.hide('aiSection');
         this.hide('aiLoading');
         this.hide('setSelector');
+        this.hide('natureSelector');
+        this.hide('natureEffectBox');
         ['cardBuild1','cardRol','cardExtra'].forEach(id => {
             const el = document.getElementById(id);
             if (el) el.classList.remove('show');

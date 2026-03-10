@@ -53,6 +53,11 @@ window.PokeAnalyzer.app = {
             }
         });
 
+        // Variación de naturaleza: recalcular efectos visuales
+        document.getElementById('natureDropdown').addEventListener('change', e => {
+            window.PokeAnalyzer.renderer.renderNatureEffect(e.target.value);
+        });
+
         // Comparador
         document.getElementById('compareBtn').addEventListener('click', () => this.runCompare());
         document.getElementById('compareInput').addEventListener('keydown', e => {
