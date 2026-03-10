@@ -212,8 +212,8 @@ window.PokeAnalyzer.renderer = {
 
         if (!effect) {
             box.innerHTML = `
-                <span class="nature-eff-title">${natureEs.toUpperCase()}</span>
-                <span class="nature-eff-neutral">Naturaleza neutra — sin modificadores de stats.</span>`;
+                <span class="nature-eff-title">${natureEs}</span>
+                <span class="nature-eff-neutral">Naturaleza neutra — sin modificadores de estadísticas.</span>`;
             this.show('natureEffectBox');
             return;
         }
@@ -222,16 +222,16 @@ window.PokeAnalyzer.renderer = {
         const downMeta = STAT_META[effect.down]  ?? { label: effect.down };
 
         box.innerHTML = `
-            <span class="nature-eff-title">${natureEs.toUpperCase()}</span>
-            <span class="nature-eff-up">+${upMeta.label} (+10%)</span>
-            <span class="nature-eff-down">-${downMeta.label} (-10%)</span>`;
+            <span class="nature-eff-title">${natureEs}</span>
+            <span class="nature-eff-up">▲ ${upMeta.label} (+10%)</span>
+            <span class="nature-eff-down">▼ ${downMeta.label} (-10%)</span>`;
         this.show('natureEffectBox');
     },
 
     // ── AI Analysis ───────────────────────────────────────────────
     renderAnalysis(analysis, generation) {
         this.el('aiHeading').textContent =
-            `- ANALISIS GEN ${generation.num}: ${generation.games.toUpperCase()} -`;
+            `Análisis Gen ${generation.num} — ${generation.games}`;
 
         const allSets = analysis.allSets ?? [];
 
@@ -266,7 +266,7 @@ window.PokeAnalyzer.renderer = {
             const typeEs  = (TYPE_ES[typeKey] || m.tipo || '').toUpperCase();
             return `
                 <div class="move-item">
-                    <span class="move-n">${i + 1}.</span>
+                    <div class="move-type-bar" style="background:${colors.bg}"></div>
                     <div class="move-body">
                         <div class="move-header">
                             <span class="move-name">${m.movimiento ?? ''}</span>
@@ -280,8 +280,8 @@ window.PokeAnalyzer.renderer = {
         this.el(contentId).innerHTML = `
             <div class="build-meta">
                 <span class="build-nature">${natureDisplay}</span>
-                <span class="build-item">&#9670; ${build.item ?? ''}</span>
-                <span class="build-ability">&#9670; ${build.ability ?? ''}</span>
+                <span class="build-item">${build.item ?? ''}</span>
+                <span class="build-ability">${build.ability ?? ''}</span>
                 <span class="build-role">${build.setName ?? ''}</span>
                 <span class="build-evs">EVs: ${build.evs ?? ''}</span>
             </div>
