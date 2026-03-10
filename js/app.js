@@ -131,28 +131,30 @@ window.PokeAnalyzer.app = {
         btn.textContent = 'VS';
     },
 
-    _runAnalysis() {
-        const { config, analyzer, renderer } = window.PokeAnalyzer;
-        const { pokemon, movesData, abilitiesEs, smogonData, smogonGen } = this.state.cache;
+    async _runAnalysis() {
+        const { config, analyzer, renderer, pokeAPI } = window.PokeAnalyzer;
+        const { pokemon, movesData, abilitiesEs } = this.state.cache;
         const generation = config.GENERATIONS.find(g => g.num === this.state.selectedGen);
-
-        // Solo usar datos Smogon si son de la generación actualmente seleccionada
-        const smogon = smogonGen === this.state.selectedGen ? smogonData : null;
 
         renderer.resetAnalysis();
         renderer.showAILoading();
 
-        // Usar setTimeout para que el DOM actualice el spinner antes de la tarea síncrona
-        setTimeout(() => {
-            try {
-                const analysis = analyzer.analyze(pokemon, movesData, abilitiesEs, generation, smogon);
-                renderer.hideAILoading();
-                renderer.renderAnalysis(analysis, generation);
-            } catch (err) {
-                renderer.hideAILoading();
-                renderer.showMessage(err.message, 'error');
+        try {
+            // Re-fetch Smogon data si la generación cambió
+            let smogonData = this.state.cache.smogonData;
+            if (this.state.cache.smogonGen !== this.state.selectedGen) {
+                smogonData = await pokeAPI.fetchSmogonSets(pokemon.name, this.state.selectedGen);
+                this.state.cache.smogonData = smogonData;
+                this.state.cache.smogonGen = this.state.selectedGen;
             }
-        }, 0);
+
+            const analysis = await analyzer.analyze(pokemon, movesData, abilitiesEs, generation, smogonData);
+            renderer.hideAILoading();
+            renderer.renderAnalysis(analysis, generation);
+        } catch (err) {
+            renderer.hideAILoading();
+            renderer.showMessage(err.message, 'error');
+        }
     },
 };
 

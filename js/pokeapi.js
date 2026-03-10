@@ -162,6 +162,26 @@ window.PokeAnalyzer.pokeAPI = {
         return slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
     },
 
+    /**
+     * Busca la traducción al castellano de un movimiento por su slug.
+     * Devuelve { nameEs, type } o null si no existe.
+     * Cache en memoria para evitar llamadas repetidas.
+     */
+    _moveCache: {},
+    async fetchMoveSpanish(slug) {
+        if (this._moveCache[slug]) return this._moveCache[slug];
+        try {
+            const res = await fetch(`${window.PokeAnalyzer.config.POKEAPI_BASE}/move/${slug}`);
+            if (!res.ok) return null;
+            const data = await res.json();
+            const nameEs = data.names?.find(n => n.language.name === 'es')?.name
+                || slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+            const result = { nameEs, type: data.type.name };
+            this._moveCache[slug] = result;
+            return result;
+        } catch { return null; }
+    },
+
     /** Sprite animado Gen V > estático > vacío. */
     getBestSprite(pokemon) {
         return pokemon.sprites?.versions?.['generation-v']?.['black-white']?.animated?.front_default
