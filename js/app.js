@@ -1,3 +1,4 @@
+
 /**
  * app.js — Orquestador principal.
  * Conecta los módulos sin contener lógica de fetch ni de DOM.
