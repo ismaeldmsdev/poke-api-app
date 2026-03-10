@@ -1,106 +1,12 @@
 /**
  * analyzer.js — Motor de análisis competitivo.
- * Obtiene sets verificados de Smogon y los presenta en castellano.
+ * Fuente principal: JSON oficial de Smogon (pkmn.github.io).
+ * Fallback: análisis dinámico por stats + movesData de PokéAPI.
  * Expone window.PokeAnalyzer.analyzer
  */
 
 // ================================================================
-// NOMBRES EN ESPAÑOL — fallback estático para moves Smogon
-// Prioridad: PokéAPI (nameEs) > este mapa > inglés formateado
-// ================================================================
-const SMOGON_NAMES_ES = {
-    'draco-meteor':    'Cometa Draco',
-    'shadow-ball':     'Bola Sombra',
-    'flamethrower':    'Lanzallamas',
-    'fire-blast':      'Llamarada',
-    'u-turn':          'Ida y Vuelta',
-    'air-slash':       'Tajo Aéreo',
-    'hurricane':       'Huracán',
-    'focus-blast':     'Foco Resplandor',
-    'roost':           'Posada',
-    'earthquake':      'Terremoto',
-    'stealth-rock':    'Trampa Rocas',
-    'scale-shot':      'Escamitazo',
-    'fire-fang':       'Colmillo Fuego',
-    'fire-punch':      'Puño Fuego',
-    'dragon-dance':    'Danza Dragón',
-    'quiver-dance':    'Danza Alas',
-    'bug-buzz':        'Zumbido',
-    'nasty-plot':      'Maquinación',
-    'make-it-rain':    'Lluvia de Dinero',
-    'swords-dance':    'Danza Espada',
-    'kowtow-cleave':   'Tajo Kowtow',
-    'iron-head':       'Cabeza de Hierro',
-    'sucker-punch':    'Golpe Bajo',
-    'close-combat':    'A Bocajarro',
-    'moonblast':       'Fuerza Lunar',
-    'knock-off':       'Desarme',
-    'extreme-speed':   'Velocidad Extrema',
-    'bullet-punch':    'Puño Bala',
-    'toxic-spikes':    'Pinchos Tóxicos',
-    'scald':           'Escaldar',
-    'recover':         'Recuperación',
-    'baneful-bunker':  'Madriguera',
-    'body-press':      'Plancha',
-    'defog':           'Ventolera',
-    'iron-defense':    'Defensa Férrea',
-    'flower-trick':    'Truco Floral',
-    'triple-axel':     'Triple Axel',
-    'acrobatics':      'Acrobacia',
-    'crunch':          'Triturar',
-    'torch-song':      'Canción Llamarada',
-    'slack-off':       'Escaqueo',
-    'will-o-wisp':     'Fuego Fatuo',
-    'headlong-rush':   'Embestida',
-    'ice-spinner':     'Giro Helado',
-    'rapid-spin':      'Giro Veloz',
-    'mortal-spin':     'Giro Mortal',
-    'power-gem':       'Gema Brillante',
-    'earth-power':     'Poder Tierra',
-    'ruination':       'Catástrofe',
-    'whirlwind':       'Torbellino',
-    'salt-cure':       'Salmuera',
-    'calm-mind':       'Paz Mental',
-    'soft-boiled':     'Huevo Pasado por Agua',
-    'dazzling-gleam':  'Brillo Mágico',
-    'aura-sphere':     'Esfera Aural',
-    'psystrike':       'Psicogolpe',
-    'thunderbolt':     'Rayo',
-    'volt-switch':     'Relevo Eléctrico',
-    'grass-knot':      'Hierba Lazo',
-    'quick-attack':    'Ataque Rápido',
-    'outrage':         'Enfado',
-    'sludge-bomb':     'Bomba Lodo',
-    'sludge-wave':     'Ola de Lodo',
-    'stone-edge':      'Roca Afilada',
-    'ice-punch':       'Puño Hielo',
-    'shadow-sneak':    'Sombra Vil',
-    'psyshock':        'Psicocarga',
-    'dark-pulse':      'Pulso Umbrío',
-    'flash-cannon':    'Cañón Destello',
-    'protect':         'Protección',
-    'high-jump-kick':  'Salto Patada',
-    'flare-blitz':     'Envite Ígneo',
-    'volt-tackle':     'Voltio Tacle',
-    'iron-tail':       'Cola Férrea',
-    'dragon-claw':     'Garra Dragón',
-    'waterfall':       'Cascada',
-    'surf':            'Surf',
-    'psychic':         'Psíquico',
-    'shadow-claw':     'Garra Sombría',
-    'thunder-wave':    'Onda Trueno',
-    'toxic':           'Tóxico',
-    'taunt':           'Mofa',
-    'substitute':      'Sustituto',
-    'leech-seed':      'Drenadoras',
-    'spikes':          'Trampa Pinchos',
-    'leftovers':       'Restos',
-};
-
-// (Sets competitivos se obtienen en tiempo real de la API Smogon)
-
-// ================================================================
-// TRADUCCIÓN DE OBJETOS — API Smogon (inglés) → castellano
+// TRADUCCIÓN DE OBJETOS — Smogon (inglés) → castellano
 // ================================================================
 const SMOGON_ITEMS_ES = {
     'Choice Specs':       'Lentes Elegidas',
@@ -197,224 +103,13 @@ const SMOGON_ITEMS_ES = {
 };
 
 // ================================================================
-// TIPOS DE MOVIMIENTOS SMOGON — fallback cuando el move no está en movesData
-// ================================================================
-const SMOGON_MOVE_TYPE = {
-    'draco-meteor':       'dragon',
-    'shadow-ball':        'ghost',
-    'flamethrower':       'fire',
-    'fire-blast':         'fire',
-    'u-turn':             'bug',
-    'air-slash':          'flying',
-    'hurricane':          'flying',
-    'focus-blast':        'fighting',
-    'roost':              'flying',
-    'earthquake':         'ground',
-    'stealth-rock':       'rock',
-    'scale-shot':         'dragon',
-    'fire-fang':          'fire',
-    'fire-punch':         'fire',
-    'dragon-dance':       'dragon',
-    'quiver-dance':       'bug',
-    'bug-buzz':           'bug',
-    'nasty-plot':         'dark',
-    'make-it-rain':       'steel',
-    'swords-dance':       'normal',
-    'kowtow-cleave':      'dark',
-    'iron-head':          'steel',
-    'sucker-punch':       'dark',
-    'close-combat':       'fighting',
-    'moonblast':          'fairy',
-    'knock-off':          'dark',
-    'extreme-speed':      'normal',
-    'bullet-punch':       'steel',
-    'toxic-spikes':       'poison',
-    'scald':              'water',
-    'recover':            'normal',
-    'baneful-bunker':     'poison',
-    'body-press':         'fighting',
-    'defog':              'flying',
-    'iron-defense':       'steel',
-    'flower-trick':       'grass',
-    'triple-axel':        'ice',
-    'acrobatics':         'flying',
-    'crunch':             'dark',
-    'torch-song':         'fire',
-    'slack-off':          'normal',
-    'will-o-wisp':        'fire',
-    'headlong-rush':      'ground',
-    'ice-spinner':        'ice',
-    'rapid-spin':         'normal',
-    'mortal-spin':        'poison',
-    'power-gem':          'rock',
-    'earth-power':        'ground',
-    'ruination':          'dark',
-    'whirlwind':          'normal',
-    'salt-cure':          'rock',
-    'calm-mind':          'psychic',
-    'soft-boiled':        'normal',
-    'dazzling-gleam':     'fairy',
-    'aura-sphere':        'fighting',
-    'psystrike':          'psychic',
-    'thunderbolt':        'electric',
-    'volt-switch':        'electric',
-    'grass-knot':         'grass',
-    'quick-attack':       'normal',
-    'outrage':            'dragon',
-    'sludge-bomb':        'poison',
-    'sludge-wave':        'poison',
-    'stone-edge':         'rock',
-    'ice-punch':          'ice',
-    'shadow-sneak':       'ghost',
-    'psyshock':           'psychic',
-    'dark-pulse':         'dark',
-    'flash-cannon':       'steel',
-    'protect':            'normal',
-    'high-jump-kick':     'fighting',
-    'flare-blitz':        'fire',
-    'volt-tackle':        'electric',
-    'iron-tail':          'steel',
-    'hydro-pump':         'water',
-    'surf':               'water',
-    'ice-beam':           'ice',
-    'blizzard':           'ice',
-    'thunder':            'electric',
-    'overheat':           'fire',
-    'psychic':            'psychic',
-    'shadow-claw':        'ghost',
-    'thunder-wave':       'electric',
-    'toxic':              'poison',
-    'taunt':              'dark',
-    'substitute':         'normal',
-    'leech-seed':         'grass',
-    'spikes':             'ground',
-    'drain-punch':        'fighting',
-    'leech-life':         'bug',
-    'play-rough':         'fairy',
-    'waterfall':          'water',
-    'aqua-jet':           'water',
-    'mach-punch':         'fighting',
-    'ice-shard':          'ice',
-    'shadow-force':       'ghost',
-    'gunk-shot':          'poison',
-    'poison-jab':         'poison',
-    'zen-headbutt':       'psychic',
-    'thunder-punch':      'electric',
-    'cross-chop':         'fighting',
-    'liquidation':        'water',
-    'smart-strike':       'steel',
-    'throat-chop':        'dark',
-    'darkest-lariat':     'dark',
-    'stomping-tantrum':   'ground',
-    'high-horsepower':    'ground',
-    'head-smash':         'rock',
-    'rock-slide':         'rock',
-    'avalanche':          'ice',
-    'night-slash':        'dark',
-    'leaf-blade':         'grass',
-    'wood-hammer':        'grass',
-    'seed-bomb':          'grass',
-    'x-scissor':          'bug',
-    'megahorn':           'bug',
-    'psycho-cut':         'psychic',
-    'wave-crash':         'water',
-    'axe-kick':           'fighting',
-    'brave-bird':         'flying',
-    'body-slam':          'normal',
-    'facade':             'normal',
-    'stored-power':       'psychic',
-    'collision-course':   'fighting',
-    'population-bomb':    'normal',
-    'last-respects':      'ghost',
-    'icicle-crash':       'ice',
-    'icicle-spear':       'ice',
-    'precipice-blades':   'ground',
-    'sacred-sword':       'fighting',
-    'flying-press':       'fighting',
-    'drill-run':          'ground',
-    'rock-blast':         'rock',
-    'power-trip':         'dark',
-    'vacuum-wave':        'fighting',
-    'water-shuriken':     'water',
-    'first-impression':   'bug',
-    'grassy-glide':       'grass',
-    'jet-punch':          'water',
-    'volt-switch':        'electric',
-    'flip-turn':          'water',
-    'parting-shot':       'dark',
-    'teleport':           'psychic',
-    'baton-pass':         'normal',
-    'trick':              'psychic',
-    'switcheroo':         'dark',
-    'encore':             'normal',
-    'destiny-bond':       'ghost',
-    'pain-split':         'normal',
-    'perish-song':        'normal',
-    'trick-room':         'psychic',
-    'tailwind':           'flying',
-    'light-screen':       'psychic',
-    'reflect':            'psychic',
-    'aurora-veil':        'ice',
-    'sticky-web':         'bug',
-    'mortal-spin':        'poison',
-    'esper-wing':         'psychic',
-    'misty-explosion':    'fairy',
-    'poltergeist':        'ghost',
-    'astral-barrage':     'ghost',
-    'glacial-lance':      'ice',
-    'eerie-spell':        'psychic',
-    'infernal-parade':    'ghost',
-    'bleakwind-storm':    'flying',
-    'wildbolt-storm':     'electric',
-    'sandsear-storm':     'ground',
-    'hydro-steam':        'water',
-    'blue-flare':         'fire',
-    'bolt-strike':        'electric',
-    'spacial-rend':       'dragon',
-    'seed-flare':         'grass',
-    'luster-purge':       'psychic',
-    'mist-ball':          'psychic',
-    'psycho-boost':       'psychic',
-    'oblivion-wing':      'flying',
-    'petal-blizzard':     'grass',
-    'mystical-fire':      'fire',
-    'burning-jealousy':   'fire',
-    'expanding-force':    'psychic',
-    'rising-voltage':     'electric',
-    'terrain-pulse':      'normal',
-    'tera-blast':         'normal',
-    'core-enforcer':      'dragon',
-    'nuzzle':             'electric',
-    'glare':              'normal',
-    'stun-spore':         'grass',
-    'sleep-powder':       'grass',
-    'spore':              'grass',
-    'hypnosis':           'psychic',
-    'yawn':               'normal',
-    'wish':               'normal',
-    'healing-wish':       'psychic',
-    'lunar-dance':        'psychic',
-    'milk-drink':         'normal',
-    'shore-up':           'ground',
-    'jungle-healing':     'grass',
-    'strength-sap':       'grass',
-    'rest':               'psychic',
-    'morning-sun':        'normal',
-    'moonlight':          'fairy',
-    'synthesis':          'grass',
-    'shadow-ball':        'ghost',
-    'energy-ball':        'grass',
-};
-
-// ================================================================
 // GEN 1-3: Split físico/especial por TIPO (no por movimiento)
-// En Gen 1-3, la categoría del movimiento se determina por su tipo.
 // ================================================================
 const GEN1_PHYSICAL_TYPES = new Set([
     'normal', 'fighting', 'poison', 'ground', 'flying', 'bug', 'rock', 'ghost', 'steel',
 ]);
 
-// Listas de movimientos premium por categoría para builds dinámicos
+// Listas premium para fallback dinámico
 const PREMIUM_PHYSICAL = new Set([
     'earthquake', 'close-combat', 'stone-edge', 'knock-off', 'u-turn', 'iron-head',
     'crunch', 'play-rough', 'brave-bird', 'flare-blitz', 'waterfall', 'ice-punch',
@@ -465,32 +160,144 @@ window.PokeAnalyzer = window.PokeAnalyzer || {};
 
 window.PokeAnalyzer.analyzer = {
 
-    async analyze(pokemon, movesData, abilitiesEs, generation) {
+    /**
+     * Punto de entrada.
+     * Si hay smogonData → usa los sets de Smogon TAL CUAL.
+     * Si no → fallback a _buildDynamic (stats + movesData).
+     */
+    async analyze(pokemon, movesData, abilitiesEs, generation, smogonData = null) {
         const stats  = this._parseStats(pokemon);
         const role   = this._determineRole(stats);
-        const builds = this._buildDynamic(pokemon, movesData, abilitiesEs, stats, role, generation);
-        const formato    = this._determineFormat(stats, generation);
-        const consejo    = this._buildAdvice(pokemon, stats, role, generation);
+
+        let builds, tier;
+        if (smogonData) {
+            tier = smogonData.tier;
+            builds = await this._buildFromSmogon(smogonData, pokemon, movesData, abilitiesEs, generation);
+        } else {
+            tier = null;
+            builds = this._buildDynamic(pokemon, movesData, abilitiesEs, stats, role, generation);
+        }
+
+        const formato = this._determineFormat(stats, generation, tier);
+        const consejo = this._buildAdvice(pokemon, stats, role, generation);
         return { builds, rol: role.description, formato, consejo_extra: consejo };
     },
 
+    // ================================================================
+    // RUTA 1: SMOGON — sets oficiales del JSON de pkmn.github.io
+    // ================================================================
+
     /**
-     * Genera builds 100% dinámicos basados en stats + movesData de PokéAPI.
-     * Respeta el split físico/especial por TIPO en Gen 1-3.
-     *
-     * FLUJO ESTRICTO:
-     *   1. Decidir orientación (físico/especial) por stats
-     *   2. Elegir naturaleza PRIMERO
-     *   3. Filtrar moves coherentes con la naturaleza
-     *   4. Elegir objeto
-     *   5. Validar: Choice → prohibir status/recovery
+     * Construye builds directamente desde los sets de Smogon.
+     * Traduce nombres de movimientos buscando en movesData o vía PokeAPI.
+     * NO recalcula nada: naturaleza, item, EVs, moves son TAL CUAL de Smogon.
      */
+    async _buildFromSmogon(smogonData, pokemon, movesData, abilitiesEs, generation) {
+        const { NATURE_ES } = window.PokeAnalyzer.config;
+        const { tier, sets } = smogonData;
+        const setNames = Object.keys(sets).slice(0, 3);
+
+        // Índice slug → nameEs desde movesData para traducción rápida
+        const moveIndex = new Map();
+        movesData.forEach(m => moveIndex.set(m.name, m));
+
+        const builds = [];
+        for (let i = 0; i < setNames.length; i++) {
+            const setName = setNames[i];
+            const s = sets[setName];
+
+            // Naturaleza
+            const natureEn = Array.isArray(s.nature) ? s.nature[0] : (s.nature ?? 'Hardy');
+            const natureEs = NATURE_ES[natureEn] ?? natureEn;
+
+            // Habilidad
+            let abilityEs = '—';
+            if (s.ability) {
+                const abilityEn  = Array.isArray(s.ability) ? s.ability[0] : s.ability;
+                const abilityKey = abilityEn.toLowerCase().replace(/ /g, '-').replace(/[.']/g, '');
+                abilityEs = abilitiesEs.get(abilityKey) ?? abilityEn;
+            } else {
+                const firstAb = pokemon.abilities?.[0]?.ability?.name;
+                if (firstAb) abilityEs = abilitiesEs.get(firstAb) ?? firstAb;
+            }
+
+            // Objeto
+            const itemEn = Array.isArray(s.item) ? s.item[0] : (s.item ?? '');
+            const itemEs = SMOGON_ITEMS_ES[itemEn] ?? itemEn;
+
+            // EVs
+            const evsRaw = Array.isArray(s.evs) ? s.evs[0] : (s.evs ?? {});
+            const evs = this._formatSmogonEvs(evsRaw);
+
+            // Movimientos: traducir cada slot
+            const moveSlots = (s.moves ?? []).slice(0, 4).map(slot => {
+                const displayName = Array.isArray(slot) ? slot[0] : slot;
+                const slug = displayName.toLowerCase().replace(/[.']/g, '').replace(/ /g, '-');
+                return { slug, displayName };
+            });
+
+            const moveset = await this._translateSmogonMoves(moveSlots, moveIndex);
+
+            builds.push({
+                etiqueta: i === 0
+                    ? `${natureEs} — SMOGON ${tier}`
+                    : `${natureEs} — ${setName} (${tier})`,
+                nature: natureEs,
+                ability: abilityEs,
+                item: itemEs,
+                evs,
+                role: setName,
+                moveset,
+            });
+        }
+
+        return builds;
+    },
+
+    /**
+     * Traduce moves de Smogon al castellano.
+     * 1º: busca en movesData (ya viene con nameEs de PokeAPI)
+     * 2º: llama a pokeAPI.fetchMoveSpanish() individualmente
+     * 3º: fallback al displayName original
+     */
+    async _translateSmogonMoves(moveSlots, moveIndex) {
+        const { pokeAPI } = window.PokeAnalyzer;
+
+        return await Promise.all(moveSlots.map(async ({ slug, displayName }) => {
+            // 1. movesData (ya descargado, tiene nameEs y type)
+            const cached = moveIndex.get(slug);
+            if (cached) {
+                return { movimiento: cached.nameEs, tipo: cached.type, razon: '' };
+            }
+
+            // 2. PokeAPI individual (con cache interna)
+            const fetched = await pokeAPI.fetchMoveSpanish(slug);
+            if (fetched) {
+                return { movimiento: fetched.nameEs, tipo: fetched.type, razon: '' };
+            }
+
+            // 3. Nombre de Smogon tal cual (último recurso)
+            return { movimiento: displayName, tipo: 'normal', razon: '' };
+        }));
+    },
+
+    _formatSmogonEvs(evs) {
+        const LABEL = { hp: 'HP', atk: 'ATK', def: 'DEF', spa: 'SP.ATK', spd: 'SP.DEF', spe: 'VEL' };
+        const parts = Object.entries(evs)
+            .filter(([, v]) => v > 0)
+            .map(([k, v]) => `${v} ${LABEL[k] ?? k.toUpperCase()}`);
+        return parts.length > 0 ? parts.join(' / ') : '252 HP / 4 ATK / 252 VEL';
+    },
+
+    // ================================================================
+    // RUTA 2: FALLBACK DINÁMICO — cuando Smogon no tiene datos
+    // ================================================================
+
     _buildDynamic(pokemon, movesData, abilitiesEs, stats, role, generation) {
         const { NATURE_ES } = window.PokeAnalyzer.config;
         const genNum = generation.num;
         const types = pokemon.types.map(t => t.type.name);
 
-        // Filtrar movimientos por generación y asignar categoría efectiva
         const available = movesData
             .filter(m => m.generationNum <= genNum)
             .map(m => ({
@@ -500,27 +307,22 @@ window.PokeAnalyzer.analyzer = {
                     : m.category,
             }));
 
-        // ── PASO 1: Determinar orientación por stats ──
         const isPhysical = stats.atk > stats.spatk;
-        const isSpecial  = stats.spatk > stats.atk;
         const isMixed    = role.type === 'mixed-attacker';
-        const isDefensive = role.type.includes('wall') || role.type === 'support';
 
-        // Habilidad en español
         const firstAb = pokemon.abilities?.[0]?.ability?.name;
         const abilityEs = firstAb ? (abilitiesEs.get(firstAb) ?? firstAb) : '—';
 
         const builds = [];
 
-        // ── BUILD 1: Set ofensivo principal ──
+        // Build ofensivo
         const offBuild = this._buildOffensiveSet(available, types, stats, isPhysical, isMixed, role, abilityEs, genNum);
         if (offBuild) builds.push(offBuild);
 
-        // ── BUILD 2: Set defensivo/soporte ──
+        // Build defensivo
         const defBuild = this._buildDefensiveSet(available, types, stats, isPhysical, abilityEs, genNum);
         if (defBuild) builds.push(defBuild);
 
-        // Fallback: si no se generó ningún build
         if (builds.length === 0) {
             builds.push({
                 etiqueta: 'ANÁLISIS BÁSICO',
@@ -534,37 +336,25 @@ window.PokeAnalyzer.analyzer = {
         return builds;
     },
 
-    /**
-     * Build ofensivo con coherencia estricta naturaleza → moves → objeto.
-     */
     _buildOffensiveSet(moves, types, stats, isPhysical, isMixed, role, abilityEs, genNum) {
         const { NATURE_ES } = window.PokeAnalyzer.config;
 
-        // ── PASO 2: Elegir naturaleza PRIMERO ──
         const nature = this._pickOffensiveNature(stats, isPhysical, isMixed);
         const natureEs = NATURE_ES[nature] ?? nature;
-
-        // ── PASO 3: Filtrar moves coherentes con la naturaleza ──
         const allowedCategory = this._natureToCategory(nature);
-        const selectedMoves = this._selectCoherentMoves(moves, types, allowedCategory, isMixed, genNum);
+        const selectedMoves = this._selectCoherentMoves(moves, types, allowedCategory, isMixed);
         if (selectedMoves.length === 0) return null;
 
-        // ── PASO 4: Elegir objeto ──
         const item = this._pickOffensiveItem(role, isPhysical, selectedMoves);
-
-        // ── PASO 5: Validar Choice ──
         const finalMoves = this._enforceChoiceRule(selectedMoves, moves, allowedCategory, item, types);
-
-        const evs = this._pickEvs(isPhysical, isMixed, stats);
-        const roleLabel = isPhysical ? 'Atacante Físico' : 'Atacante Especial';
 
         return {
             etiqueta: `${natureEs} — ANÁLISIS DINÁMICO`,
             nature: natureEs,
             ability: abilityEs,
             item,
-            evs,
-            role: roleLabel,
+            evs: this._pickEvs(isPhysical, isMixed),
+            role: isPhysical ? 'Atacante Físico' : 'Atacante Especial',
             moveset: finalMoves.slice(0, 4).map(m => ({
                 movimiento: m.nameEs,
                 tipo: m.type,
@@ -573,13 +363,9 @@ window.PokeAnalyzer.analyzer = {
         };
     },
 
-    /**
-     * Build defensivo/soporte. Item siempre es Restos (no Choice).
-     */
     _buildDefensiveSet(moves, types, stats, isPhysical, abilityEs, genNum) {
         const { NATURE_ES } = window.PokeAnalyzer.config;
-
-        const defMoves = this._selectDefensiveMoves(moves, types, genNum);
+        const defMoves = this._selectDefensiveMoves(moves, types);
         if (defMoves.length < 3) return null;
 
         const defNature = isPhysical ? 'Impish' : 'Calm';
@@ -598,35 +384,23 @@ window.PokeAnalyzer.analyzer = {
         };
     },
 
-    // ── REGLA 1: Coherencia Naturaleza-Movimiento ─────────────────
+    // ── Coherencia Naturaleza-Movimiento ──────────────────────────
 
-    /** Decide naturaleza basándose en stats ANTES de seleccionar moves. */
     _pickOffensiveNature(stats, isPhysical, isMixed) {
         if (isMixed) return stats.spe > 95 ? 'Hasty' : 'Lonely';
         if (isPhysical) return stats.spe > 95 ? 'Jolly' : 'Adamant';
         return stats.spe > 95 ? 'Timid' : 'Modest';
     },
 
-    /** Mapea naturaleza → categoría de ataque permitida. */
     _natureToCategory(nature) {
-        const PHYSICAL_NATURES = new Set(['Jolly', 'Adamant', 'Impish', 'Careful']);
-        const SPECIAL_NATURES  = new Set(['Timid', 'Modest', 'Calm', 'Bold']);
-        if (PHYSICAL_NATURES.has(nature)) return 'physical';
-        if (SPECIAL_NATURES.has(nature))  return 'special';
-        return 'mixed'; // Hasty, Lonely, Naive, etc.
+        const PHYSICAL = new Set(['Jolly', 'Adamant', 'Impish', 'Careful']);
+        const SPECIAL  = new Set(['Timid', 'Modest', 'Calm', 'Bold']);
+        if (PHYSICAL.has(nature)) return 'physical';
+        if (SPECIAL.has(nature))  return 'special';
+        return 'mixed';
     },
 
-    /**
-     * Selecciona moves COHERENTES con la categoría de la naturaleza.
-     * - Si categoría = 'physical': SOLO ataques physical + utilidad
-     * - Si categoría = 'special':  SOLO ataques special + utilidad
-     * - Si categoría = 'mixed':    ambos permitidos
-     * Los setups deben coincidir: Swords Dance solo en physical, Nasty Plot solo en special.
-     */
-    _selectCoherentMoves(moves, types, allowedCategory, isMixed, genNum) {
-        const stab = types;
-
-        // Filtrar ataques por categoría permitida
+    _selectCoherentMoves(moves, types, allowedCategory, isMixed) {
         const attacks = moves.filter(m => {
             if (m.effectiveCategory === 'status') return false;
             if (!m.power || m.power <= 0) return false;
@@ -634,7 +408,6 @@ window.PokeAnalyzer.analyzer = {
             return m.effectiveCategory === allowedCategory;
         });
 
-        // Filtrar setups coherentes con la categoría
         const setups = moves.filter(m => {
             if (m.effectiveCategory !== 'status') return false;
             if (allowedCategory === 'physical' || allowedCategory === 'mixed')
@@ -646,31 +419,25 @@ window.PokeAnalyzer.analyzer = {
 
         const pivots = moves.filter(m => PIVOT_MOVES.has(m.name));
 
-        // Ordenar ataques: STAB > Premium > Power
-        const sorted = attacks.sort((a, b) => {
-            const aStab = stab.includes(a.type) ? 1.5 : 1;
-            const bStab = stab.includes(b.type) ? 1.5 : 1;
-            const premiumList = allowedCategory === 'physical' ? PREMIUM_PHYSICAL : PREMIUM_SPECIAL;
-            const aPremium = premiumList.has(a.name) ? 1.2 : 1;
-            const bPremium = premiumList.has(b.name) ? 1.2 : 1;
-            return (b.power * bStab * bPremium) - (a.power * aStab * aPremium);
+        const premiumList = allowedCategory === 'physical' ? PREMIUM_PHYSICAL : PREMIUM_SPECIAL;
+        const sorted = [...attacks].sort((a, b) => {
+            const aScore = (a.power || 0) * (types.includes(a.type) ? 1.5 : 1) * (premiumList.has(a.name) ? 1.2 : 1);
+            const bScore = (b.power || 0) * (types.includes(b.type) ? 1.5 : 1) * (premiumList.has(b.name) ? 1.2 : 1);
+            return bScore - aScore;
         });
 
-        // Seleccionar con cobertura de tipos
         const selected = [];
         const usedTypes = new Set();
 
-        // 1. Mejor STAB
-        const bestStab = sorted.find(m => stab.includes(m.type));
+        // STAB(s)
+        const bestStab = sorted.find(m => types.includes(m.type));
         if (bestStab) { selected.push(bestStab); usedTypes.add(bestStab.type); }
-
-        // 2. Segundo STAB
-        if (stab.length > 1) {
-            const secondStab = sorted.find(m => stab.includes(m.type) && !usedTypes.has(m.type));
-            if (secondStab) { selected.push(secondStab); usedTypes.add(secondStab.type); }
+        if (types.length > 1) {
+            const s2 = sorted.find(m => types.includes(m.type) && !usedTypes.has(m.type));
+            if (s2) { selected.push(s2); usedTypes.add(s2.type); }
         }
 
-        // 3. Cobertura
+        // Cobertura
         for (const m of sorted) {
             if (selected.length >= 3) break;
             if (!usedTypes.has(m.type) && !selected.includes(m)) {
@@ -678,14 +445,11 @@ window.PokeAnalyzer.analyzer = {
             }
         }
 
-        // 4. Slot 4: setup coherente o pivote
-        if (selected.length < 4 && setups.length > 0) {
-            selected.push(setups[0]);
-        } else if (selected.length < 4 && pivots.length > 0) {
-            selected.push(pivots[0]);
-        }
+        // Slot 4: setup o pivote
+        if (selected.length < 4 && setups.length > 0) selected.push(setups[0]);
+        else if (selected.length < 4 && pivots.length > 0) selected.push(pivots[0]);
 
-        // Rellenar con ataques de la categoría correcta
+        // Rellenar
         for (const m of sorted) {
             if (selected.length >= 4) break;
             if (!selected.includes(m)) selected.push(m);
@@ -694,125 +458,83 @@ window.PokeAnalyzer.analyzer = {
         return selected.slice(0, 4);
     },
 
-    // ── REGLA 2: Check de Objeto Choice ───────────────────────────
+    // ── Check de Objeto Choice ────────────────────────────────────
 
-    /**
-     * Si el objeto es Choice (Band/Specs/Scarf), PROHIBE status y recovery.
-     * Reemplaza cualquier move de status con un ataque o pivote adicional.
-     */
     _enforceChoiceRule(selectedMoves, allMoves, allowedCategory, item, types) {
-        const CHOICE_ITEMS = new Set(['Cinta Elegida', 'Lentes Elegidas', 'Pañuelo Elegido']);
-        if (!CHOICE_ITEMS.has(item)) return selectedMoves;
+        const CHOICE = new Set(['Cinta Elegida', 'Lentes Elegidas', 'Pañuelo Elegido']);
+        if (!CHOICE.has(item)) return selectedMoves;
 
-        // Separar: ataques/pivotes OK, status/recovery prohibidos
-        const valid   = selectedMoves.filter(m =>
-            (m.power && m.power > 0) || PIVOT_MOVES.has(m.name));
-        const invalid = selectedMoves.filter(m =>
-            !(m.power && m.power > 0) && !PIVOT_MOVES.has(m.name));
+        const valid = selectedMoves.filter(m => (m.power && m.power > 0) || PIVOT_MOVES.has(m.name));
+        if (valid.length === selectedMoves.length) return selectedMoves;
 
-        if (invalid.length === 0) return selectedMoves;
-
-        // Buscar reemplazos: ataques de la categoría correcta que no estén ya
         const usedNames = new Set(valid.map(m => m.name));
         const replacements = allMoves
-            .filter(m => {
-                if (usedNames.has(m.name)) return false;
-                if (m.effectiveCategory === 'status') return false;
-                if (!m.power || m.power <= 0) return false;
-                if (allowedCategory === 'mixed') return true;
-                return m.effectiveCategory === allowedCategory;
-            })
+            .filter(m => !usedNames.has(m.name) && m.effectiveCategory !== 'status' && m.power > 0
+                && (allowedCategory === 'mixed' || m.effectiveCategory === allowedCategory))
             .sort((a, b) => {
-                const aStab = types.includes(a.type) ? 1.5 : 1;
-                const bStab = types.includes(b.type) ? 1.5 : 1;
-                return (b.power * bStab) - (a.power * aStab);
+                const aS = (a.power || 0) * (types.includes(a.type) ? 1.5 : 1);
+                const bS = (b.power || 0) * (types.includes(b.type) ? 1.5 : 1);
+                return bS - aS;
             });
 
-        // Si no hay pivotes, intentar añadir uno
-        const hasPivot = valid.some(m => PIVOT_MOVES.has(m.name));
-        if (!hasPivot) {
+        if (!valid.some(m => PIVOT_MOVES.has(m.name))) {
             const pivot = allMoves.find(m => PIVOT_MOVES.has(m.name) && !usedNames.has(m.name));
-            if (pivot) {
-                valid.push(pivot);
-                usedNames.add(pivot.name);
-            }
+            if (pivot) { valid.push(pivot); usedNames.add(pivot.name); }
         }
 
-        // Rellenar slots vacíos con ataques
         for (const m of replacements) {
             if (valid.length >= 4) break;
-            if (!usedNames.has(m.name)) {
-                valid.push(m);
-                usedNames.add(m.name);
-            }
+            if (!usedNames.has(m.name)) { valid.push(m); usedNames.add(m.name); }
         }
 
         return valid.slice(0, 4);
     },
 
-    // ── REGLA 3: Traducciones desde movesData (PokeAPI) ───────────
-    // Ya resuelta: movesData viene con nameEs desde pokeapi.js._fetchMove()
-    // No se usa SMOGON_NAMES_ES para builds dinámicos.
+    // ── Soporte defensivo ─────────────────────────────────────────
 
-    /** Selecciona movimientos para un set defensivo/soporte. */
-    _selectDefensiveMoves(moves, types, genNum) {
+    _selectDefensiveMoves(moves, types) {
         const selected = [];
-
-        // 1. Recuperación
         const recovery = moves.find(m => RECOVERY_MOVES.has(m.name));
         if (recovery) selected.push(recovery);
-
-        // 2. Hazard
         const hazard = moves.find(m => HAZARD_MOVES.has(m.name));
         if (hazard) selected.push(hazard);
-
-        // 3. Soporte/estado
-        const support = moves.filter(m => SUPPORT_MOVES.has(m.name));
-        for (const m of support) {
+        for (const m of moves.filter(m => SUPPORT_MOVES.has(m.name))) {
             if (selected.length >= 3) break;
             if (!selected.includes(m)) selected.push(m);
         }
-
-        // 4. Un ataque STAB para no ser taunt-bait
-        const stabAtk = moves.find(m =>
-            types.includes(m.type) && m.power && m.power > 0 && !selected.includes(m));
-        if (stabAtk && selected.length < 4) selected.push(stabAtk);
-
-        // Rellenar
+        const stab = moves.find(m => types.includes(m.type) && m.power > 0 && !selected.includes(m));
+        if (stab && selected.length < 4) selected.push(stab);
         for (const m of moves.filter(m => m.power > 0)) {
             if (selected.length >= 4) break;
             if (!selected.includes(m)) selected.push(m);
         }
-
         return selected.slice(0, 4);
     },
 
-    /** Elige EVs según el rol. */
-    _pickEvs(isPhysical, isMixed, stats) {
+    // ── Utilidades ────────────────────────────────────────────────
+
+    _pickEvs(isPhysical, isMixed) {
         if (isMixed) return '252 ATK / 4 SP.ATK / 252 VEL';
         if (isPhysical) return '252 ATK / 4 HP / 252 VEL';
         return '252 SP.ATK / 4 HP / 252 VEL';
     },
 
-    /** Elige objeto ofensivo. Setup → Life Orb; sin setup → Choice. */
     _pickOffensiveItem(role, isPhysical, moves) {
         const hasSetup = moves.some(m => m.effectiveCategory === 'status' &&
             (PREMIUM_PHYSICAL.has(m.name) || PREMIUM_SPECIAL.has(m.name)));
-
         if (role.type.includes('wall')) return 'Restos';
         if (hasSetup) return 'Orbe Vital';
         if (isPhysical) return 'Cinta Elegida';
         return 'Lentes Elegidas';
     },
 
-    /** Genera una razón competitiva para un movimiento. */
     _moveReason(move, types, genNum) {
         const isStab = types.includes(move.type);
         const catNote = genNum <= 3
             ? ` (${GEN1_PHYSICAL_TYPES.has(move.type) ? 'FÍSICO' : 'ESPECIAL'} por tipo en Gen ${genNum})`
             : '';
 
-        if (move.power === null || move.power === 0) {
+        if (!move.power || move.power === 0) {
             if (PIVOT_MOVES.has(move.name)) return 'Pivote — genera momentum saliendo tras atacar.';
             if (RECOVERY_MOVES.has(move.name)) return 'Recuperación — mantiene la presencia en el campo.';
             if (HAZARD_MOVES.has(move.name)) return 'Hazard — daño pasivo en cada cambio del rival.';
@@ -821,10 +543,8 @@ window.PokeAnalyzer.analyzer = {
             return 'Utilidad — control o soporte al equipo.';
         }
 
-        const stabText = isStab ? 'STAB' : 'Cobertura';
-        return `${stabText} — ${move.power} BP${catNote}.`;
+        return `${isStab ? 'STAB' : 'Cobertura'} — ${move.power} BP${catNote}.`;
     },
-
 
     // ── Stats ────────────────────────────────────────────────────
 
@@ -865,8 +585,16 @@ window.PokeAnalyzer.analyzer = {
 
     // ── Formato ──────────────────────────────────────────────────
 
-    _determineFormat(stats, generation) {
+    _determineFormat(stats, generation, tier = null) {
         const g = `Gen ${generation.num}`;
+        if (tier) {
+            const TIER_NAMES = {
+                'OU': 'OU (Overused)', 'UBERS': 'Ubers', 'UU': 'UU (Underused)',
+                'RU': 'RU (Rarely Used)', 'NU': 'NU (Never Used)', 'PU': 'PU',
+                'ZU': 'ZU', 'LC': 'LC (Little Cup)', 'DOUBLESOU': 'Dobles OU',
+            };
+            return `${g} — ${TIER_NAMES[tier] ?? tier}`;
+        }
         const { bst } = stats;
         if (bst >= 600) return `${g} — Ubers (estimado)`;
         if (bst >= 500) return `${g} — OU (estimado)`;
