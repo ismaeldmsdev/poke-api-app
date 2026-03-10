@@ -9,7 +9,7 @@ window.PokeAnalyzer.app = {
 
     state: {
         selectedGen: 9,
-        cache: null,   // { pokemon, evoData, movesData, abilitiesEs }
+        cache: null,   // { pokemon, evoData, movesData, abilitiesEs, smogonData, smogonGen }
     },
 
     init() {
@@ -77,16 +77,20 @@ window.PokeAnalyzer.app = {
         renderer.hidePokeLoading();
         renderer.showCompareSection();
 
-        // ── Fase 2: movimientos + habilidades en castellano ────────
+        // ── Fase 2: movimientos + habilidades + Smogon en paralelo ──
         renderer.showAILoading();
 
         try {
-            const [movesData, abilitiesEs] = await Promise.all([
+            const [movesData, abilitiesEs, smogonData] = await Promise.all([
                 pokeAPI.fetchMovesData(pokemon),
                 pokeAPI.fetchAbilitiesSpanish(pokemon),
+                pokeAPI.fetchSmogonSets(pokemon.name, this.state.selectedGen),
             ]);
 
-            this.state.cache = { pokemon, evoData, movesData, abilitiesEs };
+            this.state.cache = {
+                pokemon, evoData, movesData, abilitiesEs,
+                smogonData, smogonGen: this.state.selectedGen,
+            };
             renderer.renderPokemon(pokemon, evoData, abilitiesEs);
             this._runAnalysis();
         } catch (err) {
@@ -128,7 +132,7 @@ window.PokeAnalyzer.app = {
     },
 
     async _runAnalysis() {
-        const { config, analyzer, renderer } = window.PokeAnalyzer;
+        const { config, analyzer, renderer, pokeAPI } = window.PokeAnalyzer;
         const { pokemon, movesData, abilitiesEs } = this.state.cache;
         const generation = config.GENERATIONS.find(g => g.num === this.state.selectedGen);
 
@@ -142,7 +146,15 @@ window.PokeAnalyzer.app = {
         renderer.showAILoading();
 
         try {
-            const analysis = await analyzer.analyze(pokemon, movesData, abilitiesEs, generation);
+            // Re-fetch Smogon si la generación cambió
+            let smogonData = this.state.cache.smogonData;
+            if (!smogonData || this.state.cache.smogonGen !== this.state.selectedGen) {
+                smogonData = await pokeAPI.fetchSmogonSets(pokemon.name, this.state.selectedGen);
+                this.state.cache.smogonData = smogonData;
+                this.state.cache.smogonGen = this.state.selectedGen;
+            }
+
+            const analysis = await analyzer.analyze(pokemon, movesData, abilitiesEs, generation, smogonData);
             renderer.hideAILoading();
             renderer.renderAnalysis(analysis, generation);
         } catch (err) {
