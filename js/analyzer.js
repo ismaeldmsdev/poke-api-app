@@ -477,149 +477,282 @@ window.PokeAnalyzer.analyzer = {
     /**
      * Genera builds 100% dinámicos basados en stats + movesData de PokéAPI.
      * Respeta el split físico/especial por TIPO en Gen 1-3.
+     *
+     * FLUJO ESTRICTO:
+     *   1. Decidir orientación (físico/especial) por stats
+     *   2. Elegir naturaleza PRIMERO
+     *   3. Filtrar moves coherentes con la naturaleza
+     *   4. Elegir objeto
+     *   5. Validar: Choice → prohibir status/recovery
      */
     _buildDynamic(pokemon, movesData, abilitiesEs, stats, role, generation) {
         const { NATURE_ES } = window.PokeAnalyzer.config;
         const genNum = generation.num;
         const types = pokemon.types.map(t => t.type.name);
 
-        // Filtrar movimientos por generación
-        const available = movesData.filter(m => m.generationNum <= genNum);
+        // Filtrar movimientos por generación y asignar categoría efectiva
+        const available = movesData
+            .filter(m => m.generationNum <= genNum)
+            .map(m => ({
+                ...m,
+                effectiveCategory: genNum <= 3
+                    ? (m.category === 'status' ? 'status' : (GEN1_PHYSICAL_TYPES.has(m.type) ? 'physical' : 'special'))
+                    : m.category,
+            }));
 
-        // Determinar categoría efectiva de cada movimiento (Gen 1-3: por tipo)
-        const withCategory = available.map(m => ({
-            ...m,
-            effectiveCategory: genNum <= 3
-                ? (GEN1_PHYSICAL_TYPES.has(m.type) ? 'physical' : 'special')
-                : m.category,
-        }));
-
-        // Determinar si el Pokémon es más físico o especial
-        const isPhysical = stats.atk >= stats.spatk;
+        // ── PASO 1: Determinar orientación por stats ──
+        const isPhysical = stats.atk > stats.spatk;
+        const isSpecial  = stats.spatk > stats.atk;
+        const isMixed    = role.type === 'mixed-attacker';
         const isDefensive = role.type.includes('wall') || role.type === 'support';
-        const isMixed = role.type === 'mixed-attacker';
 
-        // Habilidad en español (primera disponible)
+        // Habilidad en español
         const firstAb = pokemon.abilities?.[0]?.ability?.name;
         const abilityEs = firstAb ? (abilitiesEs.get(firstAb) ?? firstAb) : '—';
 
         const builds = [];
 
         // ── BUILD 1: Set ofensivo principal ──
-        const mainMoves = this._selectOffensiveMoves(withCategory, types, isPhysical, isMixed, genNum);
-        const mainNature = this._pickNature(mainMoves, stats, isPhysical);
-        const mainEvs = this._pickEvs(isPhysical, isMixed, stats);
+        const offBuild = this._buildOffensiveSet(available, types, stats, isPhysical, isMixed, role, abilityEs, genNum);
+        if (offBuild) builds.push(offBuild);
 
-        builds.push({
-            etiqueta: `${NATURE_ES[mainNature] ?? mainNature} — ANÁLISIS DINÁMICO`,
-            nature: NATURE_ES[mainNature] ?? mainNature,
-            ability: abilityEs,
-            item: this._pickItem(role, isPhysical, mainMoves),
-            evs: mainEvs,
-            role: isPhysical ? 'Atacante Físico' : 'Atacante Especial',
-            moveset: mainMoves.map(m => ({
-                movimiento: m.nameEs,
-                tipo: m.type,
-                razon: this._moveReason(m, types, genNum),
-            })),
-        });
+        // ── BUILD 2: Set defensivo/soporte ──
+        const defBuild = this._buildDefensiveSet(available, types, stats, isPhysical, abilityEs, genNum);
+        if (defBuild) builds.push(defBuild);
 
-        // ── BUILD 2: Set defensivo/soporte (si tiene moves defensivos) ──
-        const defMoves = this._selectDefensiveMoves(withCategory, types, genNum);
-        if (defMoves.length >= 3) {
-            const defNature = isPhysical ? 'Impish' : 'Calm';
+        // Fallback: si no se generó ningún build
+        if (builds.length === 0) {
             builds.push({
-                etiqueta: `${NATURE_ES[defNature] ?? defNature} — SOPORTE/DEFENSIVO`,
-                nature: NATURE_ES[defNature] ?? defNature,
-                ability: abilityEs,
-                item: SMOGON_ITEMS_ES['Leftovers'] ?? 'Restos',
-                evs: '252 HP / 252 DEF / 4 SP.DEF',
-                role: 'Soporte Defensivo',
-                moveset: defMoves.slice(0, 4).map(m => ({
-                    movimiento: m.nameEs,
-                    tipo: m.type,
-                    razon: this._moveReason(m, types, genNum),
-                })),
+                etiqueta: 'ANÁLISIS BÁSICO',
+                nature: '—', ability: abilityEs, item: '—',
+                evs: '—', role: role.description,
+                moveset: [{ movimiento: 'Sin movimientos válidos', tipo: 'normal',
+                    razon: `No hay movimientos disponibles para Gen ${genNum}.` }],
             });
         }
 
         return builds;
     },
 
-    /** Selecciona los 4 mejores movimientos ofensivos. */
-    _selectOffensiveMoves(moves, types, isPhysical, isMixed, genNum) {
-        const targetCategory = isPhysical ? 'physical' : 'special';
+    /**
+     * Build ofensivo con coherencia estricta naturaleza → moves → objeto.
+     */
+    _buildOffensiveSet(moves, types, stats, isPhysical, isMixed, role, abilityEs, genNum) {
+        const { NATURE_ES } = window.PokeAnalyzer.config;
+
+        // ── PASO 2: Elegir naturaleza PRIMERO ──
+        const nature = this._pickOffensiveNature(stats, isPhysical, isMixed);
+        const natureEs = NATURE_ES[nature] ?? nature;
+
+        // ── PASO 3: Filtrar moves coherentes con la naturaleza ──
+        const allowedCategory = this._natureToCategory(nature);
+        const selectedMoves = this._selectCoherentMoves(moves, types, allowedCategory, isMixed, genNum);
+        if (selectedMoves.length === 0) return null;
+
+        // ── PASO 4: Elegir objeto ──
+        const item = this._pickOffensiveItem(role, isPhysical, selectedMoves);
+
+        // ── PASO 5: Validar Choice ──
+        const finalMoves = this._enforceChoiceRule(selectedMoves, moves, allowedCategory, item, types);
+
+        const evs = this._pickEvs(isPhysical, isMixed, stats);
+        const roleLabel = isPhysical ? 'Atacante Físico' : 'Atacante Especial';
+
+        return {
+            etiqueta: `${natureEs} — ANÁLISIS DINÁMICO`,
+            nature: natureEs,
+            ability: abilityEs,
+            item,
+            evs,
+            role: roleLabel,
+            moveset: finalMoves.slice(0, 4).map(m => ({
+                movimiento: m.nameEs,
+                tipo: m.type,
+                razon: this._moveReason(m, types, genNum),
+            })),
+        };
+    },
+
+    /**
+     * Build defensivo/soporte. Item siempre es Restos (no Choice).
+     */
+    _buildDefensiveSet(moves, types, stats, isPhysical, abilityEs, genNum) {
+        const { NATURE_ES } = window.PokeAnalyzer.config;
+
+        const defMoves = this._selectDefensiveMoves(moves, types, genNum);
+        if (defMoves.length < 3) return null;
+
+        const defNature = isPhysical ? 'Impish' : 'Calm';
+        return {
+            etiqueta: `${NATURE_ES[defNature] ?? defNature} — SOPORTE/DEFENSIVO`,
+            nature: NATURE_ES[defNature] ?? defNature,
+            ability: abilityEs,
+            item: 'Restos',
+            evs: '252 HP / 252 DEF / 4 SP.DEF',
+            role: 'Soporte Defensivo',
+            moveset: defMoves.slice(0, 4).map(m => ({
+                movimiento: m.nameEs,
+                tipo: m.type,
+                razon: this._moveReason(m, types, genNum),
+            })),
+        };
+    },
+
+    // ── REGLA 1: Coherencia Naturaleza-Movimiento ─────────────────
+
+    /** Decide naturaleza basándose en stats ANTES de seleccionar moves. */
+    _pickOffensiveNature(stats, isPhysical, isMixed) {
+        if (isMixed) return stats.spe > 95 ? 'Hasty' : 'Lonely';
+        if (isPhysical) return stats.spe > 95 ? 'Jolly' : 'Adamant';
+        return stats.spe > 95 ? 'Timid' : 'Modest';
+    },
+
+    /** Mapea naturaleza → categoría de ataque permitida. */
+    _natureToCategory(nature) {
+        const PHYSICAL_NATURES = new Set(['Jolly', 'Adamant', 'Impish', 'Careful']);
+        const SPECIAL_NATURES  = new Set(['Timid', 'Modest', 'Calm', 'Bold']);
+        if (PHYSICAL_NATURES.has(nature)) return 'physical';
+        if (SPECIAL_NATURES.has(nature))  return 'special';
+        return 'mixed'; // Hasty, Lonely, Naive, etc.
+    },
+
+    /**
+     * Selecciona moves COHERENTES con la categoría de la naturaleza.
+     * - Si categoría = 'physical': SOLO ataques physical + utilidad
+     * - Si categoría = 'special':  SOLO ataques special + utilidad
+     * - Si categoría = 'mixed':    ambos permitidos
+     * Los setups deben coincidir: Swords Dance solo en physical, Nasty Plot solo en special.
+     */
+    _selectCoherentMoves(moves, types, allowedCategory, isMixed, genNum) {
         const stab = types;
 
-        // Separar por función
-        const attacks = moves.filter(m =>
-            m.effectiveCategory !== 'status' && m.power && m.power > 0);
-        const setups = moves.filter(m =>
-            m.effectiveCategory === 'status' && (PREMIUM_PHYSICAL.has(m.name) || PREMIUM_SPECIAL.has(m.name)));
+        // Filtrar ataques por categoría permitida
+        const attacks = moves.filter(m => {
+            if (m.effectiveCategory === 'status') return false;
+            if (!m.power || m.power <= 0) return false;
+            if (allowedCategory === 'mixed') return true;
+            return m.effectiveCategory === allowedCategory;
+        });
+
+        // Filtrar setups coherentes con la categoría
+        const setups = moves.filter(m => {
+            if (m.effectiveCategory !== 'status') return false;
+            if (allowedCategory === 'physical' || allowedCategory === 'mixed')
+                if (PREMIUM_PHYSICAL.has(m.name)) return true;
+            if (allowedCategory === 'special' || allowedCategory === 'mixed')
+                if (PREMIUM_SPECIAL.has(m.name)) return true;
+            return false;
+        });
+
         const pivots = moves.filter(m => PIVOT_MOVES.has(m.name));
 
-        // Priorizar ataques de la categoría correcta
-        const primaryAttacks = attacks
-            .filter(m => isMixed || m.effectiveCategory === targetCategory)
-            .sort((a, b) => {
-                const aStab = stab.includes(a.type) ? 1.5 : 1;
-                const bStab = stab.includes(b.type) ? 1.5 : 1;
-                const aPremium = (isPhysical ? PREMIUM_PHYSICAL : PREMIUM_SPECIAL).has(a.name) ? 1.2 : 1;
-                const bPremium = (isPhysical ? PREMIUM_PHYSICAL : PREMIUM_SPECIAL).has(b.name) ? 1.2 : 1;
-                return (b.power * bStab * bPremium) - (a.power * aStab * aPremium);
-            });
+        // Ordenar ataques: STAB > Premium > Power
+        const sorted = attacks.sort((a, b) => {
+            const aStab = stab.includes(a.type) ? 1.5 : 1;
+            const bStab = stab.includes(b.type) ? 1.5 : 1;
+            const premiumList = allowedCategory === 'physical' ? PREMIUM_PHYSICAL : PREMIUM_SPECIAL;
+            const aPremium = premiumList.has(a.name) ? 1.2 : 1;
+            const bPremium = premiumList.has(b.name) ? 1.2 : 1;
+            return (b.power * bStab * bPremium) - (a.power * aStab * aPremium);
+        });
 
-        // Cobertura: evitar repetir tipos
+        // Seleccionar con cobertura de tipos
         const selected = [];
         const usedTypes = new Set();
 
         // 1. Mejor STAB
-        const bestStab = primaryAttacks.find(m => stab.includes(m.type));
-        if (bestStab) {
-            selected.push(bestStab);
-            usedTypes.add(bestStab.type);
-        }
+        const bestStab = sorted.find(m => stab.includes(m.type));
+        if (bestStab) { selected.push(bestStab); usedTypes.add(bestStab.type); }
 
-        // 2. Segundo STAB (si tiene doble tipo)
+        // 2. Segundo STAB
         if (stab.length > 1) {
-            const secondStab = primaryAttacks.find(m =>
-                stab.includes(m.type) && !usedTypes.has(m.type));
-            if (secondStab) {
-                selected.push(secondStab);
-                usedTypes.add(secondStab.type);
-            }
+            const secondStab = sorted.find(m => stab.includes(m.type) && !usedTypes.has(m.type));
+            if (secondStab) { selected.push(secondStab); usedTypes.add(secondStab.type); }
         }
 
-        // 3. Cobertura (tipos diferentes)
-        for (const m of primaryAttacks) {
+        // 3. Cobertura
+        for (const m of sorted) {
             if (selected.length >= 3) break;
             if (!usedTypes.has(m.type) && !selected.includes(m)) {
-                selected.push(m);
-                usedTypes.add(m.type);
+                selected.push(m); usedTypes.add(m.type);
             }
         }
 
-        // 4. Setup o pivote en slot 4
-        const setup = setups.find(m =>
-            isPhysical ? PREMIUM_PHYSICAL.has(m.name) : PREMIUM_SPECIAL.has(m.name));
-        const pivot = pivots[0];
-
-        if (selected.length < 4 && setup) selected.push(setup);
-        else if (selected.length < 4 && pivot) selected.push(pivot);
-
-        // Rellenar si faltan slots
-        for (const m of primaryAttacks) {
-            if (selected.length >= 4) break;
-            if (!selected.includes(m)) selected.push(m);
+        // 4. Slot 4: setup coherente o pivote
+        if (selected.length < 4 && setups.length > 0) {
+            selected.push(setups[0]);
+        } else if (selected.length < 4 && pivots.length > 0) {
+            selected.push(pivots[0]);
         }
-        // Fallback: cualquier ataque
-        for (const m of attacks) {
+
+        // Rellenar con ataques de la categoría correcta
+        for (const m of sorted) {
             if (selected.length >= 4) break;
             if (!selected.includes(m)) selected.push(m);
         }
 
         return selected.slice(0, 4);
     },
+
+    // ── REGLA 2: Check de Objeto Choice ───────────────────────────
+
+    /**
+     * Si el objeto es Choice (Band/Specs/Scarf), PROHIBE status y recovery.
+     * Reemplaza cualquier move de status con un ataque o pivote adicional.
+     */
+    _enforceChoiceRule(selectedMoves, allMoves, allowedCategory, item, types) {
+        const CHOICE_ITEMS = new Set(['Cinta Elegida', 'Lentes Elegidas', 'Pañuelo Elegido']);
+        if (!CHOICE_ITEMS.has(item)) return selectedMoves;
+
+        // Separar: ataques/pivotes OK, status/recovery prohibidos
+        const valid   = selectedMoves.filter(m =>
+            (m.power && m.power > 0) || PIVOT_MOVES.has(m.name));
+        const invalid = selectedMoves.filter(m =>
+            !(m.power && m.power > 0) && !PIVOT_MOVES.has(m.name));
+
+        if (invalid.length === 0) return selectedMoves;
+
+        // Buscar reemplazos: ataques de la categoría correcta que no estén ya
+        const usedNames = new Set(valid.map(m => m.name));
+        const replacements = allMoves
+            .filter(m => {
+                if (usedNames.has(m.name)) return false;
+                if (m.effectiveCategory === 'status') return false;
+                if (!m.power || m.power <= 0) return false;
+                if (allowedCategory === 'mixed') return true;
+                return m.effectiveCategory === allowedCategory;
+            })
+            .sort((a, b) => {
+                const aStab = types.includes(a.type) ? 1.5 : 1;
+                const bStab = types.includes(b.type) ? 1.5 : 1;
+                return (b.power * bStab) - (a.power * aStab);
+            });
+
+        // Si no hay pivotes, intentar añadir uno
+        const hasPivot = valid.some(m => PIVOT_MOVES.has(m.name));
+        if (!hasPivot) {
+            const pivot = allMoves.find(m => PIVOT_MOVES.has(m.name) && !usedNames.has(m.name));
+            if (pivot) {
+                valid.push(pivot);
+                usedNames.add(pivot.name);
+            }
+        }
+
+        // Rellenar slots vacíos con ataques
+        for (const m of replacements) {
+            if (valid.length >= 4) break;
+            if (!usedNames.has(m.name)) {
+                valid.push(m);
+                usedNames.add(m.name);
+            }
+        }
+
+        return valid.slice(0, 4);
+    },
+
+    // ── REGLA 3: Traducciones desde movesData (PokeAPI) ───────────
+    // Ya resuelta: movesData viene con nameEs desde pokeapi.js._fetchMove()
+    // No se usa SMOGON_NAMES_ES para builds dinámicos.
 
     /** Selecciona movimientos para un set defensivo/soporte. */
     _selectDefensiveMoves(moves, types, genNum) {
@@ -640,7 +773,7 @@ window.PokeAnalyzer.analyzer = {
             if (!selected.includes(m)) selected.push(m);
         }
 
-        // 4. Un ataque STAB para no ser inútil
+        // 4. Un ataque STAB para no ser taunt-bait
         const stabAtk = moves.find(m =>
             types.includes(m.type) && m.power && m.power > 0 && !selected.includes(m));
         if (stabAtk && selected.length < 4) selected.push(stabAtk);
@@ -654,21 +787,6 @@ window.PokeAnalyzer.analyzer = {
         return selected.slice(0, 4);
     },
 
-    /** Elige la naturaleza correcta según los movimientos seleccionados. */
-    _pickNature(moves, stats, isPhysical) {
-        const physCount = moves.filter(m => m.effectiveCategory === 'physical' && m.power > 0).length;
-        const specCount = moves.filter(m => m.effectiveCategory === 'special' && m.power > 0).length;
-
-        if (physCount > specCount) {
-            return stats.spe > 95 ? 'Jolly' : 'Adamant';
-        }
-        if (specCount > physCount) {
-            return stats.spe > 95 ? 'Timid' : 'Modest';
-        }
-        // Mixto: no bajar ningún stat ofensivo
-        return stats.spe > 95 ? 'Hasty' : 'Lonely';
-    },
-
     /** Elige EVs según el rol. */
     _pickEvs(isPhysical, isMixed, stats) {
         if (isMixed) return '252 ATK / 4 SP.ATK / 252 VEL';
@@ -676,15 +794,15 @@ window.PokeAnalyzer.analyzer = {
         return '252 SP.ATK / 4 HP / 252 VEL';
     },
 
-    /** Elige objeto según el rol. */
-    _pickItem(role, isPhysical, moves) {
+    /** Elige objeto ofensivo. Setup → Life Orb; sin setup → Choice. */
+    _pickOffensiveItem(role, isPhysical, moves) {
         const hasSetup = moves.some(m => m.effectiveCategory === 'status' &&
             (PREMIUM_PHYSICAL.has(m.name) || PREMIUM_SPECIAL.has(m.name)));
 
-        if (role.type.includes('wall')) return SMOGON_ITEMS_ES['Leftovers'] ?? 'Restos';
-        if (hasSetup) return SMOGON_ITEMS_ES['Life Orb'] ?? 'Orbe Vital';
-        if (isPhysical) return SMOGON_ITEMS_ES['Choice Band'] ?? 'Cinta Elegida';
-        return SMOGON_ITEMS_ES['Choice Specs'] ?? 'Lentes Elegidas';
+        if (role.type.includes('wall')) return 'Restos';
+        if (hasSetup) return 'Orbe Vital';
+        if (isPhysical) return 'Cinta Elegida';
+        return 'Lentes Elegidas';
     },
 
     /** Genera una razón competitiva para un movimiento. */
