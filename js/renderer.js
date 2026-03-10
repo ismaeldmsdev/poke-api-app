@@ -46,12 +46,12 @@ window.PokeAnalyzer.renderer = {
     },
 
     // ── Pokémon card ──────────────────────────────────────────────
-    renderPokemon(pokemon, evoData) {
+    renderPokemon(pokemon, evoData, abilitiesEs = null) {
         const { pokeAPI } = window.PokeAnalyzer;
         this._renderHeader(pokemon, pokeAPI);
         this._renderTypes(pokemon);
         this._renderStats(pokemon);
-        this._renderAbilities(pokemon);
+        this._renderAbilities(pokemon, abilitiesEs);
         this._renderEvoChain(evoData, pokeAPI);
         this.show('pokeCard');
         requestAnimationFrame(() => requestAnimationFrame(() => {
@@ -64,7 +64,9 @@ window.PokeAnalyzer.renderer = {
         this.el('pokeSprite').src = pokeAPI.getBestSprite(pokemon);
         this.el('pokeSprite').alt = pokemon.name;
         this.el('pokeNum').textContent  = `#${String(pokemon.id).padStart(4, '0')}`;
-        this.el('pokeName').textContent = pokemon.name;
+        const displayName = pokemon.name.split('-')
+            .map(w => w.charAt(0).toUpperCase() + w.slice(1)).join('-');
+        this.el('pokeName').textContent = displayName;
     },
 
     _renderTypes(pokemon) {
@@ -103,9 +105,11 @@ window.PokeAnalyzer.renderer = {
         });
     },
 
-    _renderAbilities(pokemon) {
+    _renderAbilities(pokemon, abilitiesEs = null) {
         this.el('abilitiesRow').innerHTML = pokemon.abilities.map(a => {
-            const name = a.ability.name.replace(/-/g, ' ');
+            const key  = a.ability.name;
+            const name = (abilitiesEs && abilitiesEs.get(key))
+                || key.replace(/-/g, ' ');
             const cls  = a.is_hidden ? 'pill hidden-ab' : 'pill';
             return `<span class="${cls}">${name}${a.is_hidden ? ' [H]' : ''}</span>`;
         }).join('');
@@ -208,6 +212,96 @@ window.PokeAnalyzer.renderer = {
                 if (el) el.classList.add('show');
             }, i * 100);
         });
+    },
+
+    // ── Comparador ────────────────────────────────────────────────
+    showCompareSection() {
+        this.el('compareSection').classList.add('active');
+    },
+    hideCompareSection() {
+        this.el('compareSection').classList.remove('active');
+        this.el('compareResult').classList.add('hidden');
+    },
+
+    renderComparison(poke1, poke2) {
+        const { STAT_META, TYPE_ES, TYPE_COLORS } = window.PokeAnalyzer.config;
+        const { pokeAPI } = window.PokeAnalyzer;
+
+        const sprite1 = pokeAPI.getBestSprite(poke1);
+        const sprite2 = pokeAPI.getBestSprite(poke2);
+
+        const stats1 = {};
+        const stats2 = {};
+        let bst1 = 0, bst2 = 0;
+        poke1.stats.forEach(s => { stats1[s.stat.name] = s.base_stat; bst1 += s.base_stat; });
+        poke2.stats.forEach(s => { stats2[s.stat.name] = s.base_stat; bst2 += s.base_stat; });
+
+        const typeBadges = (pokemon) => pokemon.types.map(t => {
+            const es = TYPE_ES[t.type.name] || t.type.name;
+            return `<span class="type-badge t-${t.type.name}">${es.toUpperCase()}</span>`;
+        }).join('');
+
+        const statNames = ['hp', 'attack', 'defense', 'special-attack', 'special-defense', 'speed'];
+        const maxStat = 255;
+
+        const statsHtml = statNames.map(name => {
+            const v1 = stats1[name] || 0;
+            const v2 = stats2[name] || 0;
+            const meta = STAT_META[name] ?? { label: name, cls: '' };
+            const pct1 = ((v1 / maxStat) * 100).toFixed(1);
+            const pct2 = ((v2 / maxStat) * 100).toFixed(1);
+            const w1 = v1 > v2 ? 'winner' : '';
+            const w2 = v2 > v1 ? 'winner' : '';
+
+            return `
+                <div class="compare-stat-row">
+                    <span class="compare-val left ${w1}">${v1}</span>
+                    <div class="compare-bar-wrap left">
+                        <div class="compare-bar-fill bar-red" data-w="${pct1}"></div>
+                    </div>
+                    <span class="compare-stat-label">${meta.label}</span>
+                    <div class="compare-bar-wrap">
+                        <div class="compare-bar-fill bar-yellow" data-w="${pct2}"></div>
+                    </div>
+                    <span class="compare-val right ${w2}">${v2}</span>
+                </div>`;
+        }).join('');
+
+        const bstW1 = bst1 > bst2 ? 'winner' : '';
+        const bstW2 = bst2 > bst1 ? 'winner' : '';
+
+        const container = this.el('compareResult');
+        container.innerHTML = `
+            <div class="compare-header">
+                <div class="compare-poke">
+                    <img src="${sprite1}" alt="${poke1.name}">
+                    <p class="compare-poke-name">${poke1.name}</p>
+                </div>
+                <span class="compare-vs">VS</span>
+                <div class="compare-poke">
+                    <img src="${sprite2}" alt="${poke2.name}">
+                    <p class="compare-poke-name">${poke2.name}</p>
+                </div>
+            </div>
+            <div class="compare-types-row">
+                <div class="compare-types">${typeBadges(poke1)}</div>
+                <div class="compare-types right">${typeBadges(poke2)}</div>
+            </div>
+            ${statsHtml}
+            <div class="compare-bst-row">
+                <span class="compare-bst left ${bstW1}">${bst1}</span>
+                <span class="compare-bst-label">BST TOTAL</span>
+                <span class="compare-bst right ${bstW2}">${bst2}</span>
+            </div>`;
+
+        container.classList.remove('hidden');
+
+        // Animar barras
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+            container.querySelectorAll('.compare-bar-fill').forEach(bar => {
+                bar.style.width = bar.dataset.w + '%';
+            });
+        }));
     },
 
     // ── Reset ─────────────────────────────────────────────────────

@@ -39,6 +39,12 @@ window.PokeAnalyzer.app = {
             document.getElementById('searchInput').value = item.dataset.name;
             this.run();
         });
+
+        // Comparador
+        document.getElementById('compareBtn').addEventListener('click', () => this.runCompare());
+        document.getElementById('compareInput').addEventListener('keydown', e => {
+            if (e.key === 'Enter') this.runCompare();
+        });
     },
 
     async run() {
@@ -52,6 +58,7 @@ window.PokeAnalyzer.app = {
         }
 
         renderer.resetResults();
+        renderer.hideCompareSection();
         renderer.setSearchBusy(true);
 
         // ── Fase 1: datos del Pokémon ────────────────────────────
@@ -68,22 +75,19 @@ window.PokeAnalyzer.app = {
         }
 
         renderer.hidePokeLoading();
-        renderer.renderPokemon(pokemon, evoData);
+        renderer.showCompareSection();
 
         // ── Fase 2: movimientos + habilidades en castellano ────────
         renderer.showAILoading();
 
         try {
-            const [movesData, abilitiesEs, smogonData] = await Promise.all([
+            const [movesData, abilitiesEs] = await Promise.all([
                 pokeAPI.fetchMovesData(pokemon),
                 pokeAPI.fetchAbilitiesSpanish(pokemon),
-                pokeAPI.fetchSmogonSets(pokemon.name, this.state.selectedGen),
             ]);
 
-            this.state.cache = {
-                pokemon, evoData, movesData, abilitiesEs,
-                smogonData, smogonGen: this.state.selectedGen,
-            };
+            this.state.cache = { pokemon, evoData, movesData, abilitiesEs };
+            renderer.renderPokemon(pokemon, evoData, abilitiesEs);
             this._runAnalysis();
         } catch (err) {
             renderer.hideAILoading();
@@ -93,28 +97,58 @@ window.PokeAnalyzer.app = {
         renderer.setSearchBusy(false);
     },
 
-    _runAnalysis() {
+    async runCompare() {
+        const { pokeAPI, renderer } = window.PokeAnalyzer;
+
+        if (!this.state.cache?.pokemon) {
+            renderer.showMessage('PRIMERO BUSCA UN POKEMON PARA COMPARAR', 'error');
+            return;
+        }
+
+        const query = document.getElementById('compareInput').value.trim();
+        if (!query) {
+            renderer.showMessage('INGRESA EL NOMBRE DEL POKEMON A COMPARAR', 'error');
+            return;
+        }
+
+        const btn = document.getElementById('compareBtn');
+        btn.disabled = true;
+        btn.textContent = '...';
+        renderer.hideMessage();
+
+        try {
+            const pokemon2 = await pokeAPI._fetchPokemon(query);
+            renderer.renderComparison(this.state.cache.pokemon, pokemon2);
+        } catch (err) {
+            renderer.showMessage(err.message, 'error');
+        }
+
+        btn.disabled = false;
+        btn.textContent = 'VS';
+    },
+
+    async _runAnalysis() {
         const { config, analyzer, renderer } = window.PokeAnalyzer;
-        const { pokemon, movesData, abilitiesEs, smogonData, smogonGen } = this.state.cache;
+        const { pokemon, movesData, abilitiesEs } = this.state.cache;
         const generation = config.GENERATIONS.find(g => g.num === this.state.selectedGen);
 
-        // Solo usar datos Smogon si son de la generación actualmente seleccionada
-        const smogon = smogonGen === this.state.selectedGen ? smogonData : null;
+        if (!movesData || movesData.length === 0) {
+            renderer.hideAILoading();
+            renderer.showMessage('No se pudieron cargar los movimientos. Intenta de nuevo.', 'error');
+            return;
+        }
 
         renderer.resetAnalysis();
         renderer.showAILoading();
 
-        // Usar setTimeout para que el DOM actualice el spinner antes de la tarea síncrona
-        setTimeout(() => {
-            try {
-                const analysis = analyzer.analyze(pokemon, movesData, abilitiesEs, generation, smogon);
-                renderer.hideAILoading();
-                renderer.renderAnalysis(analysis, generation);
-            } catch (err) {
-                renderer.hideAILoading();
-                renderer.showMessage(err.message, 'error');
-            }
-        }, 0);
+        try {
+            const analysis = await analyzer.analyze(pokemon, movesData, abilitiesEs, generation);
+            renderer.hideAILoading();
+            renderer.renderAnalysis(analysis, generation);
+        } catch (err) {
+            renderer.hideAILoading();
+            renderer.showMessage(err.message, 'error');
+        }
     },
 };
 
