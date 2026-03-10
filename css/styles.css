@@ -342,6 +342,43 @@ main { max-width: 940px; margin: 0 auto; padding: 36px 18px 60px; }
     letter-spacing: 2px;
 }
 
+/* ── Set Selector Dropdown ─────────────────────────────────── */
+.set-selector {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+.set-label {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 10px;
+    color: var(--yellow);
+    letter-spacing: 1px;
+}
+.set-dropdown {
+    font-family: 'VT323', monospace;
+    font-size: 18px;
+    background: var(--inset);
+    color: var(--text);
+    border: 2px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 16px;
+    min-width: 280px;
+    cursor: pointer;
+    outline: none;
+    transition: border-color .2s;
+}
+.set-dropdown:hover,
+.set-dropdown:focus {
+    border-color: var(--yellow);
+    box-shadow: 0 0 8px var(--glow-y);
+}
+.set-dropdown option {
+    background: var(--card);
+    color: var(--text);
+}
+
 .ai-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 
 @media (max-width: 560px) {

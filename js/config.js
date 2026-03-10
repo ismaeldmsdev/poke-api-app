@@ -52,12 +52,12 @@ window.PokeAnalyzer.config = {
 
     // Traducciones oficiales de naturalezas al castellano (nombres del juego)
     NATURE_ES: {
-        'Hardy':   'Fuerte',    'Lonely':  'Solitaria', 'Brave':   'Audaz',
+        'Hardy':   'Fuerte',    'Lonely':  'Huraña',    'Brave':   'Audaz',
         'Adamant': 'Firme',     'Naughty': 'Pícara',    'Bold':    'Osada',
         'Docile':  'Dócil',     'Relaxed': 'Plácida',   'Impish':  'Agitada',
         'Lax':     'Floja',     'Timid':   'Miedosa',   'Hasty':   'Activa',
         'Serious': 'Seria',     'Jolly':   'Alegre',    'Naive':   'Ingenua',
-        'Modest':  'Modesta',   'Mild':    'Afable',    'Quiet':   'Tranquila',
+        'Modest':  'Modesta',   'Mild':    'Afable',    'Quiet':   'Mansa',
         'Bashful': 'Tímida',    'Rash':    'Alocada',   'Calm':    'Serena',
         'Gentle':  'Amable',    'Sassy':   'Grosera',   'Careful': 'Cauta',
         'Quirky':  'Rara',

@@ -1,7 +1,8 @@
 /**
  * analyzer.js — Motor de análisis competitivo.
  * Fuente principal: JSON oficial de Smogon (pkmn.github.io).
- * Fallback: análisis dinámico por stats + movesData de PokéAPI.
+ * Fallback: análisis dinámico por stats + movesData de PokéAPI
+ *           (solo cuando NO hay datos de Smogon).
  * Expone window.PokeAnalyzer.analyzer
  */
 
@@ -162,46 +163,56 @@ window.PokeAnalyzer.analyzer = {
 
     /**
      * Punto de entrada.
-     * Si hay smogonData → usa los sets de Smogon TAL CUAL.
+     * Si hay smogonData → devuelve TODOS los sets de Smogon formateados.
      * Si no → fallback a _buildDynamic (stats + movesData).
+     *
+     * Retorna: {
+     *   allSets:      [...],   // Todos los sets parseados (Smogon o fallback)
+     *   hasSmogon:    bool,    // true si los datos vienen de Smogon
+     *   rol:          string,
+     *   formato:      string,
+     *   consejo_extra: string
+     * }
      */
     async analyze(pokemon, movesData, abilitiesEs, generation, smogonData = null) {
         const stats  = this._parseStats(pokemon);
         const role   = this._determineRole(stats);
 
-        let builds, tier;
+        let allSets, tier, hasSmogon;
         if (smogonData) {
             tier = smogonData.tier;
-            builds = await this._buildFromSmogon(smogonData, pokemon, movesData, abilitiesEs, generation);
+            hasSmogon = true;
+            allSets = await this._buildFromSmogon(smogonData, pokemon, movesData, abilitiesEs, generation);
         } else {
             tier = null;
-            builds = this._buildDynamic(pokemon, movesData, abilitiesEs, stats, role, generation);
+            hasSmogon = false;
+            allSets = this._buildDynamic(pokemon, movesData, abilitiesEs, stats, role, generation);
         }
 
         const formato = this._determineFormat(stats, generation, tier);
         const consejo = this._buildAdvice(pokemon, stats, role, generation);
-        return { builds, rol: role.description, formato, consejo_extra: consejo };
+        return { allSets, hasSmogon, rol: role.description, formato, consejo_extra: consejo };
     },
 
     // ================================================================
-    // RUTA 1: SMOGON — sets oficiales del JSON de pkmn.github.io
+    // RUTA 1: SMOGON — TODOS los sets oficiales del JSON de pkmn.github.io
     // ================================================================
 
     /**
-     * Construye builds directamente desde los sets de Smogon.
+     * Construye TODOS los sets desde Smogon (sin límite de 3).
      * Traduce nombres de movimientos buscando en movesData o vía PokeAPI.
      * NO recalcula nada: naturaleza, item, EVs, moves son TAL CUAL de Smogon.
      */
     async _buildFromSmogon(smogonData, pokemon, movesData, abilitiesEs, generation) {
         const { NATURE_ES } = window.PokeAnalyzer.config;
         const { tier, sets } = smogonData;
-        const setNames = Object.keys(sets).slice(0, 3);
+        const setNames = Object.keys(sets);
 
-        // Índice slug → nameEs desde movesData para traducción rápida
+        // Índice slug → moveData para traducción rápida
         const moveIndex = new Map();
         movesData.forEach(m => moveIndex.set(m.name, m));
 
-        const builds = [];
+        const parsedSets = [];
         for (let i = 0; i < setNames.length; i++) {
             const setName = setNames[i];
             const s = sets[setName];
@@ -238,20 +249,19 @@ window.PokeAnalyzer.analyzer = {
 
             const moveset = await this._translateSmogonMoves(moveSlots, moveIndex);
 
-            builds.push({
-                etiqueta: i === 0
-                    ? `${natureEs} — SMOGON ${tier}`
-                    : `${natureEs} — ${setName} (${tier})`,
+            parsedSets.push({
+                setName,
+                tierLabel: `[${tier}] ${setName}`,
+                natureEn,
                 nature: natureEs,
                 ability: abilityEs,
                 item: itemEs,
                 evs,
-                role: setName,
                 moveset,
             });
         }
 
-        return builds;
+        return parsedSets;
     },
 
     /**
@@ -286,11 +296,11 @@ window.PokeAnalyzer.analyzer = {
         const parts = Object.entries(evs)
             .filter(([, v]) => v > 0)
             .map(([k, v]) => `${v} ${LABEL[k] ?? k.toUpperCase()}`);
-        return parts.length > 0 ? parts.join(' / ') : '252 HP / 4 ATK / 252 VEL';
+        return parts.length > 0 ? parts.join(' / ') : '—';
     },
 
     // ================================================================
-    // RUTA 2: FALLBACK DINÁMICO — cuando Smogon no tiene datos
+    // RUTA 2: FALLBACK DINÁMICO — solo cuando Smogon NO tiene datos
     // ================================================================
 
     _buildDynamic(pokemon, movesData, abilitiesEs, stats, role, generation) {
@@ -313,35 +323,37 @@ window.PokeAnalyzer.analyzer = {
         const firstAb = pokemon.abilities?.[0]?.ability?.name;
         const abilityEs = firstAb ? (abilitiesEs.get(firstAb) ?? firstAb) : '—';
 
-        const builds = [];
+        const allSets = [];
 
         // Build ofensivo
         const offBuild = this._buildOffensiveSet(available, types, stats, isPhysical, isMixed, role, abilityEs, genNum);
-        if (offBuild) builds.push(offBuild);
+        if (offBuild) allSets.push(offBuild);
 
         // Build defensivo
         const defBuild = this._buildDefensiveSet(available, types, stats, isPhysical, abilityEs, genNum);
-        if (defBuild) builds.push(defBuild);
+        if (defBuild) allSets.push(defBuild);
 
-        if (builds.length === 0) {
-            builds.push({
-                etiqueta: 'ANÁLISIS BÁSICO',
+        if (allSets.length === 0) {
+            allSets.push({
+                setName: 'Análisis Básico',
+                tierLabel: 'Sin datos de Smogon',
+                natureEn: 'Hardy',
                 nature: '—', ability: abilityEs, item: '—',
-                evs: '—', role: role.description,
+                evs: '—',
                 moveset: [{ movimiento: 'Sin movimientos válidos', tipo: 'normal',
                     razon: `No hay movimientos disponibles para Gen ${genNum}.` }],
             });
         }
 
-        return builds;
+        return allSets;
     },
 
     _buildOffensiveSet(moves, types, stats, isPhysical, isMixed, role, abilityEs, genNum) {
         const { NATURE_ES } = window.PokeAnalyzer.config;
 
-        const nature = this._pickOffensiveNature(stats, isPhysical, isMixed);
-        const natureEs = NATURE_ES[nature] ?? nature;
-        const allowedCategory = this._natureToCategory(nature);
+        const natureEn = this._pickOffensiveNature(stats, isPhysical, isMixed);
+        const natureEs = NATURE_ES[natureEn] ?? natureEn;
+        const allowedCategory = this._natureToCategory(natureEn);
         const selectedMoves = this._selectCoherentMoves(moves, types, allowedCategory, isMixed);
         if (selectedMoves.length === 0) return null;
 
@@ -349,12 +361,13 @@ window.PokeAnalyzer.analyzer = {
         const finalMoves = this._enforceChoiceRule(selectedMoves, moves, allowedCategory, item, types);
 
         return {
-            etiqueta: `${natureEs} — ANÁLISIS DINÁMICO`,
+            setName: isPhysical ? 'Atacante Físico' : 'Atacante Especial',
+            tierLabel: `[Estimado] ${isPhysical ? 'Atacante Físico' : 'Atacante Especial'}`,
+            natureEn,
             nature: natureEs,
             ability: abilityEs,
             item,
             evs: this._pickEvs(isPhysical, isMixed),
-            role: isPhysical ? 'Atacante Físico' : 'Atacante Especial',
             moveset: finalMoves.slice(0, 4).map(m => ({
                 movimiento: m.nameEs,
                 tipo: m.type,
@@ -368,14 +381,15 @@ window.PokeAnalyzer.analyzer = {
         const defMoves = this._selectDefensiveMoves(moves, types);
         if (defMoves.length < 3) return null;
 
-        const defNature = isPhysical ? 'Impish' : 'Calm';
+        const natureEn = isPhysical ? 'Impish' : 'Calm';
         return {
-            etiqueta: `${NATURE_ES[defNature] ?? defNature} — SOPORTE/DEFENSIVO`,
-            nature: NATURE_ES[defNature] ?? defNature,
+            setName: 'Soporte Defensivo',
+            tierLabel: '[Estimado] Soporte Defensivo',
+            natureEn,
+            nature: NATURE_ES[natureEn] ?? natureEn,
             ability: abilityEs,
             item: 'Restos',
             evs: '252 HP / 252 DEF / 4 SP.DEF',
-            role: 'Soporte Defensivo',
             moveset: defMoves.slice(0, 4).map(m => ({
                 movimiento: m.nameEs,
                 tipo: m.type,

@@ -10,6 +10,7 @@ window.PokeAnalyzer.app = {
     state: {
         selectedGen: 9,
         cache: null,   // { pokemon, evoData, movesData, abilitiesEs, smogonData, smogonGen }
+        analysis: null, // { allSets, hasSmogon, rol, formato, consejo_extra }
     },
 
     init() {
@@ -38,6 +39,17 @@ window.PokeAnalyzer.app = {
             if (!item) return;
             document.getElementById('searchInput').value = item.dataset.name;
             this.run();
+        });
+
+        // Selector de sets: cambiar set al seleccionar
+        document.getElementById('setDropdown').addEventListener('change', e => {
+            const idx = Number(e.target.value);
+            if (this.state.analysis && this.state.analysis.allSets[idx]) {
+                window.PokeAnalyzer.renderer.renderSelectedSet(
+                    this.state.analysis.allSets[idx],
+                    this.state.analysis.hasSmogon
+                );
+            }
         });
 
         // Comparador
@@ -155,6 +167,7 @@ window.PokeAnalyzer.app = {
             }
 
             const analysis = await analyzer.analyze(pokemon, movesData, abilitiesEs, generation, smogonData);
+            this.state.analysis = analysis;
             renderer.hideAILoading();
             renderer.renderAnalysis(analysis, generation);
         } catch (err) {
