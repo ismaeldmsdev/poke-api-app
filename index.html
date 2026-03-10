@@ -4,25 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BuildDex</title>
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
 
 <header>
     <div class="logo">
-        <!--<span class="logo-icon">&#9881;</span> -->
-        <span class="logo-poke">BUILD</span><span class="logo-analyzer">DEX</span>
-       <!-- <span class="logo-icon logo-icon-r">&#9881;</span>
-        <span class="logo-sub">// &#9733; ATK &nbsp; DEF &nbsp; VEL &#9733; &nbsp; COMPETITIVE BUILDER //</span>-->
-        <span class="logo-sub">// BUILD COMPETITIVA //</span>
+        <span class="logo-poke">Build</span><span class="logo-analyzer">Dex</span>
+        <span class="logo-sub">ANALIZADOR COMPETITIVO</span>
     </div>
 </header>
 
 <main>
 
     <section class="search-section">
-        <p class="search-hint">// NOMBRE O ID DE POKEMON //</p>
+        <p class="search-hint">NOMBRE O NÚMERO DE POKÉMON</p>
         <div class="search-bar">
             <input
                 id="searchInput"
@@ -34,7 +31,7 @@
             >
             <button id="searchBtn" class="search-btn">ANALIZAR</button>
         </div>
-        <p class="gen-label">GENERACION COMPETITIVA</p>
+        <p class="gen-label">GENERACIÓN COMPETITIVA</p>
         <div id="genGrid" class="gen-grid"></div>
     </section>
 
@@ -54,27 +51,27 @@
             <div class="info-col">
                 <h2 id="pokeName" class="poke-name"></h2>
                 <div id="pokeTypes" class="types-row"></div>
-                <p class="section-title">- BASE STATS -</p>
+                <p class="section-title">ESTADÍSTICAS BASE</p>
                 <div id="statsRows"></div>
                 <div class="bst-line">
-                    <span class="bst-lbl">TOTAL BST:</span>
+                    <span class="bst-lbl">TOTAL:</span>
                     <span id="bstNum" class="bst-num"></span>
                 </div>
             </div>
         </div>
         <div class="sub-section">
-            <p class="section-title">- HABILIDADES -</p>
+            <p class="section-title">HABILIDADES</p>
             <div id="abilitiesRow" class="pills-row"></div>
         </div>
         <div id="evoSection" class="sub-section">
-            <p class="section-title">- CADENA DE EVOLUCIÓN -</p>
+            <p class="section-title">CADENA DE EVOLUCIÓN</p>
             <div id="evoChain" class="evo-chain"></div>
         </div>
     </div>
 
     <!-- Comparador de Pokemon -->
     <section id="compareSection" class="compare-section">
-        <p class="section-title compare-title">- COMPARADOR DE STATS -</p>
+        <p class="section-title compare-title">COMPARADOR DE ESTADÍSTICAS</p>
         <div class="compare-bar">
             <input id="compareInput" type="text" class="search-input compare-input"
                    placeholder="Pokemon a comparar..." autocomplete="off" spellcheck="false">
@@ -83,7 +80,7 @@
         <div id="compareResult" class="compare-result hidden"></div>
     </section>
 
-    <div class="divider">&#9619;&#9619;&#9619;&#9619;&#9619;&#9619;&#9619;&#9619;&#9619;&#9619;&#9619;&#9619;&#9619;&#9619;&#9619;&#9619;&#9619;&#9619;&#9619;&#9619;&#9619;&#9619;&#9619;&#9619;</div>
+    <div class="divider"></div>
 
     <div id="aiLoading" class="loading-wrap hidden">
         <div class="spinner ai-spin"></div>
@@ -94,27 +91,27 @@
         <h3 id="aiHeading" class="ai-heading"></h3>
 
         <div id="setSelector" class="set-selector hidden">
-            <label class="set-label" for="setDropdown">SET SMOGON:</label>
+            <label class="set-label" for="setDropdown">Set Smogon</label>
             <select id="setDropdown" class="set-dropdown"></select>
         </div>
 
         <div id="natureSelector" class="set-selector hidden">
-            <label class="set-label" for="natureDropdown">VARIACION DE NATURALEZA:</label>
+            <label class="set-label" for="natureDropdown">Naturaleza</label>
             <select id="natureDropdown" class="set-dropdown nature-dd"></select>
         </div>
         <div id="natureEffectBox" class="nature-effect-box hidden"></div>
 
         <div class="ai-grid">
             <div id="cardBuild1" class="ai-card full">
-                <p class="ai-card-title">* SET — <span id="buildLabel1"></span></p>
+                <p class="ai-card-title">SET — <span id="buildLabel1"></span></p>
                 <div id="buildContent1"></div>
             </div>
             <div id="cardRol" class="ai-card">
-                <p class="ai-card-title">* ROL Y FORMATO</p>
+                <p class="ai-card-title">ROL Y FORMATO</p>
                 <div id="rolContent"></div>
             </div>
             <div id="cardExtra" class="ai-card">
-                <p class="ai-card-title">* CONSEJO EXTRA</p>
+                <p class="ai-card-title">CONSEJO EXTRA</p>
                 <div id="extraContent"></div>
             </div>
         </div>
@@ -123,8 +120,8 @@
 </main>
 
 <footer>
-    &#9881; BUILD DEX &copy; 2026 &nbsp;|&nbsp; DATOS: POKEAPI.CO<br>
-    POKEMON ES MARCA REGISTRADA DE NINTENDO / GAME FREAK / CREATURES INC.
+    BuildDex &copy; 2026 &middot; Datos: PokeAPI.co<br>
+    Pokémon es marca registrada de Nintendo / Game Freak / Creatures Inc.
 </footer>
 
 <script src="js/config.js"></script>

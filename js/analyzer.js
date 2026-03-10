@@ -292,7 +292,7 @@ window.PokeAnalyzer.analyzer = {
     },
 
     _formatSmogonEvs(evs) {
-        const LABEL = { hp: 'HP', atk: 'ATK', def: 'DEF', spa: 'SP.ATK', spd: 'SP.DEF', spe: 'VEL' };
+        const LABEL = { hp: 'PS', atk: 'Atq', def: 'Def', spa: 'At.Esp', spd: 'Def.Esp', spe: 'Vel' };
         const parts = Object.entries(evs)
             .filter(([, v]) => v > 0)
             .map(([k, v]) => `${v} ${LABEL[k] ?? k.toUpperCase()}`);
@@ -389,7 +389,7 @@ window.PokeAnalyzer.analyzer = {
             nature: NATURE_ES[natureEn] ?? natureEn,
             ability: abilityEs,
             item: 'Restos',
-            evs: '252 HP / 252 DEF / 4 SP.DEF',
+            evs: '252 PS / 252 Def / 4 Def.Esp',
             moveset: defMoves.slice(0, 4).map(m => ({
                 movimiento: m.nameEs,
                 tipo: m.type,
@@ -528,9 +528,9 @@ window.PokeAnalyzer.analyzer = {
     // ── Utilidades ────────────────────────────────────────────────
 
     _pickEvs(isPhysical, isMixed) {
-        if (isMixed) return '252 ATK / 4 SP.ATK / 252 VEL';
-        if (isPhysical) return '252 ATK / 4 HP / 252 VEL';
-        return '252 SP.ATK / 4 HP / 252 VEL';
+        if (isMixed) return '252 Atq / 4 At.Esp / 252 Vel';
+        if (isPhysical) return '252 Atq / 4 PS / 252 Vel';
+        return '252 At.Esp / 4 PS / 252 Vel';
     },
 
     _pickOffensiveItem(role, isPhysical, moves) {

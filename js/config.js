@@ -11,12 +11,12 @@ window.PokeAnalyzer.config = {
     SPRITE_RAW:   'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon',
 
     STAT_META: {
-        'hp':              { label: 'HP',     cls: 'sb-hp'    },
-        'attack':          { label: 'ATK',    cls: 'sb-atk'   },
-        'defense':         { label: 'DEF',    cls: 'sb-def'   },
-        'special-attack':  { label: 'SP.ATK', cls: 'sb-spatk' },
-        'special-defense': { label: 'SP.DEF', cls: 'sb-spdef' },
-        'speed':           { label: 'VEL',    cls: 'sb-speed' },
+        'hp':              { label: 'PS',      cls: 'sb-hp'    },
+        'attack':          { label: 'Atq',     cls: 'sb-atk'   },
+        'defense':         { label: 'Def',     cls: 'sb-def'   },
+        'special-attack':  { label: 'At.Esp',  cls: 'sb-spatk' },
+        'special-defense': { label: 'Def.Esp', cls: 'sb-spdef' },
+        'speed':           { label: 'Vel',     cls: 'sb-speed' },
     },
 
     // Traducciones oficiales de tipos al castellano
