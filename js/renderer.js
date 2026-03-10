@@ -136,33 +136,76 @@ window.PokeAnalyzer.renderer = {
         });
     },
 
+    // ── Selector de Sets ──────────────────────────────────────────
+
+    /**
+     * Rellena el dropdown con todos los sets disponibles.
+     * @param {Array} allSets - Sets parseados del analyzer
+     * @param {boolean} hasSmogon - Si los datos son de Smogon
+     */
+    renderSetSelector(allSets, hasSmogon) {
+        const dropdown = this.el('setDropdown');
+        dropdown.innerHTML = '';
+
+        allSets.forEach((set, i) => {
+            const option = document.createElement('option');
+            option.value = i;
+            option.textContent = set.tierLabel;
+            dropdown.appendChild(option);
+        });
+
+        if (hasSmogon && allSets.length > 1) {
+            this.show('setSelector');
+        } else {
+            this.hide('setSelector');
+        }
+    },
+
+    /**
+     * Renderiza un set individual en la tarjeta de build.
+     * Marca la naturaleza con ★ (recomendada por Smogon).
+     */
+    renderSelectedSet(set, hasSmogon) {
+        this.el('buildLabel1').textContent = set.tierLabel;
+        this._renderBuildCard('buildContent1', set, hasSmogon);
+        this.el('cardBuild1').classList.remove('hidden');
+        // Animar la tarjeta
+        requestAnimationFrame(() => {
+            this.el('cardBuild1').classList.add('show');
+        });
+    },
+
     // ── AI Analysis ───────────────────────────────────────────────
     renderAnalysis(analysis, generation) {
         this.el('aiHeading').textContent =
             `- ANALISIS GEN ${generation.num}: ${generation.games.toUpperCase()} -`;
 
-        const builds = analysis.builds ?? [];
+        const allSets = analysis.allSets ?? [];
 
-        ['cardBuild1','cardBuild2','cardBuild3'].forEach((id, i) => {
-            const build = builds[i];
-            if (build) {
-                this.el(`buildLabel${i + 1}`).textContent = build.etiqueta;
-                this._renderBuildCard(`buildContent${i + 1}`, build);
-                this.el(id).classList.remove('hidden');
-            } else {
-                this.el(id).classList.add('hidden');
-            }
-        });
+        // Renderizar selector de sets
+        this.renderSetSelector(allSets, analysis.hasSmogon);
+
+        // Mostrar el primer set por defecto
+        if (allSets.length > 0) {
+            this.renderSelectedSet(allSets[0], analysis.hasSmogon);
+        } else {
+            this.el('cardBuild1').classList.add('hidden');
+        }
 
         this._renderRol(analysis.rol, analysis.formato);
         this._renderExtra(analysis.consejo_extra ?? '');
 
         this.show('aiSection');
-        this._animateAICards(builds.length);
+        this._animateAICards();
     },
 
-    _renderBuildCard(contentId, build) {
+    _renderBuildCard(contentId, build, hasSmogon = false) {
         const { TYPE_COLORS, TYPE_ES } = window.PokeAnalyzer.config;
+
+        // Naturaleza con ★ si es recomendación de Smogon
+        const natureDisplay = hasSmogon
+            ? `★ ${(build.nature ?? '').toUpperCase()}`
+            : (build.nature ?? '').toUpperCase();
 
         const movesHtml = (build.moveset ?? []).map((m, i) => {
             const typeKey = (m.tipo ?? '').toLowerCase();
@@ -183,10 +226,10 @@ window.PokeAnalyzer.renderer = {
 
         this.el(contentId).innerHTML = `
             <div class="build-meta">
-                <span class="build-nature">${(build.nature ?? '').toUpperCase()}</span>
+                <span class="build-nature">${natureDisplay}</span>
                 <span class="build-item">&#9670; ${build.item ?? ''}</span>
                 <span class="build-ability">&#9670; ${build.ability ?? ''}</span>
-                <span class="build-role">${build.role ?? ''}</span>
+                <span class="build-role">${build.setName ?? ''}</span>
                 <span class="build-evs">EVs: ${build.evs ?? ''}</span>
             </div>
             <div class="move-inner">${movesHtml}</div>`;
@@ -202,10 +245,8 @@ window.PokeAnalyzer.renderer = {
         this.el('extraContent').innerHTML = `<p class="extra-text">${consejo}</p>`;
     },
 
-    _animateAICards(buildCount) {
-        const ids = [];
-        for (let i = 1; i <= buildCount; i++) ids.push(`cardBuild${i}`);
-        ids.push('cardRol', 'cardExtra');
+    _animateAICards() {
+        const ids = ['cardBuild1', 'cardRol', 'cardExtra'];
         ids.forEach((id, i) => {
             setTimeout(() => {
                 const el = document.getElementById(id);
@@ -309,10 +350,11 @@ window.PokeAnalyzer.renderer = {
         this.hideMessage();
         this.hide('aiSection');
         this.hide('aiLoading');
+        this.hide('setSelector');
         const card = this.el('pokeCard');
         card.classList.add('hidden');
         card.classList.remove('show');
-        ['cardBuild1','cardBuild2','cardBuild3','cardRol','cardExtra'].forEach(id => {
+        ['cardBuild1','cardRol','cardExtra'].forEach(id => {
             const el = document.getElementById(id);
             if (el) el.classList.remove('show');
         });
@@ -321,7 +363,8 @@ window.PokeAnalyzer.renderer = {
     resetAnalysis() {
         this.hide('aiSection');
         this.hide('aiLoading');
-        ['cardBuild1','cardBuild2','cardBuild3','cardRol','cardExtra'].forEach(id => {
+        this.hide('setSelector');
+        ['cardBuild1','cardRol','cardExtra'].forEach(id => {
             const el = document.getElementById(id);
             if (el) el.classList.remove('show');
         });
