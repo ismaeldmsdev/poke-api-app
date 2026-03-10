@@ -443,285 +443,359 @@ const SMOGON_REASONS = {
 // Estructura: moves_1 usa claves de API; el resolver obtiene
 // el nombre en español directamente desde los datos de PokéAPI.
 // ================================================================
-const SMOGON_SETS = {
+// ================================================================
+// BASE DE DATOS DE SETS COMPETITIVOS VERIFICADOS POR GENERACIÓN
+// Fuente: Smogon University (smogon.com/dex)
+// Cada Pokemon puede tener múltiples sets por generación.
+// La clave es el slug de PokéAPI. Cada entrada tiene un array de sets.
+// ================================================================
+const SMOGON_SETS = {};
 
-    // ── Gen 9 ────────────────────────────────────────────────────
-    'charizard': {
-        gen: 9, tier: 'OU',
-        nature: 'Timid', ability_key: 'solar-power', item: 'Botas Seguras',
-        evs: '4 HP / 252 SP.ATK / 252 VEL', role: 'Sweeper Especial',
-        moves_1: [
-            { key: 'fire-blast',    tipo: 'fire' },
-            { key: 'air-slash',     tipo: 'flying' },
-            { key: 'focus-blast',   tipo: 'fighting' },
-            { key: 'roost',         tipo: 'flying' },
-        ],
-    },
-    'dragapult': {
-        gen: 9, tier: 'OU',
-        nature: 'Timid', ability_key: 'infiltrator', item: 'Lentes Elegidas',
-        evs: '4 HP / 252 SP.ATK / 252 VEL', role: 'Sweeper Especial',
-        moves_1: [
-            { key: 'draco-meteor',  tipo: 'dragon' },
-            { key: 'shadow-ball',   tipo: 'ghost' },
-            { key: 'flamethrower',  tipo: 'fire' },
-            { key: 'u-turn',        tipo: 'bug' },
-        ],
-    },
-    'garchomp': {
-        gen: 9, tier: 'OU',
-        nature: 'Jolly', ability_key: 'rough-skin', item: 'Casco Rocky',
-        evs: '252 HP / 172 DEF / 84 VEL', role: 'Defensor / Setter',
-        moves_1: [
-            { key: 'stealth-rock',  tipo: 'rock' },
-            { key: 'earthquake',    tipo: 'ground' },
-            { key: 'scale-shot',    tipo: 'dragon' },
-            { key: 'fire-blast',    tipo: 'fire' },
-        ],
-    },
-    'volcarona': {
-        gen: 9, tier: 'OU',
-        nature: 'Timid', ability_key: 'flame-body', item: 'Botas Seguras',
-        evs: '4 HP / 252 SP.ATK / 252 VEL', role: 'Setup Sweeper Especial',
-        moves_1: [
-            { key: 'quiver-dance',  tipo: 'bug' },
-            { key: 'fire-blast',    tipo: 'fire' },
-            { key: 'bug-buzz',      tipo: 'bug' },
-            { key: 'roost',         tipo: 'flying' },
-        ],
-    },
-    'gholdengo': {
-        gen: 9, tier: 'OU',
-        nature: 'Modest', ability_key: 'good-as-gold', item: 'Lentes Elegidas',
-        evs: '4 HP / 252 SP.ATK / 252 VEL', role: 'Sweeper Especial',
-        moves_1: [
-            { key: 'nasty-plot',    tipo: 'dark' },
-            { key: 'make-it-rain',  tipo: 'steel' },
-            { key: 'shadow-ball',   tipo: 'ghost' },
-            { key: 'focus-blast',   tipo: 'fighting' },
-        ],
-    },
-    'kingambit': {
-        gen: 9, tier: 'OU',
-        nature: 'Adamant', ability_key: 'defiant', item: 'Globo Aerostático',
-        evs: '4 HP / 252 ATK / 252 VEL', role: 'Wallbreaker Físico',
-        moves_1: [
-            { key: 'swords-dance',  tipo: 'normal' },
-            { key: 'kowtow-cleave', tipo: 'dark' },
-            { key: 'iron-head',     tipo: 'steel' },
-            { key: 'sucker-punch',  tipo: 'dark' },
-        ],
-    },
-    'toxapex': {
-        gen: 9, tier: 'OU',
-        nature: 'Bold', ability_key: 'regenerator', item: 'Cieno Negro',
-        evs: '252 HP / 252 DEF / 4 SP.DEF', role: 'Muro Defensivo',
-        moves_1: [
-            { key: 'toxic-spikes',  tipo: 'poison' },
-            { key: 'scald',         tipo: 'water' },
-            { key: 'recover',       tipo: 'normal' },
-            { key: 'baneful-bunker',tipo: 'poison' },
-        ],
-    },
-    'corviknight': {
-        gen: 9, tier: 'OU',
-        nature: 'Impish', ability_key: 'mirror-armor', item: 'Restos',
-        evs: '252 HP / 4 ATK / 252 DEF', role: 'Pivot Defensivo',
-        moves_1: [
-            { key: 'u-turn',        tipo: 'bug' },
-            { key: 'body-press',    tipo: 'fighting' },
-            { key: 'roost',         tipo: 'flying' },
-            { key: 'defog',         tipo: 'flying' },
-        ],
-    },
-    'meowscarada': {
-        gen: 9, tier: 'OU',
-        nature: 'Jolly', ability_key: 'protean', item: 'Cinta Elegida',
-        evs: '4 HP / 252 ATK / 252 VEL', role: 'Atacante Físico',
-        moves_1: [
-            { key: 'flower-trick',  tipo: 'grass' },
-            { key: 'knock-off',     tipo: 'dark' },
-            { key: 'u-turn',        tipo: 'bug' },
-            { key: 'triple-axel',   tipo: 'ice' },
-        ],
-    },
-    'skeledirge': {
-        gen: 9, tier: 'OU',
-        nature: 'Modest', ability_key: 'unaware', item: 'Restos',
-        evs: '248 HP / 252 SP.ATK / 8 SP.DEF', role: 'Muro Ofensivo',
-        moves_1: [
-            { key: 'torch-song',    tipo: 'fire' },
-            { key: 'shadow-ball',   tipo: 'ghost' },
-            { key: 'slack-off',     tipo: 'normal' },
-            { key: 'will-o-wisp',   tipo: 'fire' },
-        ],
-    },
-    'great-tusk': {
-        gen: 9, tier: 'OU',
-        nature: 'Jolly', ability_key: 'protosynthesis', item: 'Botas Seguras',
-        evs: '252 HP / 4 ATK / 252 VEL', role: 'Hazard Control',
-        moves_1: [
-            { key: 'headlong-rush', tipo: 'ground' },
-            { key: 'ice-spinner',   tipo: 'ice' },
-            { key: 'stealth-rock',  tipo: 'rock' },
-            { key: 'rapid-spin',    tipo: 'normal' },
-        ],
-    },
-    'roaring-moon': {
-        gen: 9, tier: 'OU',
-        nature: 'Jolly', ability_key: 'protosynthesis', item: 'Turboenergía',
-        evs: '4 HP / 252 ATK / 252 VEL', role: 'Sweeper Físico',
-        moves_1: [
-            { key: 'dragon-dance',  tipo: 'dragon' },
-            { key: 'acrobatics',    tipo: 'flying' },
-            { key: 'crunch',        tipo: 'dark' },
-            { key: 'earthquake',    tipo: 'ground' },
-        ],
-    },
-    'iron-valiant': {
-        gen: 9, tier: 'OU',
-        nature: 'Jolly', ability_key: 'quark-drive', item: 'Pañuelo Elegido',
-        evs: '4 HP / 252 ATK / 252 VEL', role: 'Sweeper Físico/Especial',
-        moves_1: [
-            { key: 'close-combat',  tipo: 'fighting' },
-            { key: 'moonblast',     tipo: 'fairy' },
-            { key: 'knock-off',     tipo: 'dark' },
-            { key: 'shadow-sneak',  tipo: 'ghost' },
-        ],
-    },
-    'ting-lu': {
-        gen: 9, tier: 'OU',
-        nature: 'Careful', ability_key: 'vessel-of-ruin', item: 'Restos',
-        evs: '252 HP / 4 ATK / 252 SP.DEF', role: 'Muro Especial / Setter',
-        moves_1: [
-            { key: 'stealth-rock',  tipo: 'rock' },
-            { key: 'earthquake',    tipo: 'ground' },
-            { key: 'ruination',     tipo: 'dark' },
-            { key: 'whirlwind',     tipo: 'normal' },
-        ],
-    },
-    'garganacl': {
-        gen: 9, tier: 'OU',
-        nature: 'Impish', ability_key: 'purifying-salt', item: 'Restos',
-        evs: '252 HP / 252 DEF / 4 SP.DEF', role: 'Muro Físico',
-        moves_1: [
-            { key: 'salt-cure',     tipo: 'rock' },
-            { key: 'stealth-rock',  tipo: 'rock' },
-            { key: 'recover',       tipo: 'normal' },
-            { key: 'body-press',    tipo: 'fighting' },
-        ],
-    },
-    'glimmora': {
-        gen: 9, tier: 'OU',
-        nature: 'Timid', ability_key: 'toxic-debris', item: 'Botas Seguras',
-        evs: '4 HP / 252 SP.ATK / 252 VEL', role: 'Setter / Sweeper Especial',
-        moves_1: [
-            { key: 'toxic-spikes',  tipo: 'poison' },
-            { key: 'mortal-spin',   tipo: 'poison' },
-            { key: 'power-gem',     tipo: 'rock' },
-            { key: 'earth-power',   tipo: 'ground' },
-        ],
-    },
-    'clefable': {
-        gen: 9, tier: 'OU',
-        nature: 'Bold', ability_key: 'magic-guard', item: 'Restos',
-        evs: '252 HP / 252 DEF / 4 SP.DEF', role: 'Muro Especial',
-        moves_1: [
-            { key: 'calm-mind',     tipo: 'psychic' },
-            { key: 'moonblast',     tipo: 'fairy' },
-            { key: 'flamethrower',  tipo: 'fire' },
-            { key: 'soft-boiled',   tipo: 'normal' },
-        ],
-    },
-    'togekiss': {
-        gen: 9, tier: 'OU',
-        nature: 'Timid', ability_key: 'serene-grace', item: 'Pañuelo Elegido',
-        evs: '4 HP / 252 SP.ATK / 252 VEL', role: 'Pivot Especial',
-        moves_1: [
-            { key: 'air-slash',     tipo: 'flying' },
-            { key: 'dazzling-gleam',tipo: 'fairy' },
-            { key: 'nasty-plot',    tipo: 'dark' },
-            { key: 'roost',         tipo: 'flying' },
-        ],
-    },
-    'gengar': {
-        gen: 9, tier: 'OU',
-        nature: 'Timid', ability_key: 'cursed-body', item: 'Lentes Elegidas',
-        evs: '4 HP / 252 SP.ATK / 252 VEL', role: 'Sweeper Especial',
-        moves_1: [
-            { key: 'nasty-plot',    tipo: 'dark' },
-            { key: 'shadow-ball',   tipo: 'ghost' },
-            { key: 'sludge-wave',   tipo: 'poison' },
-            { key: 'focus-blast',   tipo: 'fighting' },
-        ],
-    },
-    'dragonite': {
-        gen: 9, tier: 'OU',
-        nature: 'Adamant', ability_key: 'multiscale', item: 'Botas Seguras',
-        evs: '4 HP / 252 ATK / 252 VEL', role: 'Sweeper Físico',
-        moves_1: [
-            { key: 'dragon-dance',  tipo: 'dragon' },
-            { key: 'extreme-speed', tipo: 'normal' },
-            { key: 'earthquake',    tipo: 'ground' },
-            { key: 'fire-punch',    tipo: 'fire' },
-        ],
-    },
-    'tyranitar': {
-        gen: 9, tier: 'OU',
-        nature: 'Adamant', ability_key: 'sand-stream', item: 'Cinta Elegida',
-        evs: '4 HP / 252 ATK / 252 VEL', role: 'Atacante Físico / Setter',
-        moves_1: [
-            { key: 'stealth-rock',  tipo: 'rock' },
-            { key: 'stone-edge',    tipo: 'rock' },
-            { key: 'crunch',        tipo: 'dark' },
-            { key: 'ice-punch',     tipo: 'ice' },
-        ],
-    },
-    'lucario': {
-        gen: 9, tier: 'UU',
-        nature: 'Adamant', ability_key: 'justified', item: 'Orbe Vital',
-        evs: '4 HP / 252 ATK / 252 VEL', role: 'Sweeper Físico',
-        moves_1: [
-            { key: 'swords-dance',  tipo: 'normal' },
-            { key: 'close-combat',  tipo: 'fighting' },
-            { key: 'extreme-speed', tipo: 'normal' },
-            { key: 'bullet-punch',  tipo: 'steel' },
-        ],
-    },
-    'blaziken': {
-        gen: 9, tier: 'Ubers',
-        nature: 'Jolly', ability_key: 'speed-boost', item: 'Orbe Vital',
-        evs: '4 HP / 252 ATK / 252 VEL', role: 'Sweeper Físico',
-        moves_1: [
-            { key: 'swords-dance',    tipo: 'normal' },
-            { key: 'high-jump-kick',  tipo: 'fighting' },
-            { key: 'flare-blitz',     tipo: 'fire' },
-            { key: 'protect',         tipo: 'normal' },
-        ],
-    },
-    'mewtwo': {
-        gen: 9, tier: 'Ubers',
-        nature: 'Timid', ability_key: 'pressure', item: 'Orbe Vital',
-        evs: '4 HP / 252 SP.ATK / 252 VEL', role: 'Sweeper Especial',
-        moves_1: [
-            { key: 'nasty-plot',    tipo: 'dark' },
-            { key: 'psystrike',     tipo: 'psychic' },
-            { key: 'shadow-ball',   tipo: 'ghost' },
-            { key: 'aura-sphere',   tipo: 'fighting' },
-        ],
-    },
-    'pikachu': {
-        gen: 9, tier: 'NU',
-        nature: 'Timid', ability_key: 'static', item: 'Bola Luz',
-        evs: '4 HP / 252 SP.ATK / 252 VEL', role: 'Atacante Especial',
-        moves_1: [
-            { key: 'thunderbolt',   tipo: 'electric' },
-            { key: 'volt-switch',   tipo: 'electric' },
-            { key: 'grass-knot',    tipo: 'grass' },
-            { key: 'quick-attack',  tipo: 'normal' },
-        ],
-    },
-};
+// Helper para registrar sets
+function _reg(slug, gen, sets) {
+    if (!SMOGON_SETS[slug]) SMOGON_SETS[slug] = [];
+    sets.forEach(s => SMOGON_SETS[slug].push({ ...s, gen }));
+}
+
+// ══════════════════════════════════════════════════════════════════
+// GEN 9 — Escarlata / Púrpura
+// ══════════════════════════════════════════════════════════════════
+_reg('charizard', 9, [
+    { tier:'OU', nature:'Timid', ability_key:'solar-power', item:'Botas Seguras', evs:'4 HP / 252 SP.ATK / 252 VEL', role:'Sweeper Especial',
+      moves_1:[{key:'fire-blast',tipo:'fire'},{key:'air-slash',tipo:'flying'},{key:'focus-blast',tipo:'fighting'},{key:'roost',tipo:'flying'}]},
+    { tier:'OU', nature:'Modest', ability_key:'blaze', item:'Lentes Elegidas', evs:'4 HP / 252 SP.ATK / 252 VEL', role:'Wallbreaker Especial',
+      moves_1:[{key:'fire-blast',tipo:'fire'},{key:'hurricane',tipo:'flying'},{key:'focus-blast',tipo:'fighting'},{key:'flamethrower',tipo:'fire'}]},
+]);
+_reg('dragapult', 9, [
+    { tier:'OU', nature:'Timid', ability_key:'infiltrator', item:'Lentes Elegidas', evs:'4 HP / 252 SP.ATK / 252 VEL', role:'Sweeper Especial',
+      moves_1:[{key:'draco-meteor',tipo:'dragon'},{key:'shadow-ball',tipo:'ghost'},{key:'flamethrower',tipo:'fire'},{key:'u-turn',tipo:'bug'}]},
+    { tier:'OU', nature:'Adamant', ability_key:'clear-body', item:'Cinta Elegida', evs:'4 HP / 252 ATK / 252 VEL', role:'Sweeper Físico',
+      moves_1:[{key:'dragon-dance',tipo:'dragon'},{key:'outrage',tipo:'dragon'},{key:'shadow-claw',tipo:'ghost'},{key:'sucker-punch',tipo:'dark'}]},
+]);
+_reg('garchomp', 9, [
+    { tier:'OU', nature:'Jolly', ability_key:'rough-skin', item:'Casco Rocky', evs:'252 HP / 172 DEF / 84 VEL', role:'Defensor / Setter',
+      moves_1:[{key:'stealth-rock',tipo:'rock'},{key:'earthquake',tipo:'ground'},{key:'scale-shot',tipo:'dragon'},{key:'fire-blast',tipo:'fire'}]},
+    { tier:'OU', nature:'Jolly', ability_key:'rough-skin', item:'Pañuelo Elegido', evs:'4 HP / 252 ATK / 252 VEL', role:'Sweeper Físico',
+      moves_1:[{key:'earthquake',tipo:'ground'},{key:'outrage',tipo:'dragon'},{key:'stone-edge',tipo:'rock'},{key:'fire-fang',tipo:'fire'}]},
+]);
+_reg('volcarona', 9, [
+    { tier:'OU', nature:'Timid', ability_key:'flame-body', item:'Botas Seguras', evs:'4 HP / 252 SP.ATK / 252 VEL', role:'Setup Sweeper',
+      moves_1:[{key:'quiver-dance',tipo:'bug'},{key:'fire-blast',tipo:'fire'},{key:'bug-buzz',tipo:'bug'},{key:'roost',tipo:'flying'}]},
+]);
+_reg('gholdengo', 9, [
+    { tier:'OU', nature:'Modest', ability_key:'good-as-gold', item:'Lentes Elegidas', evs:'4 HP / 252 SP.ATK / 252 VEL', role:'Sweeper Especial',
+      moves_1:[{key:'make-it-rain',tipo:'steel'},{key:'shadow-ball',tipo:'ghost'},{key:'focus-blast',tipo:'fighting'},{key:'nasty-plot',tipo:'dark'}]},
+]);
+_reg('kingambit', 9, [
+    { tier:'OU', nature:'Adamant', ability_key:'supreme-overlord', item:'Globo Aerostático', evs:'252 HP / 252 ATK / 4 SP.DEF', role:'Wallbreaker Físico',
+      moves_1:[{key:'swords-dance',tipo:'normal'},{key:'kowtow-cleave',tipo:'dark'},{key:'iron-head',tipo:'steel'},{key:'sucker-punch',tipo:'dark'}]},
+    { tier:'OU', nature:'Adamant', ability_key:'defiant', item:'Cinta Elegida', evs:'4 HP / 252 ATK / 252 VEL', role:'Atacante Físico',
+      moves_1:[{key:'kowtow-cleave',tipo:'dark'},{key:'iron-head',tipo:'steel'},{key:'sucker-punch',tipo:'dark'},{key:'close-combat',tipo:'fighting'}]},
+]);
+_reg('toxapex', 9, [
+    { tier:'OU', nature:'Bold', ability_key:'regenerator', item:'Cieno Negro', evs:'252 HP / 252 DEF / 4 SP.DEF', role:'Muro Defensivo',
+      moves_1:[{key:'scald',tipo:'water'},{key:'recover',tipo:'normal'},{key:'toxic-spikes',tipo:'poison'},{key:'baneful-bunker',tipo:'poison'}]},
+]);
+_reg('corviknight', 9, [
+    { tier:'OU', nature:'Impish', ability_key:'pressure', item:'Restos', evs:'252 HP / 4 ATK / 252 DEF', role:'Pivot Defensivo',
+      moves_1:[{key:'u-turn',tipo:'bug'},{key:'body-press',tipo:'fighting'},{key:'roost',tipo:'flying'},{key:'defog',tipo:'flying'}]},
+]);
+_reg('meowscarada', 9, [
+    { tier:'OU', nature:'Jolly', ability_key:'overgrow', item:'Cinta Elegida', evs:'4 HP / 252 ATK / 252 VEL', role:'Atacante Físico',
+      moves_1:[{key:'flower-trick',tipo:'grass'},{key:'knock-off',tipo:'dark'},{key:'u-turn',tipo:'bug'},{key:'triple-axel',tipo:'ice'}]},
+]);
+_reg('skeledirge', 9, [
+    { tier:'OU', nature:'Bold', ability_key:'unaware', item:'Restos', evs:'252 HP / 252 DEF / 4 SP.DEF', role:'Muro Ofensivo',
+      moves_1:[{key:'torch-song',tipo:'fire'},{key:'shadow-ball',tipo:'ghost'},{key:'slack-off',tipo:'normal'},{key:'will-o-wisp',tipo:'fire'}]},
+]);
+_reg('great-tusk', 9, [
+    { tier:'OU', nature:'Jolly', ability_key:'protosynthesis', item:'Botas Seguras', evs:'252 HP / 4 ATK / 252 VEL', role:'Hazard Control',
+      moves_1:[{key:'headlong-rush',tipo:'ground'},{key:'ice-spinner',tipo:'ice'},{key:'stealth-rock',tipo:'rock'},{key:'rapid-spin',tipo:'normal'}]},
+    { tier:'OU', nature:'Adamant', ability_key:'protosynthesis', item:'Turboenergía', evs:'4 HP / 252 ATK / 252 VEL', role:'Wallbreaker Físico',
+      moves_1:[{key:'headlong-rush',tipo:'ground'},{key:'close-combat',tipo:'fighting'},{key:'ice-spinner',tipo:'ice'},{key:'knock-off',tipo:'dark'}]},
+]);
+_reg('roaring-moon', 9, [
+    { tier:'OU', nature:'Jolly', ability_key:'protosynthesis', item:'Turboenergía', evs:'4 HP / 252 ATK / 252 VEL', role:'Sweeper Físico',
+      moves_1:[{key:'dragon-dance',tipo:'dragon'},{key:'acrobatics',tipo:'flying'},{key:'crunch',tipo:'dark'},{key:'earthquake',tipo:'ground'}]},
+]);
+_reg('iron-valiant', 9, [
+    { tier:'OU', nature:'Timid', ability_key:'quark-drive', item:'Turboenergía', evs:'4 HP / 252 SP.ATK / 252 VEL', role:'Sweeper Especial',
+      moves_1:[{key:'moonblast',tipo:'fairy'},{key:'close-combat',tipo:'fighting'},{key:'shadow-ball',tipo:'ghost'},{key:'knock-off',tipo:'dark'}]},
+    { tier:'OU', nature:'Jolly', ability_key:'quark-drive', item:'Pañuelo Elegido', evs:'4 HP / 252 ATK / 252 VEL', role:'Sweeper Físico',
+      moves_1:[{key:'close-combat',tipo:'fighting'},{key:'knock-off',tipo:'dark'},{key:'shadow-sneak',tipo:'ghost'},{key:'leaf-blade',tipo:'grass'}]},
+]);
+_reg('ting-lu', 9, [
+    { tier:'OU', nature:'Careful', ability_key:'vessel-of-ruin', item:'Restos', evs:'252 HP / 4 ATK / 252 SP.DEF', role:'Muro Especial / Setter',
+      moves_1:[{key:'stealth-rock',tipo:'rock'},{key:'earthquake',tipo:'ground'},{key:'ruination',tipo:'dark'},{key:'whirlwind',tipo:'normal'}]},
+]);
+_reg('garganacl', 9, [
+    { tier:'OU', nature:'Impish', ability_key:'purifying-salt', item:'Restos', evs:'252 HP / 252 DEF / 4 SP.DEF', role:'Muro Físico',
+      moves_1:[{key:'salt-cure',tipo:'rock'},{key:'stealth-rock',tipo:'rock'},{key:'recover',tipo:'normal'},{key:'body-press',tipo:'fighting'}]},
+]);
+_reg('glimmora', 9, [
+    { tier:'OU', nature:'Timid', ability_key:'toxic-debris', item:'Banda Focus', evs:'4 HP / 252 SP.ATK / 252 VEL', role:'Setter / Lead',
+      moves_1:[{key:'stealth-rock',tipo:'rock'},{key:'mortal-spin',tipo:'poison'},{key:'power-gem',tipo:'rock'},{key:'earth-power',tipo:'ground'}]},
+]);
+_reg('clefable', 9, [
+    { tier:'OU', nature:'Bold', ability_key:'magic-guard', item:'Restos', evs:'252 HP / 252 DEF / 4 SP.DEF', role:'Muro Especial',
+      moves_1:[{key:'calm-mind',tipo:'psychic'},{key:'moonblast',tipo:'fairy'},{key:'flamethrower',tipo:'fire'},{key:'soft-boiled',tipo:'normal'}]},
+    { tier:'OU', nature:'Bold', ability_key:'unaware', item:'Restos', evs:'252 HP / 252 DEF / 4 SP.DEF', role:'Muro Físico',
+      moves_1:[{key:'moonblast',tipo:'fairy'},{key:'thunder-wave',tipo:'electric'},{key:'stealth-rock',tipo:'rock'},{key:'soft-boiled',tipo:'normal'}]},
+]);
+_reg('gengar', 9, [
+    { tier:'UU', nature:'Timid', ability_key:'cursed-body', item:'Lentes Elegidas', evs:'4 HP / 252 SP.ATK / 252 VEL', role:'Sweeper Especial',
+      moves_1:[{key:'shadow-ball',tipo:'ghost'},{key:'sludge-wave',tipo:'poison'},{key:'focus-blast',tipo:'fighting'},{key:'nasty-plot',tipo:'dark'}]},
+]);
+_reg('dragonite', 9, [
+    { tier:'OU', nature:'Adamant', ability_key:'multiscale', item:'Botas Seguras', evs:'4 HP / 252 ATK / 252 VEL', role:'Sweeper Físico',
+      moves_1:[{key:'dragon-dance',tipo:'dragon'},{key:'extreme-speed',tipo:'normal'},{key:'earthquake',tipo:'ground'},{key:'fire-punch',tipo:'fire'}]},
+    { tier:'OU', nature:'Jolly', ability_key:'multiscale', item:'Restos', evs:'252 HP / 4 ATK / 252 VEL', role:'Pivot Ofensivo',
+      moves_1:[{key:'extreme-speed',tipo:'normal'},{key:'earthquake',tipo:'ground'},{key:'roost',tipo:'flying'},{key:'thunder-wave',tipo:'electric'}]},
+]);
+_reg('tyranitar', 9, [
+    { tier:'OU', nature:'Adamant', ability_key:'sand-stream', item:'Cinta Elegida', evs:'4 HP / 252 ATK / 252 VEL', role:'Atacante Físico',
+      moves_1:[{key:'stone-edge',tipo:'rock'},{key:'crunch',tipo:'dark'},{key:'ice-punch',tipo:'ice'},{key:'earthquake',tipo:'ground'}]},
+    { tier:'OU', nature:'Careful', ability_key:'sand-stream', item:'Restos', evs:'252 HP / 4 ATK / 252 SP.DEF', role:'Muro Especial / Setter',
+      moves_1:[{key:'stealth-rock',tipo:'rock'},{key:'knock-off',tipo:'dark'},{key:'earthquake',tipo:'ground'},{key:'stone-edge',tipo:'rock'}]},
+]);
+_reg('lucario', 9, [
+    { tier:'UU', nature:'Adamant', ability_key:'justified', item:'Orbe Vital', evs:'4 HP / 252 ATK / 252 VEL', role:'Sweeper Físico',
+      moves_1:[{key:'swords-dance',tipo:'normal'},{key:'close-combat',tipo:'fighting'},{key:'extreme-speed',tipo:'normal'},{key:'bullet-punch',tipo:'steel'}]},
+    { tier:'UU', nature:'Timid', ability_key:'inner-focus', item:'Orbe Vital', evs:'4 HP / 252 SP.ATK / 252 VEL', role:'Sweeper Especial',
+      moves_1:[{key:'nasty-plot',tipo:'dark'},{key:'aura-sphere',tipo:'fighting'},{key:'flash-cannon',tipo:'steel'},{key:'dark-pulse',tipo:'dark'}]},
+]);
+_reg('blaziken', 9, [
+    { tier:'Ubers', nature:'Jolly', ability_key:'speed-boost', item:'Orbe Vital', evs:'4 HP / 252 ATK / 252 VEL', role:'Sweeper Físico',
+      moves_1:[{key:'swords-dance',tipo:'normal'},{key:'high-jump-kick',tipo:'fighting'},{key:'flare-blitz',tipo:'fire'},{key:'protect',tipo:'normal'}]},
+]);
+_reg('mewtwo', 9, [
+    { tier:'Ubers', nature:'Timid', ability_key:'pressure', item:'Orbe Vital', evs:'4 HP / 252 SP.ATK / 252 VEL', role:'Sweeper Especial',
+      moves_1:[{key:'psystrike',tipo:'psychic'},{key:'shadow-ball',tipo:'ghost'},{key:'aura-sphere',tipo:'fighting'},{key:'nasty-plot',tipo:'dark'}]},
+]);
+_reg('pikachu', 9, [
+    { tier:'NU', nature:'Timid', ability_key:'lightning-rod', item:'Bola Luz', evs:'4 HP / 252 SP.ATK / 252 VEL', role:'Atacante Especial',
+      moves_1:[{key:'thunderbolt',tipo:'electric'},{key:'volt-switch',tipo:'electric'},{key:'grass-knot',tipo:'grass'},{key:'surf',tipo:'water'}]},
+]);
+_reg('togekiss', 9, [
+    { tier:'UU', nature:'Timid', ability_key:'serene-grace', item:'Restos', evs:'252 HP / 4 SP.ATK / 252 VEL', role:'Pivot Especial',
+      moves_1:[{key:'air-slash',tipo:'flying'},{key:'nasty-plot',tipo:'dark'},{key:'dazzling-gleam',tipo:'fairy'},{key:'roost',tipo:'flying'}]},
+]);
+_reg('heatran', 9, [
+    { tier:'OU', nature:'Calm', ability_key:'flash-fire', item:'Restos', evs:'252 HP / 4 SP.ATK / 252 SP.DEF', role:'Muro Especial',
+      moves_1:[{key:'flamethrower',tipo:'fire'},{key:'earth-power',tipo:'ground'},{key:'stealth-rock',tipo:'rock'},{key:'toxic',tipo:'poison'}]},
+    { tier:'OU', nature:'Timid', ability_key:'flash-fire', item:'Lentes Elegidas', evs:'4 HP / 252 SP.ATK / 252 VEL', role:'Sweeper Especial',
+      moves_1:[{key:'fire-blast',tipo:'fire'},{key:'earth-power',tipo:'ground'},{key:'flash-cannon',tipo:'steel'},{key:'dark-pulse',tipo:'dark'}]},
+]);
+_reg('scizor', 9, [
+    { tier:'UU', nature:'Adamant', ability_key:'technician', item:'Cinta Elegida', evs:'252 HP / 252 ATK / 4 SP.DEF', role:'Pivot Ofensivo',
+      moves_1:[{key:'bullet-punch',tipo:'steel'},{key:'u-turn',tipo:'bug'},{key:'knock-off',tipo:'dark'},{key:'close-combat',tipo:'fighting'}]},
+    { tier:'UU', nature:'Adamant', ability_key:'technician', item:'Restos', evs:'252 HP / 252 ATK / 4 SP.DEF', role:'Setup Sweeper',
+      moves_1:[{key:'swords-dance',tipo:'normal'},{key:'bullet-punch',tipo:'steel'},{key:'knock-off',tipo:'dark'},{key:'roost',tipo:'flying'}]},
+]);
+_reg('gyarados', 9, [
+    { tier:'UU', nature:'Jolly', ability_key:'intimidate', item:'Restos', evs:'4 HP / 252 ATK / 252 VEL', role:'Sweeper Físico',
+      moves_1:[{key:'dragon-dance',tipo:'dragon'},{key:'waterfall',tipo:'water'},{key:'earthquake',tipo:'ground'},{key:'bounce',tipo:'flying'}]},
+]);
+_reg('ferrothorn', 9, [
+    { tier:'OU', nature:'Relaxed', ability_key:'iron-barbs', item:'Restos', evs:'252 HP / 252 DEF / 4 SP.DEF', role:'Muro Físico / Setter',
+      moves_1:[{key:'stealth-rock',tipo:'rock'},{key:'leech-seed',tipo:'grass'},{key:'knock-off',tipo:'dark'},{key:'power-whip',tipo:'grass'}]},
+]);
+_reg('landorus-therian', 9, [
+    { tier:'OU', nature:'Jolly', ability_key:'intimidate', item:'Casco Rocky', evs:'252 HP / 4 ATK / 252 VEL', role:'Pivot Defensivo / Setter',
+      moves_1:[{key:'earthquake',tipo:'ground'},{key:'u-turn',tipo:'bug'},{key:'stealth-rock',tipo:'rock'},{key:'knock-off',tipo:'dark'}]},
+]);
+_reg('weavile', 9, [
+    { tier:'UU', nature:'Jolly', ability_key:'pressure', item:'Cinta Elegida', evs:'4 HP / 252 ATK / 252 VEL', role:'Sweeper Físico',
+      moves_1:[{key:'triple-axel',tipo:'ice'},{key:'knock-off',tipo:'dark'},{key:'ice-shard',tipo:'ice'},{key:'low-kick',tipo:'fighting'}]},
+]);
+_reg('slowking-galar', 9, [
+    { tier:'OU', nature:'Bold', ability_key:'regenerator', item:'Botas Seguras', evs:'252 HP / 252 DEF / 4 SP.DEF', role:'Pivot Defensivo',
+      moves_1:[{key:'future-sight',tipo:'psychic'},{key:'sludge-bomb',tipo:'poison'},{key:'flip-turn',tipo:'water'},{key:'slack-off',tipo:'normal'}]},
+]);
+_reg('iron-moth', 9, [
+    { tier:'OU', nature:'Timid', ability_key:'quark-drive', item:'Turboenergía', evs:'4 HP / 252 SP.ATK / 252 VEL', role:'Sweeper Especial',
+      moves_1:[{key:'fire-blast',tipo:'fire'},{key:'sludge-wave',tipo:'poison'},{key:'energy-ball',tipo:'grass'},{key:'psychic',tipo:'psychic'}]},
+]);
+_reg('flutter-mane', 9, [
+    { tier:'Ubers', nature:'Timid', ability_key:'protosynthesis', item:'Turboenergía', evs:'4 HP / 252 SP.ATK / 252 VEL', role:'Sweeper Especial',
+      moves_1:[{key:'moonblast',tipo:'fairy'},{key:'shadow-ball',tipo:'ghost'},{key:'mystical-fire',tipo:'fire'},{key:'thunderbolt',tipo:'electric'}]},
+]);
+
+// ══════════════════════════════════════════════════════════════════
+// GEN 4 — Diamante / Perla / Platino
+// ══════════════════════════════════════════════════════════════════
+_reg('garchomp', 4, [
+    { tier:'Ubers', nature:'Jolly', ability_key:'sand-veil', item:'Pañuelo Elegido', evs:'4 HP / 252 ATK / 252 VEL', role:'Sweeper Físico',
+      moves_1:[{key:'outrage',tipo:'dragon'},{key:'earthquake',tipo:'ground'},{key:'stone-edge',tipo:'rock'},{key:'fire-fang',tipo:'fire'}]},
+    { tier:'Ubers', nature:'Jolly', ability_key:'sand-veil', item:'Orbe Vital', evs:'4 HP / 252 ATK / 252 VEL', role:'Setup Sweeper',
+      moves_1:[{key:'swords-dance',tipo:'normal'},{key:'earthquake',tipo:'ground'},{key:'outrage',tipo:'dragon'},{key:'fire-fang',tipo:'fire'}]},
+]);
+_reg('tyranitar', 4, [
+    { tier:'OU', nature:'Adamant', ability_key:'sand-stream', item:'Cinta Elegida', evs:'4 HP / 252 ATK / 252 VEL', role:'Wallbreaker Físico',
+      moves_1:[{key:'stone-edge',tipo:'rock'},{key:'crunch',tipo:'dark'},{key:'earthquake',tipo:'ground'},{key:'pursuit',tipo:'dark'}]},
+]);
+_reg('scizor', 4, [
+    { tier:'OU', nature:'Adamant', ability_key:'technician', item:'Cinta Elegida', evs:'248 HP / 252 ATK / 8 VEL', role:'Pivot Ofensivo',
+      moves_1:[{key:'u-turn',tipo:'bug'},{key:'bullet-punch',tipo:'steel'},{key:'superpower',tipo:'fighting'},{key:'pursuit',tipo:'dark'}]},
+]);
+_reg('heatran', 4, [
+    { tier:'OU', nature:'Modest', ability_key:'flash-fire', item:'Lentes Elegidas', evs:'4 HP / 252 SP.ATK / 252 VEL', role:'Sweeper Especial',
+      moves_1:[{key:'fire-blast',tipo:'fire'},{key:'earth-power',tipo:'ground'},{key:'flash-cannon',tipo:'steel'},{key:'dragon-pulse',tipo:'dragon'}]},
+]);
+_reg('gengar', 4, [
+    { tier:'OU', nature:'Timid', ability_key:'levitate', item:'Orbe Vital', evs:'4 HP / 252 SP.ATK / 252 VEL', role:'Sweeper Especial',
+      moves_1:[{key:'shadow-ball',tipo:'ghost'},{key:'sludge-bomb',tipo:'poison'},{key:'focus-blast',tipo:'fighting'},{key:'thunderbolt',tipo:'electric'}]},
+]);
+_reg('dragonite', 4, [
+    { tier:'OU', nature:'Adamant', ability_key:'inner-focus', item:'Orbe Vital', evs:'4 HP / 252 ATK / 252 VEL', role:'Sweeper Físico',
+      moves_1:[{key:'dragon-dance',tipo:'dragon'},{key:'outrage',tipo:'dragon'},{key:'earthquake',tipo:'ground'},{key:'extreme-speed',tipo:'normal'}]},
+]);
+_reg('lucario', 4, [
+    { tier:'OU', nature:'Adamant', ability_key:'inner-focus', item:'Orbe Vital', evs:'4 HP / 252 ATK / 252 VEL', role:'Sweeper Físico',
+      moves_1:[{key:'swords-dance',tipo:'normal'},{key:'close-combat',tipo:'fighting'},{key:'extreme-speed',tipo:'normal'},{key:'crunch',tipo:'dark'}]},
+    { tier:'OU', nature:'Timid', ability_key:'inner-focus', item:'Orbe Vital', evs:'4 HP / 252 SP.ATK / 252 VEL', role:'Sweeper Especial',
+      moves_1:[{key:'nasty-plot',tipo:'dark'},{key:'aura-sphere',tipo:'fighting'},{key:'shadow-ball',tipo:'ghost'},{key:'dark-pulse',tipo:'dark'}]},
+]);
+_reg('gyarados', 4, [
+    { tier:'OU', nature:'Adamant', ability_key:'intimidate', item:'Restos', evs:'4 HP / 252 ATK / 252 VEL', role:'Setup Sweeper',
+      moves_1:[{key:'dragon-dance',tipo:'dragon'},{key:'waterfall',tipo:'water'},{key:'stone-edge',tipo:'rock'},{key:'earthquake',tipo:'ground'}]},
+]);
+_reg('metagross', 4, [
+    { tier:'OU', nature:'Adamant', ability_key:'clear-body', item:'Orbe Vital', evs:'4 HP / 252 ATK / 252 VEL', role:'Atacante Físico',
+      moves_1:[{key:'meteor-mash',tipo:'steel'},{key:'earthquake',tipo:'ground'},{key:'zen-headbutt',tipo:'psychic'},{key:'bullet-punch',tipo:'steel'}]},
+]);
+
+// ══════════════════════════════════════════════════════════════════
+// GEN 5 — Negro / Blanco
+// ══════════════════════════════════════════════════════════════════
+_reg('volcarona', 5, [
+    { tier:'OU', nature:'Timid', ability_key:'flame-body', item:'Restos', evs:'4 HP / 252 SP.ATK / 252 VEL', role:'Setup Sweeper',
+      moves_1:[{key:'quiver-dance',tipo:'bug'},{key:'fire-blast',tipo:'fire'},{key:'bug-buzz',tipo:'bug'},{key:'roost',tipo:'flying'}]},
+]);
+_reg('ferrothorn', 5, [
+    { tier:'OU', nature:'Relaxed', ability_key:'iron-barbs', item:'Restos', evs:'252 HP / 88 DEF / 168 SP.DEF', role:'Muro / Setter',
+      moves_1:[{key:'stealth-rock',tipo:'rock'},{key:'leech-seed',tipo:'grass'},{key:'power-whip',tipo:'grass'},{key:'gyro-ball',tipo:'steel'}]},
+]);
+_reg('excadrill', 5, [
+    { tier:'OU', nature:'Jolly', ability_key:'sand-rush', item:'Orbe Vital', evs:'4 HP / 252 ATK / 252 VEL', role:'Sweeper Físico (Arena)',
+      moves_1:[{key:'earthquake',tipo:'ground'},{key:'iron-head',tipo:'steel'},{key:'rock-slide',tipo:'rock'},{key:'swords-dance',tipo:'normal'}]},
+]);
+_reg('reuniclus', 5, [
+    { tier:'OU', nature:'Bold', ability_key:'magic-guard', item:'Restos', evs:'252 HP / 252 DEF / 4 SP.ATK', role:'Setup Tanque',
+      moves_1:[{key:'calm-mind',tipo:'psychic'},{key:'psychic',tipo:'psychic'},{key:'focus-blast',tipo:'fighting'},{key:'recover',tipo:'normal'}]},
+]);
+
+// ══════════════════════════════════════════════════════════════════
+// GEN 3 — Rubí / Zafiro / Esmeralda
+// ══════════════════════════════════════════════════════════════════
+_reg('salamence', 3, [
+    { tier:'OU', nature:'Adamant', ability_key:'intimidate', item:'Cinta Elegida', evs:'4 HP / 252 ATK / 252 VEL', role:'Sweeper Físico',
+      moves_1:[{key:'dragon-dance',tipo:'dragon'},{key:'earthquake',tipo:'ground'},{key:'rock-slide',tipo:'rock'},{key:'aerial-ace',tipo:'flying'}]},
+]);
+_reg('metagross', 3, [
+    { tier:'OU', nature:'Adamant', ability_key:'clear-body', item:'Cinta Elegida', evs:'4 HP / 252 ATK / 252 VEL', role:'Atacante Físico',
+      moves_1:[{key:'meteor-mash',tipo:'steel'},{key:'earthquake',tipo:'ground'},{key:'rock-slide',tipo:'rock'},{key:'explosion',tipo:'normal'}]},
+]);
+_reg('tyranitar', 3, [
+    { tier:'OU', nature:'Adamant', ability_key:'sand-stream', item:'Restos', evs:'4 HP / 252 ATK / 252 VEL', role:'Atacante Mixto',
+      moves_1:[{key:'rock-slide',tipo:'rock'},{key:'earthquake',tipo:'ground'},{key:'crunch',tipo:'dark'},{key:'fire-blast',tipo:'fire'}]},
+]);
+_reg('gengar', 3, [
+    { tier:'OU', nature:'Timid', ability_key:'levitate', item:'Restos', evs:'4 HP / 252 SP.ATK / 252 VEL', role:'Sweeper Especial',
+      moves_1:[{key:'thunderbolt',tipo:'electric'},{key:'ice-punch',tipo:'ice'},{key:'fire-punch',tipo:'fire'},{key:'hypnosis',tipo:'psychic'}]},
+]);
+_reg('swampert', 3, [
+    { tier:'OU', nature:'Relaxed', ability_key:'torrent', item:'Restos', evs:'252 HP / 216 DEF / 40 SP.ATK', role:'Muro Defensivo',
+      moves_1:[{key:'surf',tipo:'water'},{key:'earthquake',tipo:'ground'},{key:'ice-beam',tipo:'ice'},{key:'stealth-rock',tipo:'rock'}]},
+]);
+
+// ══════════════════════════════════════════════════════════════════
+// GEN 1 — Rojo / Azul / Amarillo
+// ══════════════════════════════════════════════════════════════════
+_reg('tauros', 1, [
+    { tier:'OU', nature:'N/A', ability_key:'', item:'', evs:'N/A — Gen I sin EVs modernos', role:'Atacante Físico',
+      moves_1:[{key:'body-slam',tipo:'normal'},{key:'hyper-beam',tipo:'normal'},{key:'earthquake',tipo:'ground'},{key:'blizzard',tipo:'ice'}]},
+]);
+_reg('alakazam', 1, [
+    { tier:'OU', nature:'N/A', ability_key:'', item:'', evs:'N/A — Gen I sin EVs modernos', role:'Sweeper Especial',
+      moves_1:[{key:'psychic',tipo:'psychic'},{key:'thunder-wave',tipo:'electric'},{key:'recover',tipo:'normal'},{key:'seismic-toss',tipo:'fighting'}]},
+]);
+_reg('starmie', 1, [
+    { tier:'OU', nature:'N/A', ability_key:'', item:'', evs:'N/A — Gen I sin EVs modernos', role:'Sweeper Especial',
+      moves_1:[{key:'psychic',tipo:'psychic'},{key:'thunderbolt',tipo:'electric'},{key:'blizzard',tipo:'ice'},{key:'recover',tipo:'normal'}]},
+]);
+_reg('snorlax', 1, [
+    { tier:'OU', nature:'N/A', ability_key:'', item:'', evs:'N/A — Gen I sin EVs modernos', role:'Muro Especial',
+      moves_1:[{key:'body-slam',tipo:'normal'},{key:'earthquake',tipo:'ground'},{key:'rest',tipo:'psychic'},{key:'ice-beam',tipo:'ice'}]},
+]);
+_reg('chansey', 1, [
+    { tier:'OU', nature:'N/A', ability_key:'', item:'', evs:'N/A — Gen I sin EVs modernos', role:'Muro Especial',
+      moves_1:[{key:'soft-boiled',tipo:'normal'},{key:'thunder-wave',tipo:'electric'},{key:'ice-beam',tipo:'ice'},{key:'counter',tipo:'fighting'}]},
+]);
+_reg('gengar', 1, [
+    { tier:'OU', nature:'N/A', ability_key:'', item:'', evs:'N/A — Gen I sin EVs modernos', role:'Sweeper Especial',
+      moves_1:[{key:'thunderbolt',tipo:'electric'},{key:'hypnosis',tipo:'psychic'},{key:'explosion',tipo:'normal'},{key:'night-shade',tipo:'ghost'}]},
+]);
+
+// ══════════════════════════════════════════════════════════════════
+// GEN 2 — Oro / Plata / Cristal
+// ══════════════════════════════════════════════════════════════════
+_reg('snorlax', 2, [
+    { tier:'OU', nature:'Adamant', ability_key:'', item:'Restos', evs:'252 HP / 252 ATK / 4 SP.DEF', role:'Atacante Curseador',
+      moves_1:[{key:'curse',tipo:'ghost'},{key:'body-slam',tipo:'normal'},{key:'earthquake',tipo:'ground'},{key:'rest',tipo:'psychic'}]},
+]);
+_reg('tyranitar', 2, [
+    { tier:'OU', nature:'Adamant', ability_key:'', item:'Restos', evs:'252 HP / 252 ATK / 4 VEL', role:'Atacante Mixto',
+      moves_1:[{key:'rock-slide',tipo:'rock'},{key:'earthquake',tipo:'ground'},{key:'crunch',tipo:'dark'},{key:'fire-blast',tipo:'fire'}]},
+]);
+
+// ══════════════════════════════════════════════════════════════════
+// GEN 6 — X / Y / ORAS
+// ══════════════════════════════════════════════════════════════════
+_reg('charizard', 6, [
+    { tier:'OU', nature:'Timid', ability_key:'drought', item:'Charizardita Y', evs:'4 HP / 252 SP.ATK / 252 VEL', role:'Mega Sweeper Especial',
+      moves_1:[{key:'fire-blast',tipo:'fire'},{key:'solar-beam',tipo:'grass'},{key:'focus-blast',tipo:'fighting'},{key:'roost',tipo:'flying'}]},
+    { tier:'OU', nature:'Jolly', ability_key:'tough-claws', item:'Charizardita X', evs:'4 HP / 252 ATK / 252 VEL', role:'Mega Sweeper Físico',
+      moves_1:[{key:'dragon-dance',tipo:'dragon'},{key:'flare-blitz',tipo:'fire'},{key:'outrage',tipo:'dragon'},{key:'earthquake',tipo:'ground'}]},
+]);
+_reg('gengar', 6, [
+    { tier:'OU', nature:'Timid', ability_key:'levitate', item:'Orbe Vital', evs:'4 HP / 252 SP.ATK / 252 VEL', role:'Sweeper Especial',
+      moves_1:[{key:'shadow-ball',tipo:'ghost'},{key:'sludge-wave',tipo:'poison'},{key:'focus-blast',tipo:'fighting'},{key:'substitute',tipo:'normal'}]},
+]);
+_reg('landorus-therian', 6, [
+    { tier:'OU', nature:'Jolly', ability_key:'intimidate', item:'Pañuelo Elegido', evs:'4 HP / 252 ATK / 252 VEL', role:'Pivot Ofensivo',
+      moves_1:[{key:'earthquake',tipo:'ground'},{key:'u-turn',tipo:'bug'},{key:'stone-edge',tipo:'rock'},{key:'knock-off',tipo:'dark'}]},
+]);
+
+// ══════════════════════════════════════════════════════════════════
+// GEN 7 — Sol / Luna
+// ══════════════════════════════════════════════════════════════════
+_reg('landorus-therian', 7, [
+    { tier:'OU', nature:'Jolly', ability_key:'intimidate', item:'Pañuelo Elegido', evs:'4 HP / 252 ATK / 252 VEL', role:'Pivot Ofensivo',
+      moves_1:[{key:'earthquake',tipo:'ground'},{key:'u-turn',tipo:'bug'},{key:'stone-edge',tipo:'rock'},{key:'defog',tipo:'flying'}]},
+]);
+_reg('toxapex', 7, [
+    { tier:'OU', nature:'Bold', ability_key:'regenerator', item:'Cieno Negro', evs:'252 HP / 252 DEF / 4 SP.DEF', role:'Muro Defensivo',
+      moves_1:[{key:'scald',tipo:'water'},{key:'recover',tipo:'normal'},{key:'toxic',tipo:'poison'},{key:'baneful-bunker',tipo:'poison'}]},
+]);
+
+// ══════════════════════════════════════════════════════════════════
+// GEN 8 — Espada / Escudo
+// ══════════════════════════════════════════════════════════════════
+_reg('dragapult', 8, [
+    { tier:'OU', nature:'Timid', ability_key:'infiltrator', item:'Lentes Elegidas', evs:'4 HP / 252 SP.ATK / 252 VEL', role:'Sweeper Especial',
+      moves_1:[{key:'draco-meteor',tipo:'dragon'},{key:'shadow-ball',tipo:'ghost'},{key:'flamethrower',tipo:'fire'},{key:'u-turn',tipo:'bug'}]},
+    { tier:'OU', nature:'Jolly', ability_key:'clear-body', item:'Cinta Elegida', evs:'4 HP / 252 ATK / 252 VEL', role:'Sweeper Físico',
+      moves_1:[{key:'dragon-darts',tipo:'dragon'},{key:'phantom-force',tipo:'ghost'},{key:'u-turn',tipo:'bug'},{key:'sucker-punch',tipo:'dark'}]},
+]);
+_reg('corviknight', 8, [
+    { tier:'OU', nature:'Impish', ability_key:'pressure', item:'Restos', evs:'252 HP / 252 DEF / 4 SP.DEF', role:'Pivot Defensivo',
+      moves_1:[{key:'roost',tipo:'flying'},{key:'u-turn',tipo:'bug'},{key:'body-press',tipo:'fighting'},{key:'defog',tipo:'flying'}]},
+]);
+_reg('ferrothorn', 8, [
+    { tier:'OU', nature:'Relaxed', ability_key:'iron-barbs', item:'Restos', evs:'252 HP / 252 DEF / 4 SP.DEF', role:'Muro Físico / Setter',
+      moves_1:[{key:'stealth-rock',tipo:'rock'},{key:'leech-seed',tipo:'grass'},{key:'power-whip',tipo:'grass'},{key:'knock-off',tipo:'dark'}]},
+]);
 
 // ================================================================
 // TRADUCCIÓN DE OBJETOS — API Smogon (inglés) → castellano
@@ -1028,12 +1102,17 @@ window.PokeAnalyzer.analyzer = {
         if (smogonData) {
             return this._buildFromSmogonAPI(smogonData, pokemon, movesData, abilitiesEs, stats, role, generation);
         }
-        // Prioridad 2: override estático SMOGON_SETS (legacy, para gens sin soporte API)
-        const override = SMOGON_SETS[pokemon.name];
-        if (override && generation.num === override.gen) {
-            const b1 = this._buildFromSmogon(override, movesData, abilitiesEs);
-            const dynArr = this._buildDynamic3(pokemon, movesData, abilitiesEs, stats, role, generation);
-            return [b1, dynArr[1]].filter(Boolean);
+        // Prioridad 2: override estático SMOGON_SETS (base de datos verificada por generación)
+        const overrides = (SMOGON_SETS[pokemon.name] || []).filter(s => s.gen === generation.num);
+        if (overrides.length > 0) {
+            const builds = overrides.slice(0, 3).map(o => this._buildFromSmogon(o, movesData, abilitiesEs));
+            // Si solo hay 1 set estático, añadir un build dinámico
+            if (builds.length < 2) {
+                const dynArr = this._buildDynamic3(pokemon, movesData, abilitiesEs, stats, role, generation);
+                const dyn = dynArr[1] ?? dynArr[0];
+                if (dyn) builds.push(dyn);
+            }
+            return builds.filter(Boolean);
         }
         return this._buildDynamic3(pokemon, movesData, abilitiesEs, stats, role, generation);
     },
@@ -1131,17 +1210,19 @@ window.PokeAnalyzer.analyzer = {
         return parts.length > 0 ? parts.join(' / ') : '252 HP / 4 ATK / 252 VEL';
     },
 
-    /** Construye el Build 1 desde el override Smogon verificado. */
+    /** Construye un build desde el override Smogon verificado. */
     _buildFromSmogon(override, movesData, abilitiesEs) {
         const { NATURE_ES } = window.PokeAnalyzer.config;
         const natureEs   = NATURE_ES[override.nature] ?? override.nature;
-        const abilityEs  = abilitiesEs.get(override.ability_key)
-            ?? override.ability_key.replace(/-/g, ' ');
+        const abilityKey = override.ability_key || '';
+        const abilityEs  = abilityKey
+            ? (abilitiesEs.get(abilityKey) ?? abilityKey.replace(/-/g, ' '))
+            : 'N/A';
         return {
-            etiqueta: `SMOGON ${override.tier}`,
+            etiqueta: `${natureEs} — SMOGON ${override.tier}`,
             nature:   natureEs,
             ability:  abilityEs,
-            item:     override.item,
+            item:     override.item || 'N/A',
             evs:      override.evs,
             role:     override.role,
             moveset:  this._resolveSmogonMoves(override.moves_1, movesData),
@@ -1149,6 +1230,7 @@ window.PokeAnalyzer.analyzer = {
     },
 
     /** Genera 2 builds dinámicos con estilos distintos: setup vs hit-and-run. */
+    /** Genera 2 builds dinámicos diferenciados por naturaleza y estilo. */
     _buildDynamic3(pokemon, movesData, abilitiesEs, stats, role, generation) {
         const naturalezas = this._recommendNatures(stats, role, generation);
         const habilidad   = this._recommendAbility(pokemon, abilitiesEs, generation);
@@ -1163,10 +1245,35 @@ window.PokeAnalyzer.analyzer = {
 
         const hasSetup = cats.setupPhysical.length > 0 || cats.setupSpecial.length > 0;
 
-        // Build 1 — setup/poder: slot 4 prioriza move de setup o recuperación
-        const moveset_1 = this._buildSlotBasedSet(cats, role, generation, t1, t2, 'setup');
-        // Build 2 — velocidad/hit&run: slot 4 prioriza prioridad o pivote
-        const moveset_2 = this._buildSlotBasedSet(cats, role, generation, t1, t2, 'speed');
+        // Determinar si el Pokemon puede usar ambos lados ofensivos
+        const canPhys = stats.atk >= 70 && (cats.stabPhysical.length > 0 || cats.covPhysical.length > 0);
+        const canSpec = stats.spatk >= 70 && (cats.stabSpecial.length > 0 || cats.covSpecial.length > 0);
+        const isMixed = canPhys && canSpec && Math.abs(stats.atk - stats.spatk) < 30;
+
+        // Build 1: orientado al stat ofensivo principal con setup
+        const role1 = isMixed ? role : role;
+        const style1 = 'setup';
+        const moveset_1 = this._buildSlotBasedSet(cats, role1, generation, t1, t2, style1);
+
+        // Build 2: orientado al OTRO lado ofensivo si es viable, o hit&run
+        let moveset_2, role2Label, nature2, evs2, item2;
+        if (isMixed && !role.type.includes('wall') && !role.type.includes('support')) {
+            // Crear un build del lado opuesto
+            const altRole = role.type.includes('physical')
+                ? { ...role, type: role.type.replace('physical', 'special') }
+                : { ...role, type: role.type.replace('special', 'physical') };
+            moveset_2 = this._buildSlotBasedSet(cats, altRole, generation, t1, t2, 'speed');
+            role2Label = altRole.type.includes('physical') ? 'Atacante Físico' : 'Atacante Especial';
+            nature2 = naturalezas[1]?.nombre ?? '';
+            evs2 = this._pickEvs(altRole, 'speed');
+            item2 = this._pickItem('speed', altRole, false);
+        } else {
+            moveset_2 = this._buildSlotBasedSet(cats, role, generation, t1, t2, 'speed');
+            role2Label = role.description;
+            nature2 = naturalezas[1]?.nombre ?? '';
+            evs2 = this._pickEvs(role, 'speed');
+            item2 = this._pickItem('speed', role, hasSetup);
+        }
 
         return [
             {
@@ -1179,12 +1286,12 @@ window.PokeAnalyzer.analyzer = {
                 moveset:  moveset_1,
             },
             {
-                etiqueta: `${naturalezas[1]?.nombre ?? 'BUILD 2'} — HIT & RUN`,
-                nature:   naturalezas[1]?.nombre ?? '',
+                etiqueta: `${nature2 || 'BUILD 2'} — HIT & RUN`,
+                nature:   nature2,
                 ability:  habilidad.nombre,
-                item:     this._pickItem('speed', role, hasSetup),
-                evs:      this._pickEvs(role, 'speed'),
-                role:     role.description,
+                item:     item2,
+                evs:      evs2,
+                role:     role2Label,
                 moveset:  moveset_2,
             },
         ];
