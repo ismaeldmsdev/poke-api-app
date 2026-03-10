@@ -46,8 +46,8 @@ window.PokeAnalyzer.pokeAPI = {
             ...byMethod.other,
         ];
 
-        // Eliminar duplicados y limitar a 60
-        const unique = [...new Set(prioritized)].slice(0, 60);
+        // Eliminar duplicados y limitar a 20 (evita timeouts con 60+ fetches)
+        const unique = [...new Set(prioritized)].slice(0, 20);
 
         const results = await Promise.allSettled(
             unique.map(name => this._fetchMove(name))
@@ -78,27 +78,11 @@ window.PokeAnalyzer.pokeAPI = {
     },
 
     /**
-     * Busca sets Smogon verificados para un Pokémon en la generación dada.
-     * Consulta los tiers OU + Ubers en paralelo; si no aparece, prueba UU/RU/NU.
-     * @returns {{ tier: string, sets: object } | null}
+     * Sets Smogon desactivados — el análisis es 100% dinámico vía stats/heurística.
+     * Elimina 404s en ~90% de Pokémon y timeouts por fetch secuencial de 10+ tiers.
+     * @returns {null}
      */
     async fetchSmogonSets(pokemonSlug, generationNum) {
-        const displayName = this._slugToSmogonName(pokemonSlug);
-        const gen = generationNum;
-
-        // Los dos tiers principales en paralelo
-        const [ouResult, ubersResult] = await Promise.allSettled([
-            this._trySmogonTier(displayName, gen, 'ou'),
-            this._trySmogonTier(displayName, gen, 'ubers'),
-        ]);
-        if (ouResult.status === 'fulfilled' && ouResult.value)    return ouResult.value;
-        if (ubersResult.status === 'fulfilled' && ubersResult.value) return ubersResult.value;
-
-        // Tiers secundarios (secuencial para no saturar)
-        for (const tier of ['uu', 'ru', 'nu', 'pu', 'zu', 'lc', 'doublesou', 'monotype']) {
-            const result = await this._trySmogonTier(displayName, gen, tier);
-            if (result) return result;
-        }
         return null;
     },
 

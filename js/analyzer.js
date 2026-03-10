@@ -9,7 +9,7 @@
 // Prioridad: PokéAPI (nameEs) > este mapa > inglés formateado
 // ================================================================
 const SMOGON_NAMES_ES = {
-    'draco-meteor':    'Meteorobola',
+    'draco-meteor':    'Cometa Draco',
     'shadow-ball':     'Bola Sombra',
     'flamethrower':    'Lanzallamas',
     'fire-blast':      'Llamarada',
@@ -26,7 +26,7 @@ const SMOGON_NAMES_ES = {
     'dragon-dance':    'Danza Dragón',
     'quiver-dance':    'Danza Alas',
     'bug-buzz':        'Zumbido',
-    'nasty-plot':      'Mal de Ojo',
+    'nasty-plot':      'Maquinación',
     'make-it-rain':    'Lluvia de Dinero',
     'swords-dance':    'Danza Espada',
     'kowtow-cleave':   'Tajo Kowtow',
@@ -34,11 +34,11 @@ const SMOGON_NAMES_ES = {
     'sucker-punch':    'Golpe Bajo',
     'close-combat':    'A Bocajarro',
     'moonblast':       'Fuerza Lunar',
-    'knock-off':       'Derribo',
+    'knock-off':       'Desarme',
     'extreme-speed':   'Velocidad Extrema',
     'bullet-punch':    'Puño Bala',
     'toxic-spikes':    'Pinchos Tóxicos',
-    'scald':           'Quemalagua',
+    'scald':           'Escaldar',
     'recover':         'Recuperación',
     'baneful-bunker':  'Madriguera',
     'body-press':      'Plancha',
@@ -60,8 +60,8 @@ const SMOGON_NAMES_ES = {
     'ruination':       'Catástrofe',
     'whirlwind':       'Torbellino',
     'salt-cure':       'Salmuera',
-    'calm-mind':       'Meditación',
-    'soft-boiled':     'Ponchado',
+    'calm-mind':       'Paz Mental',
+    'soft-boiled':     'Huevo Pasado por Agua',
     'dazzling-gleam':  'Brillo Mágico',
     'aura-sphere':     'Esfera Aural',
     'psystrike':       'Psicogolpe',
@@ -69,7 +69,7 @@ const SMOGON_NAMES_ES = {
     'volt-switch':     'Relevo Eléctrico',
     'grass-knot':      'Hierba Lazo',
     'quick-attack':    'Ataque Rápido',
-    'outrage':         'Bastonazos',
+    'outrage':         'Enfado',
     'sludge-bomb':     'Bomba Lodo',
     'sludge-wave':     'Ola de Lodo',
     'stone-edge':      'Roca Afilada',
@@ -407,6 +407,57 @@ const SMOGON_MOVE_TYPE = {
 };
 
 // ================================================================
+// GEN 1-3: Split físico/especial por TIPO (no por movimiento)
+// En Gen 1-3, la categoría del movimiento se determina por su tipo.
+// ================================================================
+const GEN1_PHYSICAL_TYPES = new Set([
+    'normal', 'fighting', 'poison', 'ground', 'flying', 'bug', 'rock', 'ghost', 'steel',
+]);
+
+// Listas de movimientos premium por categoría para builds dinámicos
+const PREMIUM_PHYSICAL = new Set([
+    'earthquake', 'close-combat', 'stone-edge', 'knock-off', 'u-turn', 'iron-head',
+    'crunch', 'play-rough', 'brave-bird', 'flare-blitz', 'waterfall', 'ice-punch',
+    'thunder-punch', 'fire-punch', 'dragon-claw', 'outrage', 'x-scissor', 'megahorn',
+    'leaf-blade', 'wood-hammer', 'seed-bomb', 'shadow-claw', 'iron-tail', 'drill-run',
+    'high-horsepower', 'liquidation', 'rock-slide', 'head-smash', 'bullet-punch',
+    'extreme-speed', 'sucker-punch', 'aqua-jet', 'mach-punch', 'ice-shard',
+    'body-slam', 'facade', 'swords-dance', 'dragon-dance', 'scale-shot',
+    'headlong-rush', 'wave-crash', 'triple-axel', 'flower-trick', 'kowtow-cleave',
+    'sacred-sword', 'poison-jab', 'gunk-shot', 'zen-headbutt', 'throat-chop',
+    'fire-fang', 'acrobatics',
+]);
+
+const PREMIUM_SPECIAL = new Set([
+    'flamethrower', 'fire-blast', 'hydro-pump', 'surf', 'thunderbolt', 'thunder',
+    'ice-beam', 'blizzard', 'psychic', 'shadow-ball', 'dark-pulse', 'moonblast',
+    'draco-meteor', 'focus-blast', 'aura-sphere', 'energy-ball', 'grass-knot',
+    'flash-cannon', 'sludge-bomb', 'earth-power', 'hurricane', 'air-slash',
+    'bug-buzz', 'dazzling-gleam', 'overheat', 'scald', 'volt-switch',
+    'psyshock', 'psystrike', 'nasty-plot', 'calm-mind', 'quiver-dance',
+    'torch-song', 'make-it-rain', 'stored-power', 'expanding-force',
+    'mystical-fire', 'power-gem', 'sludge-wave',
+]);
+
+const PIVOT_MOVES = new Set([
+    'u-turn', 'volt-switch', 'flip-turn', 'teleport', 'parting-shot', 'baton-pass',
+]);
+
+const RECOVERY_MOVES = new Set([
+    'recover', 'roost', 'soft-boiled', 'slack-off', 'rest', 'milk-drink',
+    'shore-up', 'morning-sun', 'moonlight', 'synthesis', 'strength-sap', 'wish',
+]);
+
+const HAZARD_MOVES = new Set([
+    'stealth-rock', 'spikes', 'toxic-spikes', 'sticky-web',
+]);
+
+const SUPPORT_MOVES = new Set([
+    'will-o-wisp', 'thunder-wave', 'toxic', 'defog', 'rapid-spin', 'taunt',
+    'whirlwind', 'encore', 'light-screen', 'reflect', 'aurora-veil', 'protect',
+]);
+
+// ================================================================
 // MÓDULO
 // ================================================================
 
@@ -414,151 +465,246 @@ window.PokeAnalyzer = window.PokeAnalyzer || {};
 
 window.PokeAnalyzer.analyzer = {
 
-    async analyze(pokemon, abilitiesEs, generation, smogonData = null) {
+    async analyze(pokemon, movesData, abilitiesEs, generation) {
         const stats  = this._parseStats(pokemon);
         const role   = this._determineRole(stats);
-        const tier   = smogonData?.tier ?? null;
-        const builds = await this._buildCompetitiveBuilds(pokemon, abilitiesEs, stats, role, generation, smogonData);
-        const formato    = this._determineFormat(stats, generation, tier);
+        const builds = this._buildDynamic(pokemon, movesData, abilitiesEs, stats, role, generation);
+        const formato    = this._determineFormat(stats, generation);
         const consejo    = this._buildAdvice(pokemon, stats, role, generation);
         return { builds, rol: role.description, formato, consejo_extra: consejo };
     },
 
-    /** Genera builds competitivos usando datos de la API Smogon. */
-    async _buildCompetitiveBuilds(pokemon, abilitiesEs, stats, role, generation, smogonData = null) {
-        if (smogonData) {
-            return await this._buildFromSmogonAPI(smogonData, pokemon, abilitiesEs, stats, role, generation);
-        }
-        // Sin datos de Smogon: devolver build informativo vacío
-        return [{
-            etiqueta: 'SIN DATOS SMOGON',
-            nature:   '—',
-            ability:  '—',
-            item:     '—',
-            evs:      '—',
-            role:     `No hay sets Smogon para Gen ${generation.num}`,
-            moveset:  [{
-                movimiento: 'Sin datos',
-                tipo: 'normal',
-                razon: `Este Pokémon no tiene sets verificados en Smogon para Gen ${generation.num}. Prueba otra generación.`,
-            }],
-        }];
-    },
-
     /**
-     * Construye builds usando datos live de la API Smogon.
-     * Los sets de Smogon tienen movimientos en inglés con nombre display (ej. "Draco Meteor").
-     * Muestra todos los sets disponibles (hasta 3).
+     * Genera builds 100% dinámicos basados en stats + movesData de PokéAPI.
+     * Respeta el split físico/especial por TIPO en Gen 1-3.
      */
-    async _buildFromSmogonAPI(smogonData, pokemon, abilitiesEs, stats, role, generation) {
+    _buildDynamic(pokemon, movesData, abilitiesEs, stats, role, generation) {
         const { NATURE_ES } = window.PokeAnalyzer.config;
-        const { tier, sets } = smogonData;
-        const setNames = Object.keys(sets);
+        const genNum = generation.num;
+        const types = pokemon.types.map(t => t.type.name);
 
-        // Mostrar hasta 3 sets de Smogon
-        const maxSets = Math.min(setNames.length, 3);
+        // Filtrar movimientos por generación
+        const available = movesData.filter(m => m.generationNum <= genNum);
+
+        // Determinar categoría efectiva de cada movimiento (Gen 1-3: por tipo)
+        const withCategory = available.map(m => ({
+            ...m,
+            effectiveCategory: genNum <= 3
+                ? (GEN1_PHYSICAL_TYPES.has(m.type) ? 'physical' : 'special')
+                : m.category,
+        }));
+
+        // Determinar si el Pokémon es más físico o especial
+        const isPhysical = stats.atk >= stats.spatk;
+        const isDefensive = role.type.includes('wall') || role.type === 'support';
+        const isMixed = role.type === 'mixed-attacker';
+
+        // Habilidad en español (primera disponible)
+        const firstAb = pokemon.abilities?.[0]?.ability?.name;
+        const abilityEs = firstAb ? (abilitiesEs.get(firstAb) ?? firstAb) : '—';
 
         const builds = [];
-        for (let i = 0; i < maxSets; i++) {
-            const setName = setNames[i];
-            const s = sets[setName];
 
-            // Naturaleza
-            const natureEn = Array.isArray(s.nature) ? s.nature[0] : (s.nature ?? 'Hardy');
-            const natureEs = NATURE_ES[natureEn] ?? natureEn;
+        // ── BUILD 1: Set ofensivo principal ──
+        const mainMoves = this._selectOffensiveMoves(withCategory, types, isPhysical, isMixed, genNum);
+        const mainNature = this._pickNature(mainMoves, stats, isPhysical);
+        const mainEvs = this._pickEvs(isPhysical, isMixed, stats);
 
-            // Habilidad: puede estar ausente (Pokemon con 1 sola ability)
-            let abilityEs = '—';
-            if (s.ability) {
-                const abilityEn  = Array.isArray(s.ability) ? s.ability[0] : s.ability;
-                const abilityKey = abilityEn.toLowerCase().replace(/ /g, '-').replace(/[.']/g, '');
-                abilityEs = abilitiesEs.get(abilityKey) ?? abilityEn;
-            } else {
-                const firstAb = pokemon.abilities?.[0]?.ability?.name;
-                if (firstAb) abilityEs = abilitiesEs.get(firstAb) ?? firstAb;
-            }
+        builds.push({
+            etiqueta: `${NATURE_ES[mainNature] ?? mainNature} — ANÁLISIS DINÁMICO`,
+            nature: NATURE_ES[mainNature] ?? mainNature,
+            ability: abilityEs,
+            item: this._pickItem(role, isPhysical, mainMoves),
+            evs: mainEvs,
+            role: isPhysical ? 'Atacante Físico' : 'Atacante Especial',
+            moveset: mainMoves.map(m => ({
+                movimiento: m.nameEs,
+                tipo: m.type,
+                razon: this._moveReason(m, types, genNum),
+            })),
+        });
 
-            // Objeto
-            const itemEn = Array.isArray(s.item) ? s.item[0] : (s.item ?? '');
-            const itemEs = SMOGON_ITEMS_ES[itemEn] ?? itemEn;
-
-            // EVs
-            const evsRaw = Array.isArray(s.evs) ? s.evs[0] : (s.evs ?? {});
-            const evs = this._formatSmogonEvs(evsRaw);
-
-            // Movimientos: cada slot es string o array de opciones; tomamos la primera
-            const moveDefs = (s.moves ?? []).slice(0, 4).map(slotOptions => {
-                const displayName = Array.isArray(slotOptions) ? slotOptions[0] : slotOptions;
-                const slug = displayName.toLowerCase()
-                    .replace(/[.']/g, '')
-                    .replace(/ /g, '-');
-                return { slug, displayName };
-            });
-
-            const moveset = await this._resolveSmogonAPIMoves(moveDefs);
-
-            const label = i === 0
-                ? `${natureEs} — SMOGON ${tier}`
-                : `${natureEs} — ${setName} (${tier})`;
-
+        // ── BUILD 2: Set defensivo/soporte (si tiene moves defensivos) ──
+        const defMoves = this._selectDefensiveMoves(withCategory, types, genNum);
+        if (defMoves.length >= 3) {
+            const defNature = isPhysical ? 'Impish' : 'Calm';
             builds.push({
-                etiqueta: label,
-                nature:   natureEs,
-                ability:  abilityEs,
-                item:     itemEs,
-                evs,
-                role:     setName,
-                moveset,
+                etiqueta: `${NATURE_ES[defNature] ?? defNature} — SOPORTE/DEFENSIVO`,
+                nature: NATURE_ES[defNature] ?? defNature,
+                ability: abilityEs,
+                item: SMOGON_ITEMS_ES['Leftovers'] ?? 'Restos',
+                evs: '252 HP / 252 DEF / 4 SP.DEF',
+                role: 'Soporte Defensivo',
+                moveset: defMoves.slice(0, 4).map(m => ({
+                    movimiento: m.nameEs,
+                    tipo: m.type,
+                    razon: this._moveReason(m, types, genNum),
+                })),
             });
         }
 
         return builds;
     },
 
-    /**
-     * Traduce movimientos de Smogon al castellano.
-     * NO usa movesData de PokéAPI — toma los moves TAL CUAL de Smogon
-     * y solo traduce el nombre al español.
-     */
-    async _resolveSmogonAPIMoves(moveDefs) {
-        const { pokeAPI } = window.PokeAnalyzer;
-        const results = await Promise.all(moveDefs.map(async ({ slug, displayName }) => {
-            // 1. Diccionario estático (rápido, sin red)
-            if (SMOGON_NAMES_ES[slug]) {
-                return {
-                    movimiento: SMOGON_NAMES_ES[slug],
-                    tipo: SMOGON_MOVE_TYPE[slug] ?? 'normal',
-                    razon: '',
-                };
-            }
+    /** Selecciona los 4 mejores movimientos ofensivos. */
+    _selectOffensiveMoves(moves, types, isPhysical, isMixed, genNum) {
+        const targetCategory = isPhysical ? 'physical' : 'special';
+        const stab = types;
 
-            // 2. PokéAPI individual (solo para traducción del nombre)
-            const fetched = await pokeAPI.fetchMoveSpanish(slug);
-            if (fetched) {
-                return {
-                    movimiento: fetched.nameEs,
-                    tipo: fetched.type,
-                    razon: '',
-                };
-            }
+        // Separar por función
+        const attacks = moves.filter(m =>
+            m.effectiveCategory !== 'status' && m.power && m.power > 0);
+        const setups = moves.filter(m =>
+            m.effectiveCategory === 'status' && (PREMIUM_PHYSICAL.has(m.name) || PREMIUM_SPECIAL.has(m.name)));
+        const pivots = moves.filter(m => PIVOT_MOVES.has(m.name));
 
-            // 3. Fallback: nombre display de Smogon tal cual
-            return {
-                movimiento: displayName,
-                tipo: SMOGON_MOVE_TYPE[slug] ?? 'normal',
-                razon: '',
-            };
-        }));
-        return results;
+        // Priorizar ataques de la categoría correcta
+        const primaryAttacks = attacks
+            .filter(m => isMixed || m.effectiveCategory === targetCategory)
+            .sort((a, b) => {
+                const aStab = stab.includes(a.type) ? 1.5 : 1;
+                const bStab = stab.includes(b.type) ? 1.5 : 1;
+                const aPremium = (isPhysical ? PREMIUM_PHYSICAL : PREMIUM_SPECIAL).has(a.name) ? 1.2 : 1;
+                const bPremium = (isPhysical ? PREMIUM_PHYSICAL : PREMIUM_SPECIAL).has(b.name) ? 1.2 : 1;
+                return (b.power * bStab * bPremium) - (a.power * aStab * aPremium);
+            });
+
+        // Cobertura: evitar repetir tipos
+        const selected = [];
+        const usedTypes = new Set();
+
+        // 1. Mejor STAB
+        const bestStab = primaryAttacks.find(m => stab.includes(m.type));
+        if (bestStab) {
+            selected.push(bestStab);
+            usedTypes.add(bestStab.type);
+        }
+
+        // 2. Segundo STAB (si tiene doble tipo)
+        if (stab.length > 1) {
+            const secondStab = primaryAttacks.find(m =>
+                stab.includes(m.type) && !usedTypes.has(m.type));
+            if (secondStab) {
+                selected.push(secondStab);
+                usedTypes.add(secondStab.type);
+            }
+        }
+
+        // 3. Cobertura (tipos diferentes)
+        for (const m of primaryAttacks) {
+            if (selected.length >= 3) break;
+            if (!usedTypes.has(m.type) && !selected.includes(m)) {
+                selected.push(m);
+                usedTypes.add(m.type);
+            }
+        }
+
+        // 4. Setup o pivote en slot 4
+        const setup = setups.find(m =>
+            isPhysical ? PREMIUM_PHYSICAL.has(m.name) : PREMIUM_SPECIAL.has(m.name));
+        const pivot = pivots[0];
+
+        if (selected.length < 4 && setup) selected.push(setup);
+        else if (selected.length < 4 && pivot) selected.push(pivot);
+
+        // Rellenar si faltan slots
+        for (const m of primaryAttacks) {
+            if (selected.length >= 4) break;
+            if (!selected.includes(m)) selected.push(m);
+        }
+        // Fallback: cualquier ataque
+        for (const m of attacks) {
+            if (selected.length >= 4) break;
+            if (!selected.includes(m)) selected.push(m);
+        }
+
+        return selected.slice(0, 4);
     },
 
-    /** Formatea los EVs del objeto Smogon ({ hp: 252, spa: 252, spe: 4 }) a cadena legible. */
-    _formatSmogonEvs(evs) {
-        const LABEL = { hp: 'HP', atk: 'ATK', def: 'DEF', spa: 'SP.ATK', spd: 'SP.DEF', spe: 'VEL' };
-        const parts = Object.entries(evs)
-            .filter(([, v]) => v > 0)
-            .map(([k, v]) => `${v} ${LABEL[k] ?? k.toUpperCase()}`);
-        return parts.length > 0 ? parts.join(' / ') : '252 HP / 4 ATK / 252 VEL';
+    /** Selecciona movimientos para un set defensivo/soporte. */
+    _selectDefensiveMoves(moves, types, genNum) {
+        const selected = [];
+
+        // 1. Recuperación
+        const recovery = moves.find(m => RECOVERY_MOVES.has(m.name));
+        if (recovery) selected.push(recovery);
+
+        // 2. Hazard
+        const hazard = moves.find(m => HAZARD_MOVES.has(m.name));
+        if (hazard) selected.push(hazard);
+
+        // 3. Soporte/estado
+        const support = moves.filter(m => SUPPORT_MOVES.has(m.name));
+        for (const m of support) {
+            if (selected.length >= 3) break;
+            if (!selected.includes(m)) selected.push(m);
+        }
+
+        // 4. Un ataque STAB para no ser inútil
+        const stabAtk = moves.find(m =>
+            types.includes(m.type) && m.power && m.power > 0 && !selected.includes(m));
+        if (stabAtk && selected.length < 4) selected.push(stabAtk);
+
+        // Rellenar
+        for (const m of moves.filter(m => m.power > 0)) {
+            if (selected.length >= 4) break;
+            if (!selected.includes(m)) selected.push(m);
+        }
+
+        return selected.slice(0, 4);
+    },
+
+    /** Elige la naturaleza correcta según los movimientos seleccionados. */
+    _pickNature(moves, stats, isPhysical) {
+        const physCount = moves.filter(m => m.effectiveCategory === 'physical' && m.power > 0).length;
+        const specCount = moves.filter(m => m.effectiveCategory === 'special' && m.power > 0).length;
+
+        if (physCount > specCount) {
+            return stats.spe > 95 ? 'Jolly' : 'Adamant';
+        }
+        if (specCount > physCount) {
+            return stats.spe > 95 ? 'Timid' : 'Modest';
+        }
+        // Mixto: no bajar ningún stat ofensivo
+        return stats.spe > 95 ? 'Hasty' : 'Lonely';
+    },
+
+    /** Elige EVs según el rol. */
+    _pickEvs(isPhysical, isMixed, stats) {
+        if (isMixed) return '252 ATK / 4 SP.ATK / 252 VEL';
+        if (isPhysical) return '252 ATK / 4 HP / 252 VEL';
+        return '252 SP.ATK / 4 HP / 252 VEL';
+    },
+
+    /** Elige objeto según el rol. */
+    _pickItem(role, isPhysical, moves) {
+        const hasSetup = moves.some(m => m.effectiveCategory === 'status' &&
+            (PREMIUM_PHYSICAL.has(m.name) || PREMIUM_SPECIAL.has(m.name)));
+
+        if (role.type.includes('wall')) return SMOGON_ITEMS_ES['Leftovers'] ?? 'Restos';
+        if (hasSetup) return SMOGON_ITEMS_ES['Life Orb'] ?? 'Orbe Vital';
+        if (isPhysical) return SMOGON_ITEMS_ES['Choice Band'] ?? 'Cinta Elegida';
+        return SMOGON_ITEMS_ES['Choice Specs'] ?? 'Lentes Elegidas';
+    },
+
+    /** Genera una razón competitiva para un movimiento. */
+    _moveReason(move, types, genNum) {
+        const isStab = types.includes(move.type);
+        const catNote = genNum <= 3
+            ? ` (${GEN1_PHYSICAL_TYPES.has(move.type) ? 'FÍSICO' : 'ESPECIAL'} por tipo en Gen ${genNum})`
+            : '';
+
+        if (move.power === null || move.power === 0) {
+            if (PIVOT_MOVES.has(move.name)) return 'Pivote — genera momentum saliendo tras atacar.';
+            if (RECOVERY_MOVES.has(move.name)) return 'Recuperación — mantiene la presencia en el campo.';
+            if (HAZARD_MOVES.has(move.name)) return 'Hazard — daño pasivo en cada cambio del rival.';
+            if (PREMIUM_PHYSICAL.has(move.name) || PREMIUM_SPECIAL.has(move.name))
+                return 'Setup — potencia el daño para barrer al equipo rival.';
+            return 'Utilidad — control o soporte al equipo.';
+        }
+
+        const stabText = isStab ? 'STAB' : 'Cobertura';
+        return `${stabText} — ${move.power} BP${catNote}.`;
     },
 
 
@@ -601,17 +747,8 @@ window.PokeAnalyzer.analyzer = {
 
     // ── Formato ──────────────────────────────────────────────────
 
-    _determineFormat(stats, generation, tier = null) {
+    _determineFormat(stats, generation) {
         const g = `Gen ${generation.num}`;
-        if (tier) {
-            const TIER_NAMES = {
-                'OU': 'OU (Overused)', 'UBERS': 'Ubers', 'UU': 'UU (Underused)',
-                'RU': 'RU (Rarely Used)', 'NU': 'NU (Never Used)', 'PU': 'PU',
-                'ZU': 'ZU', 'LC': 'LC (Little Cup)', 'DOUBLESOU': 'Dobles OU',
-                'MONOTYPE': 'Monotype',
-            };
-            return `${g} — ${TIER_NAMES[tier] ?? tier}`;
-        }
         const { bst } = stats;
         if (bst >= 600) return `${g} — Ubers (estimado)`;
         if (bst >= 500) return `${g} — OU (estimado)`;
