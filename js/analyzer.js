@@ -97,87 +97,6 @@ const SMOGON_NAMES_ES = {
     'leftovers':       'Restos',
 };
 
-// ================================================================
-// RAZONES SMOGON — explicaciones por clave de movimiento (API)
-// ================================================================
-const SMOGON_REASONS = {
-    'draco-meteor':    'STAB Dragón — 130 BP con bajada garantizada de SP.ATK. Eje ofensivo del set.',
-    'shadow-ball':     'STAB/Cobertura Fantasma — 80 BP fiable, baja SP.DEF rival 20%.',
-    'flamethrower':    'Cobertura Fuego — 90 BP fiable, liquida Acero y Planta.',
-    'fire-blast':      'Cobertura Fuego — 110 BP máximo, ideal para sweepers con EVs en SP.ATK.',
-    'u-turn':          'Pivote — genera momentum saliendo del campo tras atacar.',
-    'air-slash':       'STAB Volador — 75 BP, 30% de flinch.',
-    'hurricane':       'STAB Volador — 110 BP, confusión 30%. Precisión perfecta bajo lluvia.',
-    'focus-blast':     'Cobertura Lucha — 120 BP, golpea Roca, Acero e Hielo que resisten.',
-    'roost':           'Recuperación — 50% HP, imprescindible para mantenerse en el campo.',
-    'earthquake':      'STAB/Cobertura Tierra — 100 BP fiable, cobertura amplísima.',
-    'stealth-rock':    'Hazard — daño pasivo garantizado en cada cambio del rival.',
-    'scale-shot':      'STAB Dragón — múltiples golpes, sube VEL al final. Sinergia con setup.',
-    'fire-fang':       'Cobertura Fuego — 65 BP fiable, golpea Acero y Planta.',
-    'fire-punch':      'Cobertura Fuego — 75 BP fiable, quemadura 10%.',
-    'dragon-dance':    'Setup — +1 ATK y VEL simultáneamente. El setup ofensivo más eficiente.',
-    'quiver-dance':    'Setup — +1 SP.ATK, SP.DEF y VEL. El setup más versátil del juego.',
-    'bug-buzz':        'STAB Bicho — 90 BP, baja SP.DEF rival 10%.',
-    'nasty-plot':      'Setup — +2 SP.ATK, duplica el poder ofensivo en un solo turno.',
-    'make-it-rain':    'STAB Acero — 120 BP firma de Gholdengo, baja SP.ATK después.',
-    'swords-dance':    'Setup — +2 ATK, duplica el poder físico en un solo turno.',
-    'kowtow-cleave':   'STAB Siniestro — 85 BP, nunca falla. Fiabilidad máxima.',
-    'iron-head':       'STAB/Cobertura Acero — 80 BP, 30% de flinch.',
-    'sucker-punch':    'Prioridad Siniestro — ataca antes si el rival usa movimiento de daño.',
-    'close-combat':    'STAB/Cobertura Lucha — 120 BP, baja DEF y SP.DEF propias.',
-    'moonblast':       'STAB Hada — 95 BP, baja SP.ATK rival 30%.',
-    'knock-off':       'Utilidad — elimina el objeto del rival (+30% BP si porta objeto).',
-    'extreme-speed':   'Prioridad +2 — arrebata KOs a rivales más rápidos.',
-    'bullet-punch':    'Prioridad Acero — ideal para cerrar KOs contra Hielo y Roca.',
-    'toxic-spikes':    'Hazard — envenena a todos los no-Voladores que entren.',
-    'scald':           'STAB/Cobertura Agua — 80 BP, 30% de quemadura.',
-    'recover':         'Recuperación — 50% HP, referencia en muros ofensivos y defensivos.',
-    'baneful-bunker':  'Protección + veneno — protege y envenena al rival si hace contacto.',
-    'body-press':      'Cobertura Lucha — el daño escala con la DEF propia, no el ATK.',
-    'defog':           'Limpieza — elimina todos los hazards del campo propio y rival.',
-    'iron-defense':    'Setup defensivo — +2 DEF, sinergia directa con Body Press.',
-    'flower-trick':    'STAB Planta — siempre crítico, nunca falla. Sin margen de error.',
-    'triple-axel':     'Cobertura Hielo — potencia acumulada (20+40+60 = hasta 120 BP efectivos).',
-    'acrobatics':      'STAB Volador — 110 BP efectivos sin objeto equipado.',
-    'crunch':          'STAB Siniestro — 80 BP, baja DEF rival 20%.',
-    'torch-song':      'STAB Fuego — 80 BP, sube SP.ATK garantizado cada turno.',
-    'slack-off':       'Recuperación — 50% HP, referencia en muros lentos.',
-    'will-o-wisp':     'Estado — quema al rival, reduce su ATK físico a la mitad.',
-    'headlong-rush':   'STAB Tierra — 100 BP firma de Gran Colmillo, baja DEF y SP.DEF.',
-    'ice-spinner':     'Cobertura Hielo — elimina el Terreno activo al usarlo.',
-    'rapid-spin':      'Limpieza — elimina hazards propios y sube VEL +1 en Gen 9.',
-    'mortal-spin':     'STAB — elimina hazards propios y envenena al rival al usarlo.',
-    'power-gem':       'STAB Roca — 80 BP fiable, alta crítico contra Fuego y Volador.',
-    'earth-power':     'Cobertura Tierra — 90 BP especial, baja SP.DEF rival 10%.',
-    'ruination':       'Utilidad Siniestro — reduce el HP del rival exactamente a la mitad.',
-    'whirlwind':       'Control — expulsa al rival forzando cambio, impide setup.',
-    'salt-cure':       'Firma Garganacl — daño pasivo cada turno, x2 contra Agua y Acero.',
-    'calm-mind':       'Setup — +1 SP.ATK y SP.DEF simultáneamente.',
-    'soft-boiled':     'Recuperación — 50% HP, insustituible en muros especiales como Clefable.',
-    'dazzling-gleam':  'STAB/Cobertura Hada — 80 BP, golpea en dobles a ambos rivales.',
-    'aura-sphere':     'STAB/Cobertura Lucha — 80 BP, nunca falla.',
-    'psystrike':       'STAB Psíquico — 100 BP, el daño se calcula contra la DEF física del rival.',
-    'thunderbolt':     'STAB Eléctrico — 90 BP fiable, parálisis 10%.',
-    'volt-switch':     'Pivote Eléctrico — genera momentum saliendo del campo tras atacar.',
-    'grass-knot':      'Cobertura Planta — potencia escalada según el peso del rival.',
-    'quick-attack':    'Prioridad Normal — asegura KOs finales contra rivales debilitados.',
-    'outrage':         'STAB Dragón — 120 BP devastador. Traba 2-3 turnos, ideal con Scarf.',
-    'sludge-bomb':     'STAB Veneno — 90 BP, envenenamiento 30%.',
-    'sludge-wave':     'STAB Veneno — 95 BP en área, sin reducción en dobles.',
-    'stone-edge':      'STAB/Cobertura Roca — 100 BP, alta tasa de crítico.',
-    'ice-punch':       'Cobertura Hielo — 75 BP, congelación 10%.',
-    'shadow-sneak':    'Prioridad Fantasma — cierra KOs contra tipos Psíquico y Normal.',
-    'psyshock':        'STAB Psíquico — 80 BP, calcula contra DEF física (perfecto vs Blissey).',
-    'dark-pulse':      'STAB/Cobertura Siniestro — 80 BP, flinch 20%.',
-    'flash-cannon':    'STAB Acero — 80 BP, baja SP.DEF rival 10%.',
-    'protect':         'Utilidad — protege un turno, activa Speed Boost en Blaziken.',
-    'high-jump-kick':  'STAB Lucha — 130 BP. Si falla, el usuario recibe retroceso.',
-    'flare-blitz':     'STAB Fuego — 120 BP con 1/3 de daño de retroceso.',
-    'volt-tackle':     'STAB Eléctrico — 120 BP, 1/3 retroceso. Firma definitoria de Pikachu.',
-    'iron-tail':       'Cobertura Acero — 100 BP, baja DEF rival 30%.',
-    'draco-meteor':    'STAB Dragón — 130 BP con bajada garantizada de SP.ATK.',
-};
-
 // (Sets competitivos se obtienen en tiempo real de la API Smogon)
 
 // ================================================================
@@ -498,8 +417,9 @@ window.PokeAnalyzer.analyzer = {
     async analyze(pokemon, abilitiesEs, generation, smogonData = null) {
         const stats  = this._parseStats(pokemon);
         const role   = this._determineRole(stats);
+        const tier   = smogonData?.tier ?? null;
         const builds = await this._buildCompetitiveBuilds(pokemon, abilitiesEs, stats, role, generation, smogonData);
-        const formato    = this._determineFormat(stats, generation);
+        const formato    = this._determineFormat(stats, generation, tier);
         const consejo    = this._buildAdvice(pokemon, stats, role, generation);
         return { builds, rol: role.description, formato, consejo_extra: consejo };
     },
@@ -681,14 +601,23 @@ window.PokeAnalyzer.analyzer = {
 
     // ── Formato ──────────────────────────────────────────────────
 
-    _determineFormat(stats, generation) {
-        const { bst } = stats;
+    _determineFormat(stats, generation, tier = null) {
         const g = `Gen ${generation.num}`;
-        if (bst >= 600) return `${g} — Ubers / VGC Restringido`;
-        if (bst >= 500) return `${g} — OU (Overused) / VGC`;
-        if (bst >= 420) return `${g} — UU (Underused) / VGC`;
-        if (bst >= 340) return `${g} — RU / NU`;
-        return                `${g} — PU / Little Cup`;
+        if (tier) {
+            const TIER_NAMES = {
+                'OU': 'OU (Overused)', 'UBERS': 'Ubers', 'UU': 'UU (Underused)',
+                'RU': 'RU (Rarely Used)', 'NU': 'NU (Never Used)', 'PU': 'PU',
+                'ZU': 'ZU', 'LC': 'LC (Little Cup)', 'DOUBLESOU': 'Dobles OU',
+                'MONOTYPE': 'Monotype',
+            };
+            return `${g} — ${TIER_NAMES[tier] ?? tier}`;
+        }
+        const { bst } = stats;
+        if (bst >= 600) return `${g} — Ubers (estimado)`;
+        if (bst >= 500) return `${g} — OU (estimado)`;
+        if (bst >= 420) return `${g} — UU (estimado)`;
+        if (bst >= 340) return `${g} — RU / NU (estimado)`;
+        return                `${g} — PU / LC (estimado)`;
     },
 
     // ── Consejo ──────────────────────────────────────────────────
@@ -710,9 +639,9 @@ window.PokeAnalyzer.analyzer = {
             4: 'En Gen IV el split ya es por movimiento individual — revisa bien la categoría de cada ataque.',
             5: 'En Gen V el meta de clima es dominante. Considera respuesta para sol, lluvia y arena.',
             6: 'En Gen VI el tipo Hada cambia matchups clave. Evalúa si necesitas cobertura de Acero o Veneno.',
-            7: 'En Gen VII aprovecha el Z-Move en el movimiento de setup del Set 1, o en el STAB más fuerte del Set 2.',
-            8: 'En Gen VIII el Dynamax se aprovecha mejor desde el Set 1 (tras setup). El Set 2 funciona más hit-and-run.',
-            9: 'En Gen IX elige el Tera Type para potenciar el Set 1 ofensivamente o tapar las debilidades del Set 2.',
+            7: 'En Gen VII aprovecha el Z-Move para potenciar tu STAB principal o para hacer un setup devastador.',
+            8: 'En Gen VIII el Dynamax permite convertir cualquier ataque en un boost. Úsalo en el turno más impactante.',
+            9: 'En Gen IX elige el Tera Type para potenciar tu STAB ofensivamente o tapar debilidades defensivas.',
         };
 
         if (genTips[generation.num]) tips.push(genTips[generation.num]);

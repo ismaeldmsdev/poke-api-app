@@ -9,7 +9,7 @@ window.PokeAnalyzer.app = {
 
     state: {
         selectedGen: 9,
-        cache: null,   // { pokemon, evoData, movesData, abilitiesEs }
+        cache: null,   // { pokemon, evoData, abilitiesEs, smogonData, smogonGen }
     },
 
     init() {
@@ -75,10 +75,9 @@ window.PokeAnalyzer.app = {
         }
 
         renderer.hidePokeLoading();
-        renderer.renderPokemon(pokemon, evoData);
         renderer.showCompareSection();
 
-        // ── Fase 2: movimientos + habilidades en castellano ────────
+        // ── Fase 2: habilidades en castellano + sets Smogon ────────
         renderer.showAILoading();
 
         try {
@@ -91,6 +90,7 @@ window.PokeAnalyzer.app = {
                 pokemon, evoData, abilitiesEs,
                 smogonData, smogonGen: this.state.selectedGen,
             };
+            renderer.renderPokemon(pokemon, evoData, abilitiesEs);
             this._runAnalysis();
         } catch (err) {
             renderer.hideAILoading();
@@ -139,9 +139,9 @@ window.PokeAnalyzer.app = {
         renderer.showAILoading();
 
         try {
-            // Re-fetch Smogon data si la generación cambió
+            // Re-fetch Smogon data si la generación cambió o no hay datos
             let smogonData = this.state.cache.smogonData;
-            if (this.state.cache.smogonGen !== this.state.selectedGen) {
+            if (!smogonData || this.state.cache.smogonGen !== this.state.selectedGen) {
                 smogonData = await pokeAPI.fetchSmogonSets(pokemon.name, this.state.selectedGen);
                 this.state.cache.smogonData = smogonData;
                 this.state.cache.smogonGen = this.state.selectedGen;

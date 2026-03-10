@@ -46,12 +46,12 @@ window.PokeAnalyzer.renderer = {
     },
 
     // ── Pokémon card ──────────────────────────────────────────────
-    renderPokemon(pokemon, evoData) {
+    renderPokemon(pokemon, evoData, abilitiesEs = null) {
         const { pokeAPI } = window.PokeAnalyzer;
         this._renderHeader(pokemon, pokeAPI);
         this._renderTypes(pokemon);
         this._renderStats(pokemon);
-        this._renderAbilities(pokemon);
+        this._renderAbilities(pokemon, abilitiesEs);
         this._renderEvoChain(evoData, pokeAPI);
         this.show('pokeCard');
         requestAnimationFrame(() => requestAnimationFrame(() => {
@@ -64,7 +64,9 @@ window.PokeAnalyzer.renderer = {
         this.el('pokeSprite').src = pokeAPI.getBestSprite(pokemon);
         this.el('pokeSprite').alt = pokemon.name;
         this.el('pokeNum').textContent  = `#${String(pokemon.id).padStart(4, '0')}`;
-        this.el('pokeName').textContent = pokemon.name;
+        const displayName = pokemon.name.split('-')
+            .map(w => w.charAt(0).toUpperCase() + w.slice(1)).join('-');
+        this.el('pokeName').textContent = displayName;
     },
 
     _renderTypes(pokemon) {
@@ -103,9 +105,11 @@ window.PokeAnalyzer.renderer = {
         });
     },
 
-    _renderAbilities(pokemon) {
+    _renderAbilities(pokemon, abilitiesEs = null) {
         this.el('abilitiesRow').innerHTML = pokemon.abilities.map(a => {
-            const name = a.ability.name.replace(/-/g, ' ');
+            const key  = a.ability.name;
+            const name = (abilitiesEs && abilitiesEs.get(key))
+                || key.replace(/-/g, ' ');
             const cls  = a.is_hidden ? 'pill hidden-ab' : 'pill';
             return `<span class="${cls}">${name}${a.is_hidden ? ' [H]' : ''}</span>`;
         }).join('');
