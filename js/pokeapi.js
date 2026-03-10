@@ -78,11 +78,27 @@ window.PokeAnalyzer.pokeAPI = {
     },
 
     /**
-     * Sets Smogon desactivados — el análisis es 100% dinámico vía stats/heurística.
-     * Elimina 404s en ~90% de Pokémon y timeouts por fetch secuencial de 10+ tiers.
-     * @returns {null}
+     * Busca sets Smogon del JSON oficial de pkmn.github.io.
+     * Intenta OU y Ubers en paralelo; si no aparece, prueba UU/RU/NU secuencial.
+     * @returns {{ tier: string, sets: object } | null}
      */
     async fetchSmogonSets(pokemonSlug, generationNum) {
+        const displayName = this._slugToSmogonName(pokemonSlug);
+        const gen = generationNum;
+
+        // Tiers principales en paralelo (rápido)
+        const [ouResult, ubersResult] = await Promise.allSettled([
+            this._trySmogonTier(displayName, gen, 'ou'),
+            this._trySmogonTier(displayName, gen, 'ubers'),
+        ]);
+        if (ouResult.status === 'fulfilled' && ouResult.value)    return ouResult.value;
+        if (ubersResult.status === 'fulfilled' && ubersResult.value) return ubersResult.value;
+
+        // Tiers secundarios (secuencial, corta si encuentra)
+        for (const tier of ['uu', 'ru', 'nu', 'pu', 'lc', 'doublesou']) {
+            const result = await this._trySmogonTier(displayName, gen, tier);
+            if (result) return result;
+        }
         return null;
     },
 
