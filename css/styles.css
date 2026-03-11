@@ -1513,18 +1513,28 @@ body.modal-open { overflow: hidden; }
 .team-matrix-scroll {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
     border-radius: var(--radius-sm);
     border: 1px solid var(--border);
+    position: relative;
+}
+.team-scroll-hint {
+    text-align: center;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    margin-bottom: 14px;
+    display: none;
 }
 .team-matrix {
     width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 0;
     font-family: 'Inter', sans-serif;
     font-size: 12px;
     min-width: 340px;
 }
-.team-matrix thead { background: rgba(28,28,30,0.85); }
+.team-matrix thead { background: rgba(28,28,30,0.95); }
 .team-matrix th,
 .team-matrix td {
     padding: 5px 4px;
@@ -1539,6 +1549,11 @@ body.modal-open { overflow: hidden; }
     letter-spacing: 1px;
     padding-left: 6px;
     min-width: 68px;
+    position: sticky;
+    left: 0;
+    z-index: 4;
+    background: rgba(28,28,30,0.95);
+    border-right: 1px solid rgba(255,255,255,0.06);
 }
 .mat-th-poke { padding: 6px 2px; min-width: 52px; }
 .mat-th-sprite {
@@ -1553,6 +1568,9 @@ body.modal-open { overflow: hidden; }
     color: var(--text);
     text-transform: capitalize;
     display: block;
+    max-width: 52px;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 .mat-th-bal {
     font-size: 9px; font-weight: 800;
@@ -1560,7 +1578,15 @@ body.modal-open { overflow: hidden; }
     letter-spacing: 0.5px;
     min-width: 40px;
 }
-.mat-td-type { text-align: left; padding-left: 6px; }
+.mat-td-type {
+    text-align: left;
+    padding-left: 6px;
+    position: sticky;
+    left: 0;
+    z-index: 3;
+    background: var(--bg);
+    border-right: 1px solid rgba(255,255,255,0.06);
+}
 .mat-type-badge {
     font-size: 9px; font-weight: 700;
     padding: 3px 7px;
@@ -1663,18 +1689,32 @@ footer {
     .tm-move-name { font-size: 13px; }
     .tm-num { font-size: 11px; min-width: 38px; }
 
-    .team-slots { grid-template-columns: repeat(2, 1fr); }
-    .team-slot { min-height: 80px; padding: 8px 6px; }
-    .team-slot-sprite { width: 40px; height: 40px; }
-    .team-slot-name { font-size: 10px; }
-    .team-slot-input { font-size: 11px; padding: 6px; }
-    .team-slot-search-btn { width: 30px; font-size: 14px; }
-    .mat-th-sprite { width: 24px; height: 24px; }
-    .mat-th-name { font-size: 7px; }
-    .mat-td-cell { min-width: 30px; font-size: 11px; }
-    .mat-th-poke { min-width: 42px; }
-    .mat-type-badge { font-size: 8px; padding: 2px 5px; }
-    .mat-th-type { min-width: 56px; }
+    /* Team Analyzer mobile */
+    .team-gen-bar { justify-content: center; }
+    .team-slots { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+    .team-slot { min-height: 76px; padding: 6px 4px; gap: 2px; }
+    .team-slot-sprite { width: 36px; height: 36px; }
+    .team-slot-name { font-size: 9px; }
+    .team-slot-remove { width: 18px; height: 18px; font-size: 9px; top: 3px; right: 3px; }
+    .team-slot-input { font-size: 10px; padding: 7px 5px; min-height: 36px; }
+    .team-slot-input::placeholder { font-size: 9px; }
+    .team-slot-search-btn { width: 28px; font-size: 14px; min-height: 36px; }
+    .team-slot-search { border-radius: 4px; }
+
+    .team-scroll-hint { display: block; }
+    .team-matrix { min-width: 280px; }
+    .mat-th-sprite { width: 22px; height: 22px; }
+    .mat-th-name { font-size: 7px; max-width: 38px; }
+    .mat-th-poke { min-width: 38px; padding: 4px 1px; }
+    .mat-th-type { min-width: 54px; padding-left: 4px; font-size: 9px; }
+    .mat-td-cell { min-width: 28px; font-size: 10px; padding: 4px 2px; }
+    .mat-type-badge { font-size: 7px; padding: 2px 5px; border-radius: 6px; }
+    .mat-td-type { padding-left: 4px; }
+    .mat-th-bal { min-width: 34px; font-size: 8px; }
+    .mat-td-bal { font-size: 11px; }
+
+    .team-warn { padding: 8px 10px; gap: 6px; font-size: 11px; flex-wrap: wrap; }
+    .team-warn-icon { font-size: 14px; }
 }
 
 @media (max-width: 360px) {
@@ -1682,4 +1722,15 @@ footer {
     .logo { font-size: 14px; }
     .gen-chip { font-size: 8px; padding: 3px 6px; }
     .header-gen-wrap { min-width: 60px; }
+
+    .team-slots { grid-template-columns: repeat(2, 1fr); gap: 5px; }
+    .team-slot { min-height: 70px; padding: 5px 3px; }
+    .team-slot-sprite { width: 32px; height: 32px; }
+    .team-slot-name { font-size: 8px; }
+    .mat-th-sprite { width: 18px; height: 18px; }
+    .mat-th-name { font-size: 6px; max-width: 32px; }
+    .mat-th-poke { min-width: 32px; }
+    .mat-td-cell { min-width: 24px; font-size: 9px; }
+    .mat-type-badge { font-size: 6px; padding: 1px 4px; }
+    .mat-th-type { min-width: 46px; font-size: 8px; }
 }
