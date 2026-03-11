@@ -1492,6 +1492,62 @@ body.modal-open { overflow: hidden; }
 .team-slot-search-btn:hover { background: var(--accent-hi); }
 .team-slot-search-btn:disabled { background: #333; cursor: not-allowed; }
 
+/* Autocomplete dropdown */
+.team-slot--empty { overflow: visible; }
+.team-slot--ac-active { z-index: 6; }
+.team-ac {
+    position: absolute;
+    top: calc(100% - 2px);
+    left: -1px;
+    right: -1px;
+    background: rgba(28,28,30,0.97);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid var(--accent);
+    border-top: none;
+    border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+    max-height: 200px;
+    overflow-y: auto;
+    display: none;
+    box-shadow: 0 14px 30px rgba(0,0,0,0.5);
+}
+.team-ac--open { display: block; }
+.team-ac-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 10px;
+    cursor: pointer;
+    transition: background .1s;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.team-ac-item:last-child { border-bottom: none; }
+.team-ac-item:hover { background: rgba(124, 92, 252, 0.12); }
+.team-ac-sprite {
+    width: 28px; height: 28px;
+    image-rendering: pixelated;
+    flex-shrink: 0;
+    filter: drop-shadow(0 1px 3px var(--accent-glow));
+}
+.team-ac-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    text-transform: capitalize;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.team-ac-num {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--muted);
+    flex-shrink: 0;
+    font-variant-numeric: tabular-nums;
+}
+
 .team-results { margin-top: 10px; }
 .team-warnings { margin-bottom: 12px; }
 .team-warn {
@@ -1690,6 +1746,11 @@ footer {
     .tm-num { font-size: 11px; min-width: 38px; }
 
     /* Team Analyzer mobile */
+    .team-ac { max-height: 160px; }
+    .team-ac-item { padding: 6px 8px; gap: 6px; }
+    .team-ac-sprite { width: 24px; height: 24px; }
+    .team-ac-name { font-size: 12px; }
+    .team-ac-num { font-size: 9px; }
     .team-gen-bar { justify-content: center; }
     .team-slots { grid-template-columns: repeat(3, 1fr); gap: 6px; }
     .team-slot { min-height: 76px; padding: 6px 4px; gap: 2px; }

@@ -184,6 +184,21 @@ window.PokeAnalyzer.pokeAPI = {
         } catch { return null; }
     },
 
+    _pokemonListCache: null,
+    async fetchPokemonList() {
+        if (this._pokemonListCache) return this._pokemonListCache;
+        try {
+            const res = await fetch(`${window.PokeAnalyzer.config.POKEAPI_BASE}/pokemon?limit=1025`);
+            if (!res.ok) return [];
+            const data = await res.json();
+            this._pokemonListCache = data.results.map(p => ({
+                name: p.name,
+                id: Number(p.url.split('/').filter(Boolean).pop()),
+            }));
+            return this._pokemonListCache;
+        } catch { return []; }
+    },
+
     /** Sprite animado Gen V > estático > vacío. */
     getBestSprite(pokemon) {
         return pokemon.sprites?.versions?.['generation-v']?.['black-white']?.animated?.front_default

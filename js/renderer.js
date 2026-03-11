@@ -806,6 +806,7 @@ window.PokeAnalyzer.renderer = {
                     <input class="team-slot-input" data-slot="${i}" type="text" placeholder="Pokémon ${i + 1}" autocomplete="off" spellcheck="false">
                     <button class="team-slot-search-btn" data-slot="${i}" type="button">+</button>
                 </div>
+                <div class="team-ac" id="teamAc${i}"></div>
             </div>`;
         }).join('');
     },
@@ -824,6 +825,41 @@ window.PokeAnalyzer.renderer = {
             input.placeholder = 'No encontrado';
             setTimeout(() => { input.placeholder = `Pokémon ${idx + 1}`; }, 2000);
         }
+    },
+
+    showTeamSuggestions(slotIdx, suggestions) {
+        this.hideAllTeamSuggestions();
+        const ac = document.getElementById(`teamAc${slotIdx}`);
+        if (!ac) return;
+        const slot = ac.closest('.team-slot');
+        if (slot) slot.classList.add('team-slot--ac-active');
+
+        const { SPRITE_RAW } = window.PokeAnalyzer.config;
+        ac.innerHTML = suggestions.map(p => `
+            <div class="team-ac-item" data-slot="${slotIdx}" data-name="${p.name}">
+                <img class="team-ac-sprite" src="${SPRITE_RAW}/${p.id}.png" alt="${p.name}" loading="lazy">
+                <span class="team-ac-name">${p.name}</span>
+                <span class="team-ac-num">#${String(p.id).padStart(4, '0')}</span>
+            </div>`).join('');
+        ac.classList.add('team-ac--open');
+    },
+
+    hideTeamSuggestions(slotIdx) {
+        const ac = document.getElementById(`teamAc${slotIdx}`);
+        if (!ac) return;
+        ac.classList.remove('team-ac--open');
+        ac.innerHTML = '';
+        const slot = ac.closest('.team-slot');
+        if (slot) slot.classList.remove('team-slot--ac-active');
+    },
+
+    hideAllTeamSuggestions() {
+        document.querySelectorAll('.team-ac--open').forEach(ac => {
+            ac.classList.remove('team-ac--open');
+            ac.innerHTML = '';
+            const slot = ac.closest('.team-slot');
+            if (slot) slot.classList.remove('team-slot--ac-active');
+        });
     },
 
     renderTeamWarnings(warnings) {

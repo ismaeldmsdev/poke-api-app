@@ -14,7 +14,7 @@ window.PokeAnalyzer.app = {
         analysis: null,
         coverage: { mode: 'defensive', genNum: 9, selected: [] },
         tm: { gameId: '', search: '', typeFilter: 'all', checklists: {} },
-        team: { genNum: 9, slots: [null, null, null, null, null, null] },
+        team: { genNum: 9, slots: [null, null, null, null, null, null], pokemonList: null },
     },
 
     init() {
@@ -214,10 +214,40 @@ window.PokeAnalyzer.app = {
             if (e.key !== 'Enter') return;
             const input = e.target.closest('.team-slot-input');
             if (!input) return;
-            this._addTeamPokemon(Number(input.dataset.slot), input.value.trim());
+            const idx = Number(input.dataset.slot);
+            window.PokeAnalyzer.renderer.hideTeamSuggestions(idx);
+            this._addTeamPokemon(idx, input.value.trim());
+        });
+
+        let teamAcTimer;
+        document.getElementById('teamSlots').addEventListener('input', e => {
+            const input = e.target.closest('.team-slot-input');
+            if (!input) return;
+            clearTimeout(teamAcTimer);
+            const slotIdx = Number(input.dataset.slot);
+            const query = input.value.trim().toLowerCase();
+            teamAcTimer = setTimeout(() => {
+                this._filterTeamSuggestions(slotIdx, query);
+            }, 120);
+        });
+
+        document.getElementById('teamSlots').addEventListener('focusout', e => {
+            const input = e.target.closest('.team-slot-input');
+            if (!input) return;
+            setTimeout(() => {
+                const idx = Number(input.dataset.slot);
+                window.PokeAnalyzer.renderer.hideTeamSuggestions(idx);
+            }, 180);
         });
 
         document.getElementById('teamSlots').addEventListener('click', e => {
+            const acItem = e.target.closest('.team-ac-item');
+            if (acItem) {
+                const idx = Number(acItem.dataset.slot);
+                window.PokeAnalyzer.renderer.hideTeamSuggestions(idx);
+                this._addTeamPokemon(idx, acItem.dataset.name);
+                return;
+            }
             const removeBtn = e.target.closest('.team-slot-remove');
             if (removeBtn) {
                 this._removeTeamPokemon(Number(removeBtn.dataset.slot));
@@ -403,13 +433,34 @@ window.PokeAnalyzer.app = {
 
     // ── Analizador de Equipo ────────────────────────────────────
     _openTeamAnalyzer() {
-        const { renderer } = window.PokeAnalyzer;
+        const { renderer, pokeAPI } = window.PokeAnalyzer;
         this.state.team.genNum = this.state.selectedGen;
         this.state.team.slots = [null, null, null, null, null, null];
         renderer.openTeamModal();
         renderer.renderTeamGenGrid(this.state.team.genNum);
         renderer.renderTeamSlots(this.state.team.slots);
         renderer.hide('teamResults');
+
+        if (!this.state.team.pokemonList) {
+            pokeAPI.fetchPokemonList().then(list => {
+                this.state.team.pokemonList = list;
+            });
+        }
+    },
+
+    _filterTeamSuggestions(slotIdx, query) {
+        const { renderer } = window.PokeAnalyzer;
+        if (query.length < 2 || !this.state.team.pokemonList) {
+            renderer.hideTeamSuggestions(slotIdx);
+            return;
+        }
+        const list = this.state.team.pokemonList;
+        const startsWith = list.filter(p => p.name.startsWith(query));
+        const includes = list.filter(p => !p.name.startsWith(query) && p.name.includes(query));
+        const matches = [...startsWith, ...includes].slice(0, 6);
+
+        if (matches.length > 0) renderer.showTeamSuggestions(slotIdx, matches);
+        else renderer.hideTeamSuggestions(slotIdx);
     },
 
     async _addTeamPokemon(slotIdx, query) {
