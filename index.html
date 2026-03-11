@@ -24,6 +24,7 @@
             <div id="headerMenuPanel" class="header-menu-panel hidden">
                 <button id="menuVersusItem" class="header-menu-item" type="button" disabled>Comparar Pokémon (Versus)</button>
                 <button id="menuCoverageItem" class="header-menu-item" type="button">Calculadora de Cobertura</button>
+                <button id="menuTmItem" class="header-menu-item" type="button">Localizador de MT</button>
             </div>
         </div>
     </div>
@@ -181,7 +182,40 @@
     </div>
 </div>
 
+<!-- Modal Localizador de MT -->
+<div id="tmModal" class="modal hidden" aria-hidden="true">
+    <div class="modal-backdrop" data-close-tm="1"></div>
+    <div class="modal-sheet" role="dialog" aria-modal="true" aria-label="Localizador de MT">
+        <div class="modal-topbar">
+            <div class="modal-title">LOCALIZADOR DE MT</div>
+            <button id="closeTmBtn" class="icon-btn" type="button" aria-label="Cerrar" data-close-tm="1">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="tm-controls">
+                <div class="tm-game-row">
+                    <label class="tm-ctrl-label" for="tmGameSelect">JUEGO</label>
+                    <select id="tmGameSelect" class="tm-game-select"></select>
+                </div>
+                <div class="tm-search-row">
+                    <input id="tmSearch" type="text" class="tm-search-input" placeholder="Buscar movimiento..." autocomplete="off" spellcheck="false">
+                </div>
+                <div id="tmTypeFilter" class="tm-type-filter"></div>
+            </div>
+            <div id="tmProgress" class="tm-progress hidden">
+                <div class="tm-progress-header">
+                    <span class="tm-progress-label">PROGRESO</span>
+                    <span id="tmProgressText" class="tm-progress-text">0 / 0</span>
+                </div>
+                <div class="tm-progress-bg"><div id="tmProgressFill" class="tm-progress-fill"></div></div>
+            </div>
+            <div id="tmList" class="tm-list"></div>
+            <div id="tmEmpty" class="tm-empty hidden">No se encontraron MTs con ese filtro.</div>
+        </div>
+    </div>
+</div>
+
 <script src="js/config.js"></script>
+<script src="js/tm-data.js"></script>
 <script src="js/translator.js"></script>
 <script src="js/pokeapi.js"></script>
 <script src="js/analyzer.js"></script>

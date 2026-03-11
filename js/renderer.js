@@ -789,4 +789,82 @@ window.PokeAnalyzer.renderer = {
     hidePokeLoading() { this.hide('pokeLoading'); },
     showAILoading()   { this.show('aiLoading');   },
     hideAILoading()   { this.hide('aiLoading');   },
+
+    // ── Localizador de MT ─────────────────────────────────────────
+    openTmModal() {
+        const modal = this.el('tmModal');
+        modal.classList.remove('hidden');
+        modal.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('modal-open');
+    },
+    closeTmModal() {
+        const modal = this.el('tmModal');
+        modal.classList.add('hidden');
+        modal.setAttribute('aria-hidden', 'true');
+        document.body.classList.remove('modal-open');
+    },
+
+    renderTmGameSelector(games) {
+        const select = this.el('tmGameSelect');
+        select.innerHTML = '<option value="">— Elige un juego —</option>' +
+            games.map(g => `<option value="${g.id}">Gen ${g.gen} — ${g.label}</option>`).join('');
+    },
+
+    renderTmTypeFilter(types) {
+        const { TYPE_ES, TYPE_COLORS } = window.PokeAnalyzer.config;
+        const container = this.el('tmTypeFilter');
+        container.innerHTML = `<button class="tm-type-btn active" data-type="all" type="button">TODOS</button>` +
+            types.map(t => {
+                const c = TYPE_COLORS[t] || { bg: '#888', fg: '#111' };
+                return `<button class="tm-type-btn" data-type="${t}" type="button" style="--tb:${c.bg};--tf:${c.fg}">${TYPE_ES[t] || t}</button>`;
+            }).join('');
+    },
+
+    renderTmList(tms, checklist, gameId) {
+        const { TYPE_COLORS, TYPE_ES } = window.PokeAnalyzer.config;
+        const { METHOD_LABELS } = window.PokeAnalyzer.tmData;
+        const list = this.el('tmList');
+        const empty = this.el('tmEmpty');
+
+        if (!tms || tms.length === 0) {
+            list.innerHTML = '';
+            empty.classList.remove('hidden');
+            return;
+        }
+        empty.classList.add('hidden');
+
+        list.innerHTML = tms.map(tm => {
+            const c = TYPE_COLORS[tm.type] || { bg: '#888', fg: '#111' };
+            const typeEs = TYPE_ES[tm.type] || tm.type;
+            const m = METHOD_LABELS[tm.method] || { icon: '❓', label: 'Otro' };
+            const checked = checklist[tm.num] ? 'checked' : '';
+            const doneClass = checklist[tm.num] ? ' tm-card--done' : '';
+            const isHm = tm.num.startsWith('MO');
+
+            return `
+            <div class="tm-card${doneClass}" data-num="${tm.num}">
+                <label class="tm-check-wrap">
+                    <input type="checkbox" class="tm-check" data-game="${gameId}" data-num="${tm.num}" ${checked}>
+                    <span class="tm-check-custom"></span>
+                </label>
+                <div class="tm-num ${isHm ? 'tm-num--hm' : ''}">${tm.num}</div>
+                <div class="tm-info">
+                    <div class="tm-move-row">
+                        <span class="tm-move-name">${tm.move}</span>
+                        <span class="tm-move-type" style="background:${c.bg};color:${c.fg}">${typeEs.toUpperCase()}</span>
+                        <span class="tm-method" title="${m.label}">${m.icon}</span>
+                    </div>
+                    <p class="tm-loc">${tm.loc}</p>
+                </div>
+            </div>`;
+        }).join('');
+    },
+
+    renderTmProgress(checked, total) {
+        const pct = total > 0 ? ((checked / total) * 100).toFixed(0) : 0;
+        this.el('tmProgressText').textContent = `${checked} / ${total}`;
+        this.el('tmProgressFill').style.width = `${pct}%`;
+        if (total > 0) this.el('tmProgress').classList.remove('hidden');
+        else this.el('tmProgress').classList.add('hidden');
+    },
 };

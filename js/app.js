@@ -13,6 +13,7 @@ window.PokeAnalyzer.app = {
         cache: null,
         analysis: null,
         coverage: { mode: 'defensive', genNum: 9, selected: [] },
+        tm: { gameId: '', search: '', typeFilter: 'all', checklists: {} },
     },
 
     init() {
@@ -109,6 +110,9 @@ window.PokeAnalyzer.app = {
                 if (item.id === 'menuCoverageItem') {
                     this._openCoverage();
                 }
+                if (item.id === 'menuTmItem') {
+                    this._openTmLocator();
+                }
             });
         }
 
@@ -147,6 +151,45 @@ window.PokeAnalyzer.app = {
         document.getElementById('covClearBtn').addEventListener('click', () => {
             this.state.coverage.selected = [];
             this._refreshCoverage();
+        });
+
+        // TM Locator
+        document.getElementById('closeTmBtn').addEventListener('click', () => {
+            window.PokeAnalyzer.renderer.closeTmModal();
+        });
+        document.getElementById('tmModal').addEventListener('click', e => {
+            if (e.target?.dataset?.closeTm) window.PokeAnalyzer.renderer.closeTmModal();
+        });
+
+        document.getElementById('tmGameSelect').addEventListener('change', e => {
+            this.state.tm.gameId = e.target.value;
+            this.state.tm.search = '';
+            this.state.tm.typeFilter = 'all';
+            document.getElementById('tmSearch').value = '';
+            this._refreshTm();
+        });
+
+        let tmSearchTimer;
+        document.getElementById('tmSearch').addEventListener('input', e => {
+            clearTimeout(tmSearchTimer);
+            tmSearchTimer = setTimeout(() => {
+                this.state.tm.search = e.target.value.trim().toLowerCase();
+                this._refreshTm();
+            }, 200);
+        });
+
+        document.getElementById('tmTypeFilter').addEventListener('click', e => {
+            const btn = e.target.closest('.tm-type-btn');
+            if (!btn) return;
+            this.state.tm.typeFilter = btn.dataset.type;
+            document.querySelectorAll('.tm-type-btn').forEach(b => b.classList.toggle('active', b.dataset.type === this.state.tm.typeFilter));
+            this._refreshTm();
+        });
+
+        document.getElementById('tmList').addEventListener('change', e => {
+            if (!e.target.classList.contains('tm-check')) return;
+            const { game, num } = e.target.dataset;
+            this._toggleTmCheck(game, num, e.target.checked);
         });
     },
 
@@ -243,6 +286,80 @@ window.PokeAnalyzer.app = {
         this.state.selectedGen = newGen;
         renderer.setActiveGenButton(this.state.selectedGen);
         if (this.state.cache) this._runAnalysis();
+    },
+
+    // ── Localizador de MT ───────────────────────────────────────
+    _openTmLocator() {
+        const { renderer, tmData } = window.PokeAnalyzer;
+        this.state.tm.checklists = this._loadTmChecklists();
+        renderer.openTmModal();
+        renderer.renderTmGameSelector(tmData.GAMES.filter(g => tmData[g.id]));
+        this._refreshTm();
+    },
+
+    _refreshTm() {
+        const { renderer, tmData, config } = window.PokeAnalyzer;
+        const { gameId, search, typeFilter } = this.state.tm;
+
+        if (!gameId || !tmData[gameId]) {
+            renderer.renderTmTypeFilter([]);
+            renderer.renderTmList([], {}, '');
+            renderer.renderTmProgress(0, 0);
+            return;
+        }
+
+        const allTms = tmData[gameId];
+        const game = tmData.GAMES.find(g => g.id === gameId);
+        const genTypes = config.getTypesForGen(game?.gen || 9);
+        const usedTypes = [...new Set(allTms.map(t => t.type))].filter(t => genTypes.includes(t)).sort((a, b) => genTypes.indexOf(a) - genTypes.indexOf(b));
+        renderer.renderTmTypeFilter(usedTypes);
+
+        document.querySelectorAll('.tm-type-btn').forEach(b => b.classList.toggle('active', b.dataset.type === typeFilter));
+
+        let filtered = allTms;
+        if (typeFilter !== 'all') {
+            filtered = filtered.filter(t => t.type === typeFilter);
+        }
+        if (search) {
+            filtered = filtered.filter(t =>
+                t.move.toLowerCase().includes(search) ||
+                t.num.toLowerCase().includes(search) ||
+                t.loc.toLowerCase().includes(search)
+            );
+        }
+
+        const checklist = this.state.tm.checklists[gameId] || {};
+        renderer.renderTmList(filtered, checklist, gameId);
+
+        const totalChecked = Object.values(this.state.tm.checklists[gameId] || {}).filter(Boolean).length;
+        renderer.renderTmProgress(totalChecked, allTms.length);
+    },
+
+    _toggleTmCheck(gameId, num, checked) {
+        if (!this.state.tm.checklists[gameId]) this.state.tm.checklists[gameId] = {};
+        this.state.tm.checklists[gameId][num] = checked;
+        if (!checked) delete this.state.tm.checklists[gameId][num];
+        this._saveTmChecklists();
+
+        const card = document.querySelector(`.tm-card[data-num="${num}"]`);
+        if (card) card.classList.toggle('tm-card--done', checked);
+
+        const { tmData } = window.PokeAnalyzer;
+        const allTms = tmData[gameId] || [];
+        const totalChecked = Object.values(this.state.tm.checklists[gameId] || {}).filter(Boolean).length;
+        window.PokeAnalyzer.renderer.renderTmProgress(totalChecked, allTms.length);
+    },
+
+    _loadTmChecklists() {
+        try {
+            return JSON.parse(localStorage.getItem('builddex-tm-checklists')) || {};
+        } catch { return {}; }
+    },
+
+    _saveTmChecklists() {
+        try {
+            localStorage.setItem('builddex-tm-checklists', JSON.stringify(this.state.tm.checklists));
+        } catch { /* storage full */ }
     },
 
     // ── Calculadora de Cobertura ─────────────────────────────────

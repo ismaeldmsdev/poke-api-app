@@ -1186,6 +1186,223 @@ body.modal-open { overflow: hidden; }
     color: var(--muted);
 }
 
+/* ── TM Locator ──────────────────────────────────────────────── */
+.tm-controls { margin-bottom: 14px; }
+.tm-game-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+.tm-ctrl-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--muted);
+    letter-spacing: 2px;
+    flex-shrink: 0;
+}
+.tm-game-select {
+    flex: 1;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    background: var(--card);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    min-height: var(--touch-min);
+    cursor: pointer;
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238a8a9a' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+}
+.tm-game-select:focus { border-color: var(--accent); box-shadow: 0 0 12px var(--accent-glow); }
+.tm-game-select option { background: var(--card); color: var(--text); }
+
+.tm-search-row { margin-bottom: 10px; }
+.tm-search-input {
+    width: 100%;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    background: var(--card);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    min-height: var(--touch-min);
+    outline: none;
+    transition: border-color .2s;
+}
+.tm-search-input:focus { border-color: var(--accent); box-shadow: 0 0 12px var(--accent-glow); }
+.tm-search-input::placeholder { color: #555; }
+
+.tm-type-filter {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    margin-bottom: 6px;
+}
+.tm-type-btn {
+    font-family: 'Inter', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    padding: 5px 10px;
+    border-radius: 14px;
+    border: 2px solid transparent;
+    background: rgba(255,255,255,0.06);
+    color: var(--muted);
+    cursor: pointer;
+    transition: all .15s;
+    min-height: 30px;
+}
+.tm-type-btn.active {
+    background: var(--tb, var(--accent));
+    color: var(--tf, #fff);
+    border-color: rgba(255,255,255,0.3);
+}
+.tm-type-btn:hover:not(.active) { border-color: rgba(255,255,255,0.15); }
+
+.tm-progress {
+    margin-bottom: 14px;
+    padding: 10px 14px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+}
+.tm-progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+}
+.tm-progress-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 1.5px;
+}
+.tm-progress-text {
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--text);
+}
+.tm-progress-bg {
+    height: 6px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 3px;
+    overflow: hidden;
+}
+.tm-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), #4caf50);
+    border-radius: 3px;
+    transition: width .4s cubic-bezier(.4,0,.2,1);
+}
+
+.tm-list { display: flex; flex-direction: column; gap: 6px; }
+
+.tm-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    transition: border-color .15s, opacity .2s;
+}
+.tm-card:hover { border-color: rgba(255,255,255,0.12); }
+.tm-card--done {
+    opacity: 0.5;
+    border-color: rgba(76, 175, 80, 0.3);
+}
+.tm-card--done .tm-num { color: #4caf50; }
+
+.tm-check-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 28px;
+    min-height: 28px;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+.tm-check { display: none; }
+.tm-check-custom {
+    width: 22px;
+    height: 22px;
+    border: 2px solid var(--border);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all .15s;
+    background: transparent;
+}
+.tm-check:checked + .tm-check-custom {
+    background: var(--accent);
+    border-color: var(--accent);
+}
+.tm-check:checked + .tm-check-custom::after {
+    content: '✓';
+    color: #fff;
+    font-size: 14px;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.tm-num {
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--accent);
+    letter-spacing: 0.5px;
+    min-width: 42px;
+    flex-shrink: 0;
+}
+.tm-num--hm { color: var(--blue); }
+
+.tm-info { flex: 1; min-width: 0; }
+.tm-move-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 2px;
+}
+.tm-move-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+}
+.tm-move-type {
+    font-size: 9px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+.tm-method {
+    font-size: 14px;
+    flex-shrink: 0;
+}
+.tm-loc {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.4;
+}
+.tm-empty {
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+    padding: 30px 16px;
+}
+
 /* ── Type palette ────────────────────────────────────────────── */
 .t-normal{background:#A8A878;color:#111} .t-fire{background:#F08030;color:#111}
 .t-water{background:#6890F0;color:#fff}  .t-electric{background:#F8D030;color:#111}
@@ -1255,6 +1472,12 @@ footer {
     .cov-type-grid { grid-template-columns: repeat(3, 1fr); }
     .cov-gen-bar { justify-content: center; }
     .cov-gen-btn { width: 30px; height: 30px; font-size: 12px; }
+
+    .tm-game-row { flex-direction: column; align-items: stretch; }
+    .tm-ctrl-label { text-align: center; }
+    .tm-card { gap: 8px; padding: 8px 10px; }
+    .tm-move-name { font-size: 13px; }
+    .tm-num { font-size: 11px; min-width: 38px; }
 }
 
 @media (max-width: 360px) {
