@@ -152,7 +152,7 @@ window.PokeAnalyzer.app = {
                 pokemon, evoData, movesData, abilitiesEs,
                 smogonData, smogonGen: this.state.selectedGen,
             };
-            renderer.renderPokemon(pokemon, evoData, abilitiesEs);
+            renderer.renderPokemon(pokemon, evoData, abilitiesEs, this.state.selectedGen);
             this._runAnalysis();
         } catch (err) {
             renderer.hideAILoading();
@@ -216,6 +216,7 @@ window.PokeAnalyzer.app = {
 
         renderer.resetAnalysis();
         renderer.showAILoading();
+        renderer.updateAbilities(pokemon, abilitiesEs, this.state.selectedGen);
 
         try {
             // Re-fetch Smogon si la generación cambió

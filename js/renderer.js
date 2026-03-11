@@ -107,12 +107,12 @@ window.PokeAnalyzer.renderer = {
     },
 
     // ── Pokémon card ──────────────────────────────────────────────
-    renderPokemon(pokemon, evoData, abilitiesEs = null) {
+    renderPokemon(pokemon, evoData, abilitiesEs = null, genNum = 9) {
         const { pokeAPI } = window.PokeAnalyzer;
         this._renderHeader(pokemon, pokeAPI);
         this._renderTypes(pokemon);
         this._renderStats(pokemon);
-        this._renderAbilities(pokemon, abilitiesEs);
+        this._renderAbilities(pokemon, abilitiesEs, genNum);
         this._renderEvoChain(evoData, pokeAPI);
         this.show('pokeCard');
         requestAnimationFrame(() => requestAnimationFrame(() => {
@@ -188,14 +188,35 @@ window.PokeAnalyzer.renderer = {
         });
     },
 
-    _renderAbilities(pokemon, abilitiesEs = null) {
-        this.el('abilitiesRow').innerHTML = pokemon.abilities.map(a => {
-            const key  = a.ability.name;
-            const entry = abilitiesEs && abilitiesEs.get(key);
-            const name = entry?.nameEs || key.replace(/-/g, ' ');
-            const cls  = a.is_hidden ? 'pill hidden-ab' : 'pill';
-            return `<span class="${cls}">${name}${a.is_hidden ? ' [H]' : ''}</span>`;
-        }).join('');
+    _renderAbilities(pokemon, abilitiesEs = null, genNum = 9) {
+        const row = this.el('abilitiesRow');
+        const hasAbilities = genNum >= 3;
+
+        if (!hasAbilities) {
+            row.innerHTML = '<span class="pill">Sin habilidades en esta gen</span>';
+            return;
+        }
+
+        const pills = pokemon.abilities
+            .filter(a => {
+                const entry = abilitiesEs && abilitiesEs.get(a.ability.name);
+                return entry ? entry.genNum <= genNum : true;
+            })
+            .map(a => {
+                const key  = a.ability.name;
+                const entry = abilitiesEs && abilitiesEs.get(key);
+                const name = entry?.nameEs || key.replace(/-/g, ' ');
+                const cls  = a.is_hidden ? 'pill hidden-ab' : 'pill';
+                return `<span class="${cls}">${name}${a.is_hidden ? ' [H]' : ''}</span>`;
+            });
+
+        row.innerHTML = pills.length > 0
+            ? pills.join('')
+            : '<span class="pill">Sin habilidades disponibles en esta gen</span>';
+    },
+
+    updateAbilities(pokemon, abilitiesEs, genNum) {
+        this._renderAbilities(pokemon, abilitiesEs, genNum);
     },
 
     _renderEvoChain(evoData, pokeAPI) {
