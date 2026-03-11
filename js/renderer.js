@@ -755,6 +755,184 @@ window.PokeAnalyzer.renderer = {
                 </div>`).join('')}`;
     },
 
+    // ── Analizador de Equipo ────────────────────────────────────
+    openTeamModal() {
+        const modal = this.el('teamModal');
+        modal.classList.remove('hidden');
+        modal.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('modal-open');
+    },
+    closeTeamModal() {
+        const modal = this.el('teamModal');
+        modal.classList.add('hidden');
+        modal.setAttribute('aria-hidden', 'true');
+        document.body.classList.remove('modal-open');
+    },
+
+    renderTeamGenGrid(genNum) {
+        const grid = this.el('teamGenGrid');
+        if (!grid) return;
+        grid.innerHTML = '';
+        for (let i = 1; i <= 9; i++) {
+            const btn = document.createElement('button');
+            btn.className = `cov-gen-btn${i === genNum ? ' active' : ''}`;
+            btn.dataset.gen = i;
+            btn.type = 'button';
+            btn.textContent = i;
+            grid.appendChild(btn);
+        }
+    },
+
+    renderTeamSlots(slots) {
+        const { TYPE_ES, TYPE_COLORS } = window.PokeAnalyzer.config;
+        const container = this.el('teamSlots');
+        container.innerHTML = slots.map((slot, i) => {
+            if (slot) {
+                const badges = slot.types.map(t => {
+                    const c = TYPE_COLORS[t] || { bg: '#888', fg: '#111' };
+                    return `<span class="type-badge" style="font-size:8px;padding:2px 6px;background:${c.bg};color:${c.fg}">${(TYPE_ES[t] || t).toUpperCase()}</span>`;
+                }).join('');
+                return `
+                <div class="team-slot team-slot--filled">
+                    <button class="team-slot-remove" data-slot="${i}" type="button" title="Quitar">✕</button>
+                    <img class="team-slot-sprite" src="${slot.sprite}" alt="${slot.name}">
+                    <p class="team-slot-name">${slot.name}</p>
+                    <div class="team-slot-types">${badges}</div>
+                </div>`;
+            }
+            return `
+            <div class="team-slot team-slot--empty">
+                <div class="team-slot-search">
+                    <input class="team-slot-input" data-slot="${i}" type="text" placeholder="Pokémon ${i + 1}" autocomplete="off" spellcheck="false">
+                    <button class="team-slot-search-btn" data-slot="${i}" type="button">+</button>
+                </div>
+            </div>`;
+        }).join('');
+    },
+
+    setTeamSlotBusy(idx, busy) {
+        const input = document.querySelector(`.team-slot-input[data-slot="${idx}"]`);
+        if (input) input.disabled = busy;
+        const btn = document.querySelector(`.team-slot-search-btn[data-slot="${idx}"]`);
+        if (btn) { btn.disabled = busy; btn.textContent = busy ? '...' : '+'; }
+    },
+
+    showTeamSlotError(idx) {
+        const input = document.querySelector(`.team-slot-input[data-slot="${idx}"]`);
+        if (input) {
+            input.value = '';
+            input.placeholder = 'No encontrado';
+            setTimeout(() => { input.placeholder = `Pokémon ${idx + 1}`; }, 2000);
+        }
+    },
+
+    renderTeamWarnings(warnings) {
+        const { TYPE_ES, TYPE_COLORS } = window.PokeAnalyzer.config;
+        const container = this.el('teamWarnings');
+        if (warnings.length === 0) { container.innerHTML = ''; return; }
+        container.innerHTML = warnings.map(w => {
+            const c = TYPE_COLORS[w.type] || { bg: '#888', fg: '#111' };
+            const name = TYPE_ES[w.type] || w.type;
+            return `
+            <div class="team-warn">
+                <span class="team-warn-icon">⚠️</span>
+                <span>GRAN VULNERABILIDAD a <span class="type-badge" style="background:${c.bg};color:${c.fg};font-size:9px;padding:2px 8px;border-radius:10px">${name.toUpperCase()}</span> — ${w.count} Pokémon débiles</span>
+            </div>`;
+        }).join('');
+    },
+
+    renderTeamMatrix(matrix, slots, genNum) {
+        const { TYPE_ES, TYPE_COLORS } = window.PokeAnalyzer.config;
+        const filled = slots.map((s, i) => s ? { ...s, idx: i } : null).filter(Boolean);
+
+        let head = '<tr><th class="mat-th-type">TIPO</th>';
+        for (const s of filled) {
+            head += `<th class="mat-th-poke">
+                <img src="${s.sprite}" alt="${s.name}" class="mat-th-sprite">
+                <span class="mat-th-name">${s.name}</span>
+            </th>`;
+        }
+        head += '<th class="mat-th-bal">BAL.</th></tr>';
+
+        const mulLabel = m => {
+            if (m >= 4)       return '×4';
+            if (m >= 2)       return '×2';
+            if (m === 1)      return '·';
+            if (m === 0.5)    return '½';
+            if (m === 0.25)   return '¼';
+            if (m === 0)      return '0';
+            return '·';
+        };
+        const mulClass = m => {
+            if (m >= 4)       return 'mat-qweak';
+            if (m >= 2)       return 'mat-weak';
+            if (m === 1)      return 'mat-neutral';
+            if (m === 0.5)    return 'mat-resist';
+            if (m === 0.25)   return 'mat-qresist';
+            if (m === 0)      return 'mat-immune';
+            return 'mat-neutral';
+        };
+
+        let body = '';
+        for (const row of matrix) {
+            const c = TYPE_COLORS[row.type] || { bg: '#888', fg: '#111' };
+            const name = TYPE_ES[row.type] || row.type;
+            body += '<tr>';
+            body += `<td class="mat-td-type"><span class="mat-type-badge" style="background:${c.bg};color:${c.fg}">${name}</span></td>`;
+
+            for (const s of filled) {
+                const cell = row.cells[s.idx];
+                if (!cell) { body += '<td class="mat-td-cell"></td>'; continue; }
+                body += `<td class="mat-td-cell ${mulClass(cell.mul)}">${mulLabel(cell.mul)}</td>`;
+            }
+
+            let balCls = 'mat-bal-zero';
+            if (row.score < 0) balCls = 'mat-bal-neg';
+            else if (row.score > 0) balCls = 'mat-bal-pos';
+            const balTxt = row.score > 0 ? `+${row.score}` : String(row.score);
+            body += `<td class="mat-td-bal ${balCls}">${balTxt}</td>`;
+            body += '</tr>';
+        }
+
+        this.el('teamMatrix').innerHTML = `<thead>${head}</thead><tbody>${body}</tbody>`;
+    },
+
+    renderTeamOffensive(superEff, notCovered, total) {
+        const { TYPE_ES, TYPE_COLORS } = window.PokeAnalyzer.config;
+        const container = this.el('teamOffensive');
+        const pct = ((superEff.length / total) * 100).toFixed(0);
+
+        const badge = t => {
+            const c = TYPE_COLORS[t] || { bg: '#888', fg: '#111' };
+            return `<span class="cov-res-badge" style="background:${c.bg};color:${c.fg}">${TYPE_ES[t] || t}</span>`;
+        };
+
+        let html = `
+        <div class="cov-bar-wrap">
+            <div class="cov-bar-header">
+                <span class="cov-bar-label">COBERTURA STAB</span>
+                <span class="cov-bar-pct">${pct}%</span>
+            </div>
+            <div class="cov-bar-bg"><div class="cov-bar-fill" style="width:${pct}%"></div></div>
+            <p class="cov-bar-detail">Tu equipo golpea súper efectivo a ${superEff.length} de ${total} tipos (basado en STAB).</p>
+        </div>`;
+
+        if (superEff.length > 0) {
+            html += `<div class="cov-group">
+                <p class="cov-group-label" style="color:#4caf50">SÚPER EFECTIVO <span class="cov-count">${superEff.length}</span></p>
+                <div class="cov-badges">${superEff.map(badge).join('')}</div>
+            </div>`;
+        }
+        if (notCovered.length > 0) {
+            html += `<div class="cov-group">
+                <p class="cov-group-label" style="color:#ff6b6b">SIN COBERTURA <span class="cov-count">${notCovered.length}</span></p>
+                <div class="cov-badges">${notCovered.map(badge).join('')}</div>
+            </div>`;
+        }
+
+        container.innerHTML = html;
+    },
+
     // ── Reset ─────────────────────────────────────────────────────
     resetResults() {
         this.hideMessage();

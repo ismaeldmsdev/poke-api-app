@@ -14,6 +14,7 @@ window.PokeAnalyzer.app = {
         analysis: null,
         coverage: { mode: 'defensive', genNum: 9, selected: [] },
         tm: { gameId: '', search: '', typeFilter: 'all', checklists: {} },
+        team: { genNum: 9, slots: [null, null, null, null, null, null] },
     },
 
     init() {
@@ -113,6 +114,9 @@ window.PokeAnalyzer.app = {
                 if (item.id === 'menuTmItem') {
                     this._openTmLocator();
                 }
+                if (item.id === 'menuTeamItem') {
+                    this._openTeamAnalyzer();
+                }
             });
         }
 
@@ -190,6 +194,41 @@ window.PokeAnalyzer.app = {
             if (!e.target.classList.contains('tm-check')) return;
             const { game, num } = e.target.dataset;
             this._toggleTmCheck(game, num, e.target.checked);
+        });
+
+        // Team Analyzer
+        document.getElementById('closeTeamBtn').addEventListener('click', () => {
+            window.PokeAnalyzer.renderer.closeTeamModal();
+        });
+        document.getElementById('teamModal').addEventListener('click', e => {
+            if (e.target?.dataset?.closeTeam) window.PokeAnalyzer.renderer.closeTeamModal();
+        });
+
+        document.getElementById('teamGenGrid').addEventListener('click', e => {
+            const btn = e.target.closest('.cov-gen-btn');
+            if (!btn) return;
+            this._setTeamGen(Number(btn.dataset.gen));
+        });
+
+        document.getElementById('teamSlots').addEventListener('keydown', e => {
+            if (e.key !== 'Enter') return;
+            const input = e.target.closest('.team-slot-input');
+            if (!input) return;
+            this._addTeamPokemon(Number(input.dataset.slot), input.value.trim());
+        });
+
+        document.getElementById('teamSlots').addEventListener('click', e => {
+            const removeBtn = e.target.closest('.team-slot-remove');
+            if (removeBtn) {
+                this._removeTeamPokemon(Number(removeBtn.dataset.slot));
+                return;
+            }
+            const searchBtn = e.target.closest('.team-slot-search-btn');
+            if (searchBtn) {
+                const idx = Number(searchBtn.dataset.slot);
+                const input = document.querySelector(`.team-slot-input[data-slot="${idx}"]`);
+                if (input) this._addTeamPokemon(idx, input.value.trim());
+            }
         });
     },
 
@@ -360,6 +399,111 @@ window.PokeAnalyzer.app = {
         try {
             localStorage.setItem('builddex-tm-checklists', JSON.stringify(this.state.tm.checklists));
         } catch { /* storage full */ }
+    },
+
+    // ── Analizador de Equipo ────────────────────────────────────
+    _openTeamAnalyzer() {
+        const { renderer } = window.PokeAnalyzer;
+        this.state.team.genNum = this.state.selectedGen;
+        this.state.team.slots = [null, null, null, null, null, null];
+        renderer.openTeamModal();
+        renderer.renderTeamGenGrid(this.state.team.genNum);
+        renderer.renderTeamSlots(this.state.team.slots);
+        renderer.hide('teamResults');
+    },
+
+    async _addTeamPokemon(slotIdx, query) {
+        if (!query) return;
+        const { pokeAPI, renderer } = window.PokeAnalyzer;
+        renderer.setTeamSlotBusy(slotIdx, true);
+
+        try {
+            const pokemon = await pokeAPI._fetchPokemon(query);
+            this.state.team.slots[slotIdx] = {
+                name: pokemon.name,
+                id: pokemon.id,
+                types: pokemon.types.map(t => t.type.name),
+                sprite: pokeAPI.getBestSprite(pokemon),
+            };
+        } catch {
+            renderer.setTeamSlotBusy(slotIdx, false);
+            renderer.showTeamSlotError(slotIdx);
+            return;
+        }
+
+        renderer.renderTeamSlots(this.state.team.slots);
+        this._refreshTeamAnalysis();
+    },
+
+    _removeTeamPokemon(slotIdx) {
+        this.state.team.slots[slotIdx] = null;
+        window.PokeAnalyzer.renderer.renderTeamSlots(this.state.team.slots);
+        this._refreshTeamAnalysis();
+    },
+
+    _setTeamGen(genNum) {
+        if (genNum === this.state.team.genNum) return;
+        this.state.team.genNum = genNum;
+        window.PokeAnalyzer.renderer.renderTeamGenGrid(genNum);
+        this._refreshTeamAnalysis();
+    },
+
+    _refreshTeamAnalysis() {
+        const { renderer, config } = window.PokeAnalyzer;
+        const { slots, genNum } = this.state.team;
+        const filled = slots.filter(Boolean);
+
+        if (filled.length < 1) { renderer.hide('teamResults'); return; }
+        renderer.show('teamResults');
+
+        const allTypes = config.getTypesForGen(genNum);
+
+        const matrix = [];
+        const warnings = [];
+
+        for (const atkType of allTypes) {
+            const row = { type: atkType, cells: [], score: 0 };
+            let weakCount = 0;
+
+            for (const slot of slots) {
+                if (!slot) { row.cells.push(null); continue; }
+                const pokeTypes = slot.types.filter(t => allTypes.includes(t));
+                if (pokeTypes.length === 0) pokeTypes.push('normal');
+                const mul = config.getEffectiveness(atkType, pokeTypes, genNum);
+
+                let sc = 0;
+                if (mul >= 4)       sc = -2;
+                else if (mul >= 2)  sc = -1;
+                else if (mul === 0.5)  sc = 1;
+                else if (mul === 0.25) sc = 2;
+                else if (mul === 0)    sc = 3;
+
+                row.cells.push({ mul, score: sc });
+                row.score += sc;
+                if (mul >= 2) weakCount++;
+            }
+
+            if (weakCount >= 3) warnings.push({ type: atkType, count: weakCount });
+            matrix.push(row);
+        }
+
+        const teamTypes = new Set();
+        for (const s of filled) {
+            for (const t of s.types) { if (allTypes.includes(t)) teamTypes.add(t); }
+        }
+
+        const superEff = [], notCovered = [];
+        for (const target of allTypes) {
+            let hit = false;
+            for (const atk of teamTypes) {
+                if (config.getEffectiveness(atk, [target], genNum) >= 2) { hit = true; break; }
+            }
+            (hit ? superEff : notCovered).push(target);
+        }
+
+        renderer.renderTeamWarnings(warnings);
+        renderer.renderTeamMatrix(matrix, slots, genNum);
+        renderer.renderTeamOffensive(superEff, notCovered, allTypes.length);
     },
 
     // ── Calculadora de Cobertura ─────────────────────────────────

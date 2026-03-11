@@ -1403,6 +1403,190 @@ body.modal-open { overflow: hidden; }
     padding: 30px 16px;
 }
 
+/* ── Team Analyzer ──────────────────────────────────────────── */
+.team-gen-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+.team-slots {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 18px;
+}
+.team-slot {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 8px;
+    text-align: center;
+    min-height: 96px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    position: relative;
+    transition: border-color .15s;
+}
+.team-slot--filled { border-color: rgba(124, 92, 252, 0.25); }
+.team-slot-remove {
+    position: absolute;
+    top: 4px; right: 4px;
+    width: 22px; height: 22px;
+    border: none;
+    background: rgba(255,76,76,0.2);
+    color: #ff6b6b;
+    border-radius: 50%;
+    font-size: 11px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background .15s;
+}
+.team-slot-remove:hover { background: rgba(255,76,76,0.4); }
+.team-slot-sprite {
+    width: 48px; height: 48px;
+    image-rendering: pixelated;
+    filter: drop-shadow(0 2px 8px var(--accent-glow));
+}
+.team-slot-name {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text);
+    text-transform: capitalize;
+}
+.team-slot-types { display: flex; gap: 3px; flex-wrap: wrap; justify-content: center; }
+.team-slot-search {
+    display: flex; gap: 0; width: 100%;
+    border-radius: var(--radius-xs);
+    overflow: hidden;
+    border: 1px solid var(--border);
+}
+.team-slot-input {
+    flex: 1; min-width: 0;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    padding: 8px;
+    outline: none;
+}
+.team-slot-input::placeholder { color: #555; font-size: 11px; }
+.team-slot-search-btn {
+    width: 34px;
+    background: var(--accent);
+    border: none;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background .15s;
+}
+.team-slot-search-btn:hover { background: var(--accent-hi); }
+.team-slot-search-btn:disabled { background: #333; cursor: not-allowed; }
+
+.team-results { margin-top: 10px; }
+.team-warnings { margin-bottom: 12px; }
+.team-warn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    margin-bottom: 6px;
+    background: rgba(255, 76, 76, 0.08);
+    border: 1px solid rgba(255, 76, 76, 0.25);
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    font-weight: 600;
+    color: #ff6b6b;
+}
+.team-warn-icon { font-size: 16px; flex-shrink: 0; }
+
+/* Matrix table */
+.team-matrix-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: 6px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+}
+.team-matrix {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    min-width: 340px;
+}
+.team-matrix thead { background: rgba(28,28,30,0.85); }
+.team-matrix th,
+.team-matrix td {
+    padding: 5px 4px;
+    text-align: center;
+    white-space: nowrap;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.mat-th-type {
+    text-align: left;
+    font-size: 10px; font-weight: 700;
+    color: var(--muted);
+    letter-spacing: 1px;
+    padding-left: 6px;
+    min-width: 68px;
+}
+.mat-th-poke { padding: 6px 2px; min-width: 52px; }
+.mat-th-sprite {
+    width: 30px; height: 30px;
+    image-rendering: pixelated;
+    display: block;
+    margin: 0 auto 2px;
+    filter: drop-shadow(0 1px 4px var(--accent-glow));
+}
+.mat-th-name {
+    font-size: 8px; font-weight: 700;
+    color: var(--text);
+    text-transform: capitalize;
+    display: block;
+}
+.mat-th-bal {
+    font-size: 9px; font-weight: 800;
+    color: var(--accent);
+    letter-spacing: 0.5px;
+    min-width: 40px;
+}
+.mat-td-type { text-align: left; padding-left: 6px; }
+.mat-type-badge {
+    font-size: 9px; font-weight: 700;
+    padding: 3px 7px;
+    border-radius: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    display: inline-block;
+}
+.mat-td-cell {
+    font-weight: 800;
+    font-size: 12px;
+    min-width: 36px;
+    transition: background .15s;
+}
+.mat-qweak    { background: rgba(255, 34, 34, 0.30); color: #ff4444; }
+.mat-weak     { background: rgba(255, 107, 107, 0.20); color: #ff6b6b; }
+.mat-neutral  { color: rgba(138,138,154,0.4); }
+.mat-resist   { background: rgba(76, 175, 80, 0.15); color: #4caf50; }
+.mat-qresist  { background: rgba(46, 125, 50, 0.25); color: #66bb6a; }
+.mat-immune   { background: rgba(124, 92, 252, 0.15); color: var(--accent); }
+
+.mat-td-bal { font-weight: 800; font-size: 13px; }
+.mat-bal-neg { color: #ff4444; }
+.mat-bal-zero { color: var(--muted); }
+.mat-bal-pos { color: #4caf50; }
+
 /* ── Type palette ────────────────────────────────────────────── */
 .t-normal{background:#A8A878;color:#111} .t-fire{background:#F08030;color:#111}
 .t-water{background:#6890F0;color:#fff}  .t-electric{background:#F8D030;color:#111}
@@ -1478,6 +1662,19 @@ footer {
     .tm-card { gap: 8px; padding: 8px 10px; }
     .tm-move-name { font-size: 13px; }
     .tm-num { font-size: 11px; min-width: 38px; }
+
+    .team-slots { grid-template-columns: repeat(2, 1fr); }
+    .team-slot { min-height: 80px; padding: 8px 6px; }
+    .team-slot-sprite { width: 40px; height: 40px; }
+    .team-slot-name { font-size: 10px; }
+    .team-slot-input { font-size: 11px; padding: 6px; }
+    .team-slot-search-btn { width: 30px; font-size: 14px; }
+    .mat-th-sprite { width: 24px; height: 24px; }
+    .mat-th-name { font-size: 7px; }
+    .mat-td-cell { min-width: 30px; font-size: 11px; }
+    .mat-th-poke { min-width: 42px; }
+    .mat-type-badge { font-size: 8px; padding: 2px 5px; }
+    .mat-th-type { min-width: 56px; }
 }
 
 @media (max-width: 360px) {
