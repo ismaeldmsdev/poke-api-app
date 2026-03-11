@@ -18,6 +18,17 @@ window.PokeAnalyzer.app = {
         breeding: { parent1: null, parent2: null, destinyKnot: false, everstone: false, pokemonList: null },
     },
 
+    _togglePanel(panel, btn) {
+        const isOpen = !panel.classList.contains('hidden');
+        panel.classList.toggle('hidden', isOpen);
+        if (btn) btn.setAttribute('aria-expanded', String(!isOpen));
+    },
+
+    _debounce(fn, ms) {
+        let timer;
+        return (...args) => { clearTimeout(timer); timer = setTimeout(() => fn(...args), ms); };
+    },
+
     init() {
         const { config, renderer } = window.PokeAnalyzer;
         renderer.buildGenButtons(config.GENERATIONS, this.state.selectedGen);
@@ -44,9 +55,7 @@ window.PokeAnalyzer.app = {
         const genDropdown = document.getElementById('genDropdown');
         if (genChip && genDropdown) {
             genChip.addEventListener('click', () => {
-                const isOpen = !genDropdown.classList.contains('hidden');
-                genDropdown.classList.toggle('hidden', isOpen);
-                genChip.setAttribute('aria-expanded', String(!isOpen));
+                this._togglePanel(genDropdown, genChip);
             });
 
             genDropdown.addEventListener('click', e => {
@@ -92,35 +101,24 @@ window.PokeAnalyzer.app = {
         const menuBtn = document.getElementById('headerMenuBtn');
         const menuPanel = document.getElementById('headerMenuPanel');
         const menuVersus = document.getElementById('menuVersusItem');
+        const menuHandlers = {
+            menuVersusItem:   () => { if (!document.getElementById('menuVersusItem').disabled) { window.PokeAnalyzer.renderer.openVersusModal(); document.getElementById('versusInput').focus(); } },
+            menuCoverageItem: () => this._openCoverage(),
+            menuTmItem:       () => this._openTmLocator(),
+            menuTeamItem:     () => this._openTeamAnalyzer(),
+            menuBreedingItem: () => this._openBreeding(),
+        };
+
         if (menuBtn && menuPanel) {
-            menuBtn.addEventListener('click', () => {
-                const isOpen = !menuPanel.classList.contains('hidden');
-                menuPanel.classList.toggle('hidden', isOpen);
-                menuBtn.setAttribute('aria-expanded', String(!isOpen));
-            });
+            menuBtn.addEventListener('click', () => this._togglePanel(menuPanel, menuBtn));
 
             menuPanel.addEventListener('click', e => {
                 const item = e.target.closest('.header-menu-item');
                 if (!item) return;
                 menuPanel.classList.add('hidden');
                 menuBtn.setAttribute('aria-expanded', 'false');
-
-                if (item.id === 'menuVersusItem' && !item.disabled) {
-                    window.PokeAnalyzer.renderer.openVersusModal();
-                    document.getElementById('versusInput').focus();
-                }
-                if (item.id === 'menuCoverageItem') {
-                    this._openCoverage();
-                }
-                if (item.id === 'menuTmItem') {
-                    this._openTmLocator();
-                }
-                if (item.id === 'menuTeamItem') {
-                    this._openTeamAnalyzer();
-                }
-                if (item.id === 'menuBreedingItem') {
-                    this._openBreeding();
-                }
+                const handler = menuHandlers[item.id];
+                if (handler) handler();
             });
         }
 
@@ -177,14 +175,10 @@ window.PokeAnalyzer.app = {
             this._refreshTm();
         });
 
-        let tmSearchTimer;
-        document.getElementById('tmSearch').addEventListener('input', e => {
-            clearTimeout(tmSearchTimer);
-            tmSearchTimer = setTimeout(() => {
-                this.state.tm.search = e.target.value.trim().toLowerCase();
-                this._refreshTm();
-            }, 200);
-        });
+        document.getElementById('tmSearch').addEventListener('input', this._debounce(e => {
+            this.state.tm.search = e.target.value.trim().toLowerCase();
+            this._refreshTm();
+        }, 200));
 
         document.getElementById('tmTypeFilter').addEventListener('click', e => {
             const btn = e.target.closest('.tm-type-btn');
@@ -247,14 +241,9 @@ window.PokeAnalyzer.app = {
             window.PokeAnalyzer.renderer.closeTeamSearch();
         });
 
-        let teamPokeTimer;
-        document.getElementById('teamPokeSearchInput').addEventListener('input', e => {
-            clearTimeout(teamPokeTimer);
-            const query = e.target.value.trim().toLowerCase();
-            teamPokeTimer = setTimeout(() => {
-                this._filterTeamPokeSearch(query);
-            }, 120);
-        });
+        document.getElementById('teamPokeSearchInput').addEventListener('input', this._debounce(e => {
+            this._filterTeamPokeSearch(e.target.value.trim().toLowerCase());
+        }, 120));
         document.getElementById('teamPokeSearchInput').addEventListener('keydown', e => {
             if (e.key === 'Escape') {
                 window.PokeAnalyzer.renderer.closeTeamSearch();
@@ -285,15 +274,12 @@ window.PokeAnalyzer.app = {
             if (e.target?.dataset?.closeBreed) window.PokeAnalyzer.renderer.closeBreedingModal();
         });
 
-        document.getElementById('breedParents').addEventListener('input', e => {
+        document.getElementById('breedParents').addEventListener('input', this._debounce(e => {
             const inp = e.target.closest('.breed-search');
             if (!inp) return;
             const slot = Number(inp.dataset.slot);
-            clearTimeout(this._breedSearchTimer);
-            this._breedSearchTimer = setTimeout(() => {
-                this._filterBreedSuggestions(slot, inp.value.trim().toLowerCase());
-            }, 120);
-        });
+            this._filterBreedSuggestions(slot, inp.value.trim().toLowerCase());
+        }, 120));
 
         document.getElementById('breedParents').addEventListener('keydown', e => {
             const inp = e.target.closest('.breed-search');

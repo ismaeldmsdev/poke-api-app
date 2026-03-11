@@ -107,7 +107,7 @@ window.PokeAnalyzer.pokeAPI = {
     async _trySmogonTier(displayName, gen, tier) {
         try {
             const res = await fetch(
-                `https://pkmn.github.io/smogon/data/sets/gen${gen}${tier}.json`
+                `${window.PokeAnalyzer.config.SMOGON_BASE}/gen${gen}${tier}.json`
             );
             if (!res.ok) return null;
             const data = await res.json();

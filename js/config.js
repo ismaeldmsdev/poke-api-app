@@ -7,8 +7,9 @@ window.PokeAnalyzer = window.PokeAnalyzer || {};
 
 window.PokeAnalyzer.config = {
 
-    POKEAPI_BASE: 'https://pokeapi.co/api/v2',
-    SPRITE_RAW:   'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon',
+    POKEAPI_BASE:  'https://pokeapi.co/api/v2',
+    SMOGON_BASE:   'https://pkmn.github.io/smogon/data/sets',
+    SPRITE_RAW:    'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon',
 
     STAT_META: {
         'hp':              { label: 'PS',      cls: 'sb-hp'    },

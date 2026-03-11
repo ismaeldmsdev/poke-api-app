@@ -144,35 +144,18 @@ window.PokeAnalyzer.renderer = {
         const container = this.el('statsRows');
         container.innerHTML = '';
         let bst = 0;
-        const effect = null;
 
         pokemon.stats.forEach(s => {
-            const baseStat = s.base_stat;
-            let displayStat = baseStat;
-            let modifier = '';
-            let modClass = '';
-
-            if (effect) {
-                if (effect.up === s.stat.name) {
-                    displayStat = Math.floor(baseStat * 1.1);
-                    modifier = ' (\u2191)';
-                    modClass = ' stat-up';
-                } else if (effect.down === s.stat.name) {
-                    displayStat = Math.floor(baseStat * 0.9);
-                    modifier = ' (\u2193)';
-                    modClass = ' stat-down';
-                }
-            }
-
-            bst += displayStat;
+            const val = s.base_stat;
+            bst += val;
             const meta = STAT_META[s.stat.name] ?? { label: s.stat.name, cls: '' };
-            const pct  = ((displayStat / 255) * 100).toFixed(1);
+            const pct  = ((val / 255) * 100).toFixed(1);
             container.insertAdjacentHTML('beforeend', `
                 <div class="stat-row">
                     <span class="stat-lbl">${meta.label}</span>
-                    <span class="stat-num${modClass}">${displayStat}${modifier}</span>
+                    <span class="stat-num">${val}</span>
                     <div class="stat-bg">
-                        <div class="stat-bar ${meta.cls}${modClass}" data-w="${pct}"></div>
+                        <div class="stat-bar ${meta.cls}" data-w="${pct}"></div>
                     </div>
                 </div>`);
         });
@@ -864,23 +847,6 @@ window.PokeAnalyzer.renderer = {
             input.placeholder = '❌ No encontrado, intenta de nuevo';
             setTimeout(() => { input.placeholder = 'Charizard, Garchomp, Rotom-W...'; }, 2500);
         }
-    },
-
-    showTeamSuggestions() {
-        // Mantenido por compatibilidad (no usado en nueva UI)
-    },
-
-    hideTeamSuggestions() {
-        // Mantenido por compatibilidad (no usado en nueva UI)
-    },
-
-    hideAllTeamSuggestions() {
-        document.querySelectorAll('.team-ac--open').forEach(ac => {
-            ac.classList.remove('team-ac--open');
-            ac.innerHTML = '';
-            const slot = ac.closest('.team-slot');
-            if (slot) slot.classList.remove('team-slot--ac-active');
-        });
     },
 
     renderTeamWarnings(warnings) {
