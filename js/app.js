@@ -15,6 +15,7 @@ window.PokeAnalyzer.app = {
         coverage: { mode: 'defensive', genNum: 9, selected: [] },
         tm: { gameId: '', search: '', typeFilter: 'all', checklists: {} },
         team: { genNum: 9, slots: [null, null, null, null, null, null], pokemonList: null, searchingSlot: -1 },
+        breeding: { parent1: null, parent2: null, destinyKnot: false, everstone: false, pokemonList: null },
     },
 
     init() {
@@ -116,6 +117,9 @@ window.PokeAnalyzer.app = {
                 }
                 if (item.id === 'menuTeamItem') {
                     this._openTeamAnalyzer();
+                }
+                if (item.id === 'menuBreedingItem') {
+                    this._openBreeding();
                 }
             });
         }
@@ -271,6 +275,49 @@ window.PokeAnalyzer.app = {
             const slot = this.state.team.searchingSlot;
             window.PokeAnalyzer.renderer.closeTeamSearch();
             this._addTeamPokemon(slot, item.dataset.name);
+        });
+
+        // Breeding modal
+        document.getElementById('closeBreedingBtn').addEventListener('click', () => {
+            window.PokeAnalyzer.renderer.closeBreedingModal();
+        });
+        document.getElementById('breedingModal').addEventListener('click', e => {
+            if (e.target?.dataset?.closeBreed) window.PokeAnalyzer.renderer.closeBreedingModal();
+        });
+
+        document.getElementById('breedParents').addEventListener('input', e => {
+            const inp = e.target.closest('.breed-search');
+            if (!inp) return;
+            const slot = Number(inp.dataset.slot);
+            clearTimeout(this._breedSearchTimer);
+            this._breedSearchTimer = setTimeout(() => {
+                this._filterBreedSuggestions(slot, inp.value.trim().toLowerCase());
+            }, 120);
+        });
+
+        document.getElementById('breedParents').addEventListener('keydown', e => {
+            const inp = e.target.closest('.breed-search');
+            if (!inp || e.key !== 'Enter') return;
+            const first = inp.closest('.breed-parent')?.querySelector('.breed-ac-item');
+            if (first) this._setBreedingParent(Number(inp.dataset.slot), first.dataset.name);
+        });
+
+        document.getElementById('breedParents').addEventListener('click', e => {
+            const acItem = e.target.closest('.breed-ac-item');
+            if (acItem) {
+                this._setBreedingParent(Number(acItem.dataset.slot), acItem.dataset.name);
+                return;
+            }
+            const removeBtn = e.target.closest('.breed-parent-remove');
+            if (removeBtn) {
+                this._removeBreedingParent(Number(removeBtn.dataset.slot));
+            }
+        });
+
+        document.getElementById('breedItems').addEventListener('change', e => {
+            const cb = e.target.closest('.breed-item-cb');
+            if (!cb) return;
+            this._toggleBreedingItem(cb.dataset.item, cb.checked);
         });
     },
 
@@ -567,6 +614,177 @@ window.PokeAnalyzer.app = {
         renderer.renderTeamWarnings(warnings);
         renderer.renderTeamMatrix(matrix, slots, genNum);
         renderer.renderTeamOffensive(superEff, notCovered, allTypes.length);
+    },
+
+    // ── Simulador de Crianza ───────────────────────────────────
+    _openBreeding() {
+        const { renderer, pokeAPI } = window.PokeAnalyzer;
+        this.state.breeding = { parent1: null, parent2: null, destinyKnot: false, everstone: false, pokemonList: this.state.breeding.pokemonList };
+        renderer.openBreedingModal();
+        renderer.renderBreedingParents(null, null);
+        renderer.renderBreedingItems(false, false);
+        renderer.hide('breedResult');
+        renderer.hide('breedError');
+
+        if (!this.state.breeding.pokemonList) {
+            pokeAPI.fetchPokemonList().then(list => {
+                this.state.breeding.pokemonList = list;
+            }).catch(() => {});
+        }
+    },
+
+    _filterBreedSuggestions(slot, query) {
+        const { renderer } = window.PokeAnalyzer;
+        if (query.length < 2 || !this.state.breeding.pokemonList) {
+            renderer.hideBreedingSuggestions(slot);
+            return;
+        }
+        const list = this.state.breeding.pokemonList;
+        const startsWith = list.filter(p => p.name.startsWith(query));
+        const includes = list.filter(p => !p.name.startsWith(query) && p.name.includes(query));
+        const matches = [...startsWith, ...includes].slice(0, 15);
+        renderer.showBreedingSuggestions(slot, matches);
+    },
+
+    async _setBreedingParent(slot, name) {
+        if (!name) return;
+        const { pokeAPI, renderer } = window.PokeAnalyzer;
+
+        renderer.setBreedingSlotBusy(slot, true);
+
+        try {
+            const [pokemon, species] = await Promise.all([
+                pokeAPI._fetchPokemon(name),
+                pokeAPI.fetchSpeciesBreeding(name),
+            ]);
+
+            if (!pokemon || !species) throw new Error('No encontrado');
+
+            const parentData = {
+                name: pokemon.name,
+                id: pokemon.id,
+                sprite: pokeAPI.getBestSprite(pokemon),
+                types: pokemon.types.map(t => t.type.name),
+                eggGroups: species.eggGroups,
+                genderRate: species.genderRate,
+                hatchCounter: species.hatchCounter,
+                stats: {},
+            };
+            const statMap = { hp: 'PS', attack: 'Atq', defense: 'Def', 'special-attack': 'Atq.Esp', 'special-defense': 'Def.Esp', speed: 'Vel' };
+            for (const s of pokemon.stats) {
+                parentData.stats[statMap[s.stat.name] || s.stat.name] = s.base_stat;
+            }
+
+            if (slot === 1) this.state.breeding.parent1 = parentData;
+            else this.state.breeding.parent2 = parentData;
+        } catch {
+            renderer.setBreedingSlotBusy(slot, false);
+            renderer.renderBreedingError('No se encontró el Pokémon.');
+            return;
+        }
+
+        renderer.renderBreedingParents(this.state.breeding.parent1, this.state.breeding.parent2);
+        this._calculateBreeding();
+    },
+
+    _removeBreedingParent(slot) {
+        if (slot === 1) this.state.breeding.parent1 = null;
+        else this.state.breeding.parent2 = null;
+        const { renderer } = window.PokeAnalyzer;
+        renderer.renderBreedingParents(this.state.breeding.parent1, this.state.breeding.parent2);
+        renderer.hide('breedResult');
+        renderer.hide('breedError');
+    },
+
+    _toggleBreedingItem(item, checked) {
+        if (item === 'destinyKnot') this.state.breeding.destinyKnot = checked;
+        if (item === 'everstone') this.state.breeding.everstone = checked;
+        this._calculateBreeding();
+    },
+
+    _checkBreedingCompatibility() {
+        const { parent1, parent2 } = this.state.breeding;
+        if (!parent1 || !parent2) return { compatible: false, reason: '' };
+
+        const g1 = parent1.eggGroups;
+        const g2 = parent2.eggGroups;
+
+        if (g1.includes('no-eggs') || g2.includes('no-eggs')) {
+            return { compatible: false, reason: 'Uno de los Pokémon pertenece al grupo "Sin huevos" (Undiscovered) y no puede criar.' };
+        }
+        if (g1.includes('ditto') || g2.includes('ditto')) {
+            return { compatible: true, reason: 'Compatible vía Ditto.' };
+        }
+        const shared = g1.filter(g => g2.includes(g));
+        if (shared.length > 0) {
+            return { compatible: true, reason: '' };
+        }
+        return { compatible: false, reason: 'Estos Pokémon no pueden criar entre sí. No comparten ningún grupo huevo.' };
+    },
+
+    _calculateBreeding() {
+        const { renderer, config } = window.PokeAnalyzer;
+        const { parent1, parent2, destinyKnot } = this.state.breeding;
+
+        if (!parent1 || !parent2) {
+            renderer.hide('breedResult');
+            renderer.hide('breedError');
+            return;
+        }
+
+        const compat = this._checkBreedingCompatibility();
+        if (!compat.compatible) {
+            renderer.renderBreedingError(compat.reason);
+            renderer.hide('breedResult');
+            return;
+        }
+
+        renderer.hide('breedError');
+
+        const isDitto1 = parent1.eggGroups.includes('ditto');
+        const isDitto2 = parent2.eggGroups.includes('ditto');
+        let mother = isDitto1 ? parent2 : (isDitto2 ? parent1 : null);
+        if (!mother) {
+            mother = parent2.genderRate >= 0 ? parent2 : parent1;
+        }
+
+        const B = config.BREEDING;
+        const hatchSteps = (mother.hatchCounter + 1) * B.STEPS_PER_CYCLE;
+
+        const statKeys = ['PS', 'Atq', 'Def', 'Atq.Esp', 'Def.Esp', 'Vel'];
+        const inheritedCount = destinyKnot ? B.DESTINY_KNOT_IVS : 3;
+        const ivProbs = {};
+        for (const stat of statKeys) {
+            const v1 = parent1.stats[stat] ?? 0;
+            const v2 = parent2.stats[stat] ?? 0;
+            const base1 = Math.min(v1 / 255, 1);
+            const base2 = Math.min(v2 / 255, 1);
+            const probInherited = inheritedCount / 6;
+            const probRandom = 1 / 32;
+            const parentAvg = (base1 + base2) / 2;
+            ivProbs[stat] = Math.min(1, probInherited * parentAvg + (1 - probInherited) * probRandom);
+        }
+
+        const eggGroupsES = config.EGG_GROUPS_ES;
+        const sharedGroupsEs = parent1.eggGroups
+            .filter(g => parent2.eggGroups.includes(g) || parent2.eggGroups.includes('ditto') || parent1.eggGroups.includes('ditto'))
+            .map(g => eggGroupsES[g] || g);
+
+        const resultData = {
+            offspring: mother,
+            sharedGroups: sharedGroupsEs,
+            hatchSteps,
+            maxHatchSteps: 10240,
+            ivProbs,
+            shinyMasuda: `1/${B.SHINY_MASUDA}`,
+            shinyCharm: `1/${B.SHINY_CHARM}`,
+            shinyBoth: `1/${B.SHINY_MASUDA_CHARM}`,
+            shinyBase: `1/${B.SHINY_BASE}`,
+            destinyKnot,
+            everstone: this.state.breeding.everstone,
+        };
+
+        renderer.renderBreedingResult(resultData);
     },
 
     // ── Calculadora de Cobertura ─────────────────────────────────

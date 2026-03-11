@@ -252,4 +252,32 @@ window.PokeAnalyzer.config = {
             mechanics: `Terastal (cambio de tipo en combate). Tera Blast. Pokémon Paradox. Meta VGC actual.`,
         },
     ],
+
+    BREEDING: {
+        STEPS_PER_CYCLE: 128,
+        IV_MAX: 31,
+        DESTINY_KNOT_IVS: 5,
+        SHINY_BASE: 4096,
+        SHINY_MASUDA: 683,
+        SHINY_CHARM: 1365,
+        SHINY_MASUDA_CHARM: 512,
+    },
+
+    EGG_GROUPS_ES: {
+        monster:      'Monstruo',
+        water1:       'Agua 1',
+        water2:       'Agua 2',
+        water3:       'Agua 3',
+        bug:          'Bicho',
+        flying:       'Volador',
+        ground:       'Campo',
+        fairy:        'Hada',
+        plant:        'Planta',
+        humanshape:   'Humanoide',
+        mineral:      'Mineral',
+        indeterminate:'Amorfo',
+        dragon:       'Dragón',
+        ditto:        'Ditto',
+        'no-eggs':    'Sin huevos',
+    },
 };

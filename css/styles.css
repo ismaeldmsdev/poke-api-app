@@ -1872,3 +1872,364 @@ footer {
     .mat-type-badge { font-size: 6px; padding: 1px 4px; }
     .mat-th-type { min-width: 46px; font-size: 8px; }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   SIMULADOR DE CRIANZA
+   ═══════════════════════════════════════════════════════════════ */
+
+.breed-parents {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.breed-parent {
+    background: rgba(255,255,255,.06);
+    border-radius: 14px;
+    padding: 16px;
+    border: 1px solid rgba(255,255,255,.1);
+    position: relative;
+}
+
+.breed-parent--empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    min-height: 160px;
+    justify-content: center;
+}
+
+.breed-parent-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: rgba(255,255,255,.5);
+    margin: 0 0 4px;
+}
+
+.breed-search {
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,.15);
+    background: rgba(0,0,0,.35);
+    color: #fff;
+    font-size: 14px;
+    outline: none;
+    transition: border-color .2s;
+}
+.breed-search:focus {
+    border-color: var(--accent, #6cf);
+}
+
+.breed-parent--filled {
+    text-align: center;
+}
+
+.breed-parent-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.breed-parent-remove {
+    background: rgba(255,60,60,.25);
+    border: none;
+    color: #ff6b6b;
+    font-size: 14px;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background .2s;
+}
+.breed-parent-remove:hover { background: rgba(255,60,60,.5); }
+
+.breed-parent-sprite {
+    width: 96px;
+    height: 96px;
+    image-rendering: pixelated;
+    margin: 4px auto;
+    display: block;
+}
+
+.breed-parent-name {
+    font-size: 16px;
+    font-weight: 700;
+    text-transform: capitalize;
+    margin: 4px 0;
+}
+
+.breed-parent-types { margin: 6px 0; display: flex; gap: 4px; justify-content: center; flex-wrap: wrap; }
+.breed-parent-eggs  { margin: 6px 0; display: flex; gap: 4px; justify-content: center; flex-wrap: wrap; }
+.breed-parent-gender { font-size: 11px; color: rgba(255,255,255,.55); margin: 4px 0 8px; }
+
+.breed-egg-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 9px;
+    font-weight: 600;
+    background: rgba(255,255,255,.1);
+    color: rgba(255,255,255,.75);
+    text-transform: uppercase;
+    letter-spacing: .5px;
+}
+.breed-egg-badge--shared { background: rgba(100,200,255,.2); color: #6cf; }
+
+.breed-parent-stats { margin-top: 8px; }
+
+.breed-stat-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 3px;
+}
+.breed-stat-label { font-size: 10px; width: 48px; text-align: right; color: rgba(255,255,255,.6); }
+.breed-stat-bar-track {
+    flex: 1;
+    height: 8px;
+    background: rgba(255,255,255,.08);
+    border-radius: 4px;
+    overflow: hidden;
+}
+.breed-stat-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width .3s;
+}
+.breed-stat-val { font-size: 10px; width: 28px; color: rgba(255,255,255,.7); }
+
+/* Items panel */
+.breed-items {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.breed-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border-radius: 12px;
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.1);
+    cursor: pointer;
+    transition: background .2s, border-color .2s;
+    user-select: none;
+}
+.breed-toggle:hover { background: rgba(255,255,255,.1); }
+.breed-toggle--active {
+    border-color: var(--accent, #6cf);
+    background: rgba(100,200,255,.1);
+    box-shadow: 0 0 12px rgba(100,200,255,.15);
+}
+
+.breed-toggle input { display: none; }
+.breed-toggle-icon { font-size: 20px; }
+.breed-toggle-text { font-size: 12px; font-weight: 600; line-height: 1.3; }
+.breed-toggle-text small { font-weight: 400; color: rgba(255,255,255,.5); font-size: 10px; }
+
+/* Error */
+.breed-error {
+    text-align: center;
+    margin: 12px 0;
+}
+.breed-error-text {
+    display: inline-block;
+    padding: 10px 20px;
+    border-radius: 12px;
+    background: rgba(255,60,60,.15);
+    color: #ff6b6b;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+/* Result */
+.breed-result { margin-top: 12px; }
+
+.breed-result-top {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    background: rgba(255,255,255,.05);
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.breed-offspring-card { text-align: center; }
+.breed-offspring-sprite {
+    width: 96px;
+    height: 96px;
+    image-rendering: pixelated;
+}
+.breed-offspring-name {
+    font-size: 18px;
+    font-weight: 700;
+    text-transform: capitalize;
+    margin: 4px 0;
+}
+.breed-offspring-types { display: flex; gap: 4px; justify-content: center; flex-wrap: wrap; }
+
+.breed-compat-info { text-align: center; }
+.breed-compat-label { font-size: 11px; color: rgba(255,255,255,.5); margin: 0 0 6px; }
+.breed-compat-groups { display: flex; gap: 4px; flex-wrap: wrap; justify-content: center; margin-bottom: 8px; }
+.breed-compat-ok { color: #6fcf97; font-size: 13px; font-weight: 600; margin: 0; }
+
+.breed-section-title {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    color: rgba(255,255,255,.55);
+    margin: 0 0 8px;
+}
+
+/* Hatch bar */
+.breed-hatch-section {
+    background: rgba(255,255,255,.04);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 16px;
+}
+.breed-hatch-bar-track {
+    height: 12px;
+    background: rgba(255,255,255,.08);
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 6px;
+}
+.breed-hatch-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #6cf, #a78bfa);
+    border-radius: 6px;
+    transition: width .3s;
+}
+.breed-hatch-steps { font-size: 13px; margin: 4px 0 2px; }
+.breed-hatch-note  { font-size: 11px; color: rgba(255,255,255,.45); margin: 0; }
+
+/* IV probability bars */
+.breed-iv-section {
+    background: rgba(255,255,255,.04);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 16px;
+}
+.breed-iv-bars { }
+.breed-iv-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 4px;
+}
+.breed-iv-label { font-size: 10px; width: 48px; text-align: right; color: rgba(255,255,255,.6); }
+.breed-iv-bar-track {
+    flex: 1;
+    height: 10px;
+    background: rgba(255,255,255,.08);
+    border-radius: 5px;
+    overflow: hidden;
+}
+.breed-iv-bar-fill {
+    height: 100%;
+    border-radius: 5px;
+    transition: width .3s;
+}
+.breed-iv-val { font-size: 10px; width: 38px; color: rgba(255,255,255,.7); }
+
+/* Shiny grid */
+.breed-shiny-section {
+    background: rgba(255,255,255,.04);
+    border-radius: 12px;
+    padding: 14px;
+}
+.breed-shiny-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+}
+.breed-shiny-card {
+    text-align: center;
+    padding: 10px 6px;
+    border-radius: 10px;
+    background: rgba(255,255,255,.05);
+}
+.breed-shiny-card--highlight { background: rgba(100,200,255,.1); }
+.breed-shiny-label {
+    display: block;
+    font-size: 9px;
+    color: rgba(255,255,255,.5);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+}
+.breed-shiny-val {
+    font-size: 15px;
+    font-weight: 700;
+    color: #ffd700;
+}
+
+/* Autocomplete */
+.breed-ac {
+    position: relative;
+    width: 100%;
+    display: none;
+}
+.breed-ac--open {
+    display: block;
+}
+.breed-ac-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: background .15s;
+}
+.breed-ac-item:hover { background: rgba(255,255,255,.1); }
+.breed-ac-sprite { width: 32px; height: 32px; image-rendering: pixelated; }
+.breed-ac-name { font-size: 13px; text-transform: capitalize; flex: 1; }
+.breed-ac-num  { font-size: 10px; color: rgba(255,255,255,.4); }
+.breed-ac-empty { font-size: 11px; color: rgba(255,255,255,.4); padding: 8px; text-align: center; }
+
+/* ── Breeding responsive ─────────────────────────────── */
+@media (max-width: 600px) {
+    .breed-parents {
+        grid-template-columns: 1fr;
+    }
+    .breed-parent-sprite,
+    .breed-offspring-sprite {
+        width: 72px;
+        height: 72px;
+    }
+    .breed-parent-name { font-size: 14px; }
+    .breed-offspring-name { font-size: 15px; }
+    .breed-shiny-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .breed-result-top { flex-direction: column; }
+    .breed-toggle { padding: 8px 12px; }
+    .breed-toggle-icon { font-size: 16px; }
+    .breed-toggle-text { font-size: 11px; }
+}
+
+@media (max-width: 360px) {
+    .breed-parent { padding: 10px; }
+    .breed-stat-label { width: 36px; font-size: 9px; }
+    .breed-iv-label { width: 36px; font-size: 9px; }
+    .breed-shiny-val { font-size: 13px; }
+    .breed-shiny-label { font-size: 8px; }
+}

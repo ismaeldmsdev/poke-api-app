@@ -1102,4 +1102,214 @@ window.PokeAnalyzer.renderer = {
         if (total > 0) this.el('tmProgress').classList.remove('hidden');
         else this.el('tmProgress').classList.add('hidden');
     },
+
+    // ── Simulador de Crianza ───────────────────────────────────
+    openBreedingModal() {
+        const modal = this.el('breedingModal');
+        modal.classList.remove('hidden');
+        modal.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('modal-open');
+    },
+
+    closeBreedingModal() {
+        const modal = this.el('breedingModal');
+        modal.classList.add('hidden');
+        modal.setAttribute('aria-hidden', 'true');
+        document.body.classList.remove('modal-open');
+    },
+
+    renderBreedingParents(parent1, parent2) {
+        const { TYPE_ES, TYPE_COLORS, EGG_GROUPS_ES, SPRITE_RAW } = window.PokeAnalyzer.config;
+        const container = this.el('breedParents');
+
+        const renderParent = (parent, slot, label) => {
+            if (!parent) {
+                return `
+                <div class="breed-parent breed-parent--empty" data-slot="${slot}">
+                    <p class="breed-parent-label">${label}</p>
+                    <input class="breed-search" type="search" data-slot="${slot}" placeholder="Buscar Pokémon..." autocomplete="off" spellcheck="false">
+                    <div class="breed-ac" data-slot="${slot}"></div>
+                </div>`;
+            }
+
+            const badges = parent.types.map(t => {
+                const c = TYPE_COLORS[t] || { bg: '#888', fg: '#111' };
+                return `<span class="type-badge" style="font-size:9px;padding:2px 7px;background:${c.bg};color:${c.fg}">${(TYPE_ES[t] || t).toUpperCase()}</span>`;
+            }).join('');
+
+            const eggBadges = parent.eggGroups.map(g =>
+                `<span class="breed-egg-badge">${EGG_GROUPS_ES[g] || g}</span>`
+            ).join('');
+
+            const genderText = parent.genderRate === -1 ? 'Sin género'
+                : parent.genderRate === 0 ? '100% ♂'
+                : parent.genderRate === 8 ? '100% ♀'
+                : `${((8 - parent.genderRate) / 8 * 100).toFixed(0)}% ♂ / ${(parent.genderRate / 8 * 100).toFixed(0)}% ♀`;
+
+            const statKeys = ['PS', 'Atq', 'Def', 'Atq.Esp', 'Def.Esp', 'Vel'];
+            const statBars = statKeys.map(k => {
+                const val = parent.stats[k] ?? 0;
+                const pct = Math.min((val / 255) * 100, 100);
+                const hue = Math.round((pct / 100) * 120);
+                return `
+                <div class="breed-stat-row">
+                    <span class="breed-stat-label">${k}</span>
+                    <div class="breed-stat-bar-track">
+                        <div class="breed-stat-bar-fill" style="width:${pct}%;background:hsl(${hue},70%,50%)"></div>
+                    </div>
+                    <span class="breed-stat-val">${val}</span>
+                </div>`;
+            }).join('');
+
+            return `
+            <div class="breed-parent breed-parent--filled" data-slot="${slot}">
+                <div class="breed-parent-header">
+                    <p class="breed-parent-label">${label}</p>
+                    <button class="breed-parent-remove" data-slot="${slot}" type="button" title="Quitar">✕</button>
+                </div>
+                <img class="breed-parent-sprite" src="${parent.sprite}" alt="${parent.name}">
+                <p class="breed-parent-name">${parent.name}</p>
+                <div class="breed-parent-types">${badges}</div>
+                <div class="breed-parent-eggs">${eggBadges}</div>
+                <p class="breed-parent-gender">${genderText}</p>
+                <div class="breed-parent-stats">${statBars}</div>
+            </div>`;
+        };
+
+        container.innerHTML = renderParent(parent1, 1, 'Padre') + renderParent(parent2, 2, 'Madre / Ditto');
+    },
+
+    renderBreedingItems(destinyKnot, everstone) {
+        const container = this.el('breedItems');
+        container.innerHTML = `
+        <label class="breed-toggle${destinyKnot ? ' breed-toggle--active' : ''}">
+            <input type="checkbox" class="breed-item-cb" data-item="destinyKnot" ${destinyKnot ? 'checked' : ''}>
+            <span class="breed-toggle-icon">🔗</span>
+            <span class="breed-toggle-text">Lazo Destino<br><small>Hereda 5 IVs</small></span>
+        </label>
+        <label class="breed-toggle${everstone ? ' breed-toggle--active' : ''}">
+            <input type="checkbox" class="breed-item-cb" data-item="everstone" ${everstone ? 'checked' : ''}>
+            <span class="breed-toggle-icon">🪨</span>
+            <span class="breed-toggle-text">Piedra Eterna<br><small>Hereda Naturaleza</small></span>
+        </label>`;
+    },
+
+    renderBreedingResult(data) {
+        const { TYPE_ES, TYPE_COLORS, SPRITE_RAW } = window.PokeAnalyzer.config;
+        const container = this.el('breedResult');
+        container.classList.remove('hidden');
+
+        const badges = data.offspring.types.map(t => {
+            const c = TYPE_COLORS[t] || { bg: '#888', fg: '#111' };
+            return `<span class="type-badge" style="font-size:9px;padding:2px 7px;background:${c.bg};color:${c.fg}">${(TYPE_ES[t] || t).toUpperCase()}</span>`;
+        }).join('');
+
+        const groupBadges = data.sharedGroups.map(g =>
+            `<span class="breed-egg-badge breed-egg-badge--shared">${g}</span>`
+        ).join('') || '<span class="breed-egg-badge breed-egg-badge--shared">Ditto</span>';
+
+        const hatchPct = Math.min((data.hatchSteps / data.maxHatchSteps) * 100, 100).toFixed(0);
+
+        const statKeys = ['PS', 'Atq', 'Def', 'Atq.Esp', 'Def.Esp', 'Vel'];
+        const ivBars = statKeys.map(k => {
+            const prob = data.ivProbs[k] ?? 0;
+            const pct = (prob * 100).toFixed(1);
+            const hue = Math.round(prob * 120);
+            return `
+            <div class="breed-iv-row">
+                <span class="breed-iv-label">${k}</span>
+                <div class="breed-iv-bar-track">
+                    <div class="breed-iv-bar-fill" style="width:${pct}%;background:hsl(${hue},70%,50%)"></div>
+                </div>
+                <span class="breed-iv-val">${pct}%</span>
+            </div>`;
+        }).join('');
+
+        container.innerHTML = `
+        <div class="breed-result-top">
+            <div class="breed-offspring-card">
+                <img class="breed-offspring-sprite" src="${data.offspring.sprite}" alt="${data.offspring.name}">
+                <p class="breed-offspring-name">${data.offspring.name}</p>
+                <div class="breed-offspring-types">${badges}</div>
+            </div>
+            <div class="breed-compat-info">
+                <p class="breed-compat-label">Grupo(s) huevo compartido(s)</p>
+                <div class="breed-compat-groups">${groupBadges}</div>
+                <p class="breed-compat-ok">✅ Compatible</p>
+            </div>
+        </div>
+
+        <div class="breed-hatch-section">
+            <p class="breed-section-title">Pasos de eclosión</p>
+            <div class="breed-hatch-bar-track">
+                <div class="breed-hatch-bar-fill" style="width:${hatchPct}%"></div>
+            </div>
+            <p class="breed-hatch-steps">${data.hatchSteps.toLocaleString('es-ES')} pasos <small>(aprox. ${(data.hatchSteps / 256).toFixed(0)} ciclos)</small></p>
+            <p class="breed-hatch-note">🔥 Con Cuerpo Llama / Armadura Magma se reduce a la mitad</p>
+        </div>
+
+        <div class="breed-iv-section">
+            <p class="breed-section-title">Probabilidad de IV perfecto por stat ${data.destinyKnot ? '(Lazo Destino)' : '(sin Lazo Destino)'}</p>
+            <div class="breed-iv-bars">${ivBars}</div>
+        </div>
+
+        <div class="breed-shiny-section">
+            <p class="breed-section-title">Probabilidades Shiny</p>
+            <div class="breed-shiny-grid">
+                <div class="breed-shiny-card">
+                    <span class="breed-shiny-label">Base</span>
+                    <span class="breed-shiny-val">${data.shinyBase}</span>
+                </div>
+                <div class="breed-shiny-card breed-shiny-card--highlight">
+                    <span class="breed-shiny-label">Método Masuda</span>
+                    <span class="breed-shiny-val">${data.shinyMasuda}</span>
+                </div>
+                <div class="breed-shiny-card">
+                    <span class="breed-shiny-label">Amuleto Iris</span>
+                    <span class="breed-shiny-val">${data.shinyCharm}</span>
+                </div>
+                <div class="breed-shiny-card breed-shiny-card--highlight">
+                    <span class="breed-shiny-label">Masuda + Iris</span>
+                    <span class="breed-shiny-val">${data.shinyBoth}</span>
+                </div>
+            </div>
+        </div>`;
+    },
+
+    renderBreedingError(msg) {
+        const container = this.el('breedError');
+        container.classList.remove('hidden');
+        container.innerHTML = `<p class="breed-error-text">❌ ${msg}</p>`;
+    },
+
+    setBreedingSlotBusy(slot, busy) {
+        const parent = document.querySelector(`.breed-parent[data-slot="${slot}"]`);
+        if (parent) parent.style.opacity = busy ? '0.5' : '';
+    },
+
+    showBreedingSuggestions(slot, matches) {
+        const { SPRITE_RAW } = window.PokeAnalyzer.config;
+        const ac = document.querySelector(`.breed-ac[data-slot="${slot}"]`);
+        if (!ac) return;
+        if (!matches || matches.length === 0) {
+            ac.innerHTML = '<p class="breed-ac-empty">Sin resultados.</p>';
+            ac.classList.add('breed-ac--open');
+            return;
+        }
+        ac.innerHTML = matches.map(p => `
+            <div class="breed-ac-item" data-slot="${slot}" data-name="${p.name}">
+                <img class="breed-ac-sprite" src="${SPRITE_RAW}/${p.id}.png" alt="${p.name}" loading="lazy">
+                <span class="breed-ac-name">${p.name}</span>
+                <span class="breed-ac-num">#${String(p.id).padStart(4, '0')}</span>
+            </div>`).join('');
+        ac.classList.add('breed-ac--open');
+    },
+
+    hideBreedingSuggestions(slot) {
+        const ac = document.querySelector(`.breed-ac[data-slot="${slot}"]`);
+        if (ac) {
+            ac.classList.remove('breed-ac--open');
+            ac.innerHTML = '';
+        }
+    },
 };

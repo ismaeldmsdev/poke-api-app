@@ -184,6 +184,26 @@ window.PokeAnalyzer.pokeAPI = {
         } catch { return null; }
     },
 
+    _speciesCache: {},
+    async fetchSpeciesBreeding(name) {
+        const key = String(name).toLowerCase().trim();
+        if (this._speciesCache[key]) return this._speciesCache[key];
+        try {
+            const res = await fetch(`${window.PokeAnalyzer.config.POKEAPI_BASE}/pokemon-species/${key}`);
+            if (!res.ok) return null;
+            const data = await res.json();
+            const result = {
+                name: data.name,
+                eggGroups: (data.egg_groups || []).map(g => g.name),
+                hatchCounter: data.hatch_counter ?? 20,
+                genderRate: data.gender_rate ?? -1,
+                isBaby: data.is_baby ?? false,
+            };
+            this._speciesCache[key] = result;
+            return result;
+        } catch { return null; }
+    },
+
     _pokemonListCache: null,
     async fetchPokemonList() {
         if (this._pokemonListCache) return this._pokemonListCache;

@@ -26,6 +26,7 @@
                 <button id="menuCoverageItem" class="header-menu-item" type="button">Calculadora de Cobertura</button>
                 <button id="menuTmItem" class="header-menu-item" type="button">Localizador de MT</button>
                 <button id="menuTeamItem" class="header-menu-item" type="button">Analizador de Equipo</button>
+                <button id="menuBreedingItem" class="header-menu-item" type="button">Simulador de Crianza</button>
             </div>
         </div>
     </div>
@@ -260,6 +261,22 @@
             <div id="teamPokeSearchResults" class="team-poke-search-results">
                 <p class="team-poke-search-hint">Escribe 2+ letras para buscar.</p>
             </div>
+        </div>
+    </div>
+</div>
+
+<div id="breedingModal" class="modal hidden" aria-hidden="true">
+    <div class="modal-backdrop" data-close-breed="1"></div>
+    <div class="modal-sheet" role="dialog" aria-modal="true" aria-label="Simulador de Crianza">
+        <div class="modal-topbar">
+            <div class="modal-title">SIMULADOR DE CRIANZA</div>
+            <button id="closeBreedingBtn" class="icon-btn" type="button" aria-label="Cerrar">✕</button>
+        </div>
+        <div class="modal-body">
+            <div id="breedParents" class="breed-parents"></div>
+            <div id="breedItems" class="breed-items"></div>
+            <div id="breedError" class="breed-error hidden"></div>
+            <div id="breedResult" class="breed-result hidden"></div>
         </div>
     </div>
 </div>
