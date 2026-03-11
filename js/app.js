@@ -14,7 +14,7 @@ window.PokeAnalyzer.app = {
         analysis: null,
         coverage: { mode: 'defensive', genNum: 9, selected: [] },
         tm: { gameId: '', search: '', typeFilter: 'all', checklists: {} },
-        team: { genNum: 9, slots: [null, null, null, null, null, null], pokemonList: null },
+        team: { genNum: 9, slots: [null, null, null, null, null, null], pokemonList: null, searchingSlot: -1 },
     },
 
     init() {
@@ -210,55 +210,67 @@ window.PokeAnalyzer.app = {
             this._setTeamGen(Number(btn.dataset.gen));
         });
 
-        document.getElementById('teamSlots').addEventListener('keydown', e => {
-            if (e.key !== 'Enter') return;
-            const input = e.target.closest('.team-slot-input');
-            if (!input) return;
-            const idx = Number(input.dataset.slot);
-            window.PokeAnalyzer.renderer.hideTeamSuggestions(idx);
-            this._addTeamPokemon(idx, input.value.trim());
-        });
-
-        let teamAcTimer;
-        document.getElementById('teamSlots').addEventListener('input', e => {
-            const input = e.target.closest('.team-slot-input');
-            if (!input) return;
-            clearTimeout(teamAcTimer);
-            const slotIdx = Number(input.dataset.slot);
-            const query = input.value.trim().toLowerCase();
-            teamAcTimer = setTimeout(() => {
-                this._filterTeamSuggestions(slotIdx, query);
-            }, 120);
-        });
-
-        document.getElementById('teamSlots').addEventListener('focusout', e => {
-            const input = e.target.closest('.team-slot-input');
-            if (!input) return;
-            setTimeout(() => {
-                const idx = Number(input.dataset.slot);
-                window.PokeAnalyzer.renderer.hideTeamSuggestions(idx);
-            }, 180);
-        });
-
+        // Slots: tap vacío → abrir búsqueda; tap quitar → eliminar
         document.getElementById('teamSlots').addEventListener('click', e => {
-            const acItem = e.target.closest('.team-ac-item');
-            if (acItem) {
-                const idx = Number(acItem.dataset.slot);
-                window.PokeAnalyzer.renderer.hideTeamSuggestions(idx);
-                this._addTeamPokemon(idx, acItem.dataset.name);
-                return;
-            }
             const removeBtn = e.target.closest('.team-slot-remove');
             if (removeBtn) {
                 this._removeTeamPokemon(Number(removeBtn.dataset.slot));
                 return;
             }
-            const searchBtn = e.target.closest('.team-slot-search-btn');
-            if (searchBtn) {
-                const idx = Number(searchBtn.dataset.slot);
-                const input = document.querySelector(`.team-slot-input[data-slot="${idx}"]`);
-                if (input) this._addTeamPokemon(idx, input.value.trim());
+            const emptySlot = e.target.closest('.team-slot--empty');
+            if (emptySlot) {
+                const idx = Number(emptySlot.dataset.slot);
+                this.state.team.searchingSlot = idx;
+                window.PokeAnalyzer.renderer.openTeamSearch(idx);
             }
+        });
+        document.getElementById('teamSlots').addEventListener('keydown', e => {
+            if (e.key !== 'Enter' && e.key !== ' ') return;
+            const emptySlot = e.target.closest('.team-slot--empty');
+            if (emptySlot) {
+                e.preventDefault();
+                const idx = Number(emptySlot.dataset.slot);
+                this.state.team.searchingSlot = idx;
+                window.PokeAnalyzer.renderer.openTeamSearch(idx);
+            }
+        });
+
+        // Overlay de búsqueda de Pokémon para equipo
+        document.getElementById('teamPokeSearchClose').addEventListener('click', () => {
+            window.PokeAnalyzer.renderer.closeTeamSearch();
+        });
+        document.getElementById('teamPokeSearchBg').addEventListener('click', () => {
+            window.PokeAnalyzer.renderer.closeTeamSearch();
+        });
+
+        let teamPokeTimer;
+        document.getElementById('teamPokeSearchInput').addEventListener('input', e => {
+            clearTimeout(teamPokeTimer);
+            const query = e.target.value.trim().toLowerCase();
+            teamPokeTimer = setTimeout(() => {
+                this._filterTeamPokeSearch(query);
+            }, 120);
+        });
+        document.getElementById('teamPokeSearchInput').addEventListener('keydown', e => {
+            if (e.key === 'Escape') {
+                window.PokeAnalyzer.renderer.closeTeamSearch();
+                return;
+            }
+            if (e.key === 'Enter') {
+                const first = document.querySelector('.team-poke-search-item');
+                if (first) {
+                    const slot = this.state.team.searchingSlot;
+                    window.PokeAnalyzer.renderer.closeTeamSearch();
+                    this._addTeamPokemon(slot, first.dataset.name);
+                }
+            }
+        });
+        document.getElementById('teamPokeSearchResults').addEventListener('click', e => {
+            const item = e.target.closest('.team-poke-search-item');
+            if (!item) return;
+            const slot = this.state.team.searchingSlot;
+            window.PokeAnalyzer.renderer.closeTeamSearch();
+            this._addTeamPokemon(slot, item.dataset.name);
         });
     },
 
@@ -448,19 +460,19 @@ window.PokeAnalyzer.app = {
         }
     },
 
-    _filterTeamSuggestions(slotIdx, query) {
+    _filterTeamPokeSearch(query) {
         const { renderer } = window.PokeAnalyzer;
+        const slot = this.state.team.searchingSlot;
+        const results = document.getElementById('teamPokeSearchResults');
         if (query.length < 2 || !this.state.team.pokemonList) {
-            renderer.hideTeamSuggestions(slotIdx);
+            if (results) results.innerHTML = '<p class="team-poke-search-hint">Escribe 2+ letras para buscar.</p>';
             return;
         }
         const list = this.state.team.pokemonList;
         const startsWith = list.filter(p => p.name.startsWith(query));
         const includes = list.filter(p => !p.name.startsWith(query) && p.name.includes(query));
-        const matches = [...startsWith, ...includes].slice(0, 6);
-
-        if (matches.length > 0) renderer.showTeamSuggestions(slotIdx, matches);
-        else renderer.hideTeamSuggestions(slotIdx);
+        const matches = [...startsWith, ...includes].slice(0, 20);
+        renderer.renderTeamPokeSearchResults(matches, slot);
     },
 
     async _addTeamPokemon(slotIdx, query) {

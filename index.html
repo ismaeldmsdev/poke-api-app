@@ -224,7 +224,10 @@
             <button id="closeTeamBtn" class="icon-btn" type="button" aria-label="Cerrar" data-close-team="1">✕</button>
         </div>
         <div class="modal-body">
-            <p class="modal-sub">Añade hasta 6 Pokémon para analizar las debilidades y cobertura ofensiva de tu equipo.</p>
+            <div class="team-header-bar">
+                <p class="modal-sub">Toca un slot para añadir un Pokémon.</p>
+                <span id="teamSlotCount" class="team-slot-count">0 / 6</span>
+            </div>
             <div class="team-gen-bar">
                 <span class="cov-gen-label">GENERACIÓN</span>
                 <div id="teamGenGrid" class="cov-gen-grid"></div>
@@ -239,6 +242,23 @@
                 <p class="team-scroll-hint">← DESLIZA PARA VER MÁS →</p>
                 <p class="section-title" style="margin-top:18px">COBERTURA OFENSIVA DEL EQUIPO</p>
                 <div id="teamOffensive"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Overlay de búsqueda de Pokémon (bottom sheet) -->
+    <div id="teamPokeSearch" class="team-poke-search hidden" aria-hidden="true">
+        <div class="team-poke-search-bg" id="teamPokeSearchBg"></div>
+        <div class="team-poke-search-sheet" role="dialog" aria-label="Buscar Pokémon">
+            <div class="team-poke-search-header">
+                <span id="teamPokeSearchTitle" class="team-poke-search-title">SLOT 1 — AÑADIR POKÉMON</span>
+                <button id="teamPokeSearchClose" class="icon-btn" type="button" aria-label="Cerrar búsqueda">✕</button>
+            </div>
+            <div class="team-poke-search-input-wrap">
+                <input id="teamPokeSearchInput" class="team-poke-search-input" type="search" placeholder="Charizard, Garchomp, Rotom-W..." autocomplete="off" spellcheck="false">
+            </div>
+            <div id="teamPokeSearchResults" class="team-poke-search-results">
+                <p class="team-poke-search-hint">Escribe 2+ letras para buscar.</p>
             </div>
         </div>
     </div>

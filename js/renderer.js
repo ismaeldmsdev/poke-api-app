@@ -786,6 +786,10 @@ window.PokeAnalyzer.renderer = {
     renderTeamSlots(slots) {
         const { TYPE_ES, TYPE_COLORS } = window.PokeAnalyzer.config;
         const container = this.el('teamSlots');
+        const filled = slots.filter(Boolean).length;
+        const countEl = this.el('teamSlotCount');
+        if (countEl) countEl.textContent = `${filled} / 6`;
+
         container.innerHTML = slots.map((slot, i) => {
             if (slot) {
                 const badges = slot.types.map(t => {
@@ -793,7 +797,7 @@ window.PokeAnalyzer.renderer = {
                     return `<span class="type-badge" style="font-size:8px;padding:2px 6px;background:${c.bg};color:${c.fg}">${(TYPE_ES[t] || t).toUpperCase()}</span>`;
                 }).join('');
                 return `
-                <div class="team-slot team-slot--filled">
+                <div class="team-slot team-slot--filled" data-slot="${i}">
                     <button class="team-slot-remove" data-slot="${i}" type="button" title="Quitar">✕</button>
                     <img class="team-slot-sprite" src="${slot.sprite}" alt="${slot.name}">
                     <p class="team-slot-name">${slot.name}</p>
@@ -801,56 +805,73 @@ window.PokeAnalyzer.renderer = {
                 </div>`;
             }
             return `
-            <div class="team-slot team-slot--empty">
-                <div class="team-slot-search">
-                    <input class="team-slot-input" data-slot="${i}" type="text" placeholder="Pokémon ${i + 1}" autocomplete="off" spellcheck="false">
-                    <button class="team-slot-search-btn" data-slot="${i}" type="button">+</button>
-                </div>
-                <div class="team-ac" id="teamAc${i}"></div>
+            <div class="team-slot team-slot--empty" data-slot="${i}" role="button" tabindex="0" aria-label="Añadir Pokémon en slot ${i + 1}">
+                <div class="team-slot-add-icon">+</div>
+                <span class="team-slot-add-label">SLOT ${i + 1}</span>
             </div>`;
         }).join('');
     },
 
+    // ── Team Pokémon search overlay ─────────────────────────────
+    openTeamSearch(idx) {
+        const overlay = this.el('teamPokeSearch');
+        const title   = this.el('teamPokeSearchTitle');
+        const input   = this.el('teamPokeSearchInput');
+        const results = this.el('teamPokeSearchResults');
+        title.textContent = `SLOT ${idx + 1} — AÑADIR POKÉMON`;
+        input.value = '';
+        results.innerHTML = '<p class="team-poke-search-hint">Escribe 2+ letras para buscar.</p>';
+        overlay.classList.remove('hidden');
+        overlay.setAttribute('aria-hidden', 'false');
+        setTimeout(() => input.focus(), 60);
+    },
+
+    closeTeamSearch() {
+        const overlay = this.el('teamPokeSearch');
+        overlay.classList.add('hidden');
+        overlay.setAttribute('aria-hidden', 'true');
+        const input = this.el('teamPokeSearchInput');
+        if (input) input.value = '';
+    },
+
+    renderTeamPokeSearchResults(suggestions, slotIdx) {
+        const { SPRITE_RAW } = window.PokeAnalyzer.config;
+        const results = this.el('teamPokeSearchResults');
+        if (!suggestions || suggestions.length === 0) {
+            results.innerHTML = '<p class="team-poke-search-hint">Sin resultados. Prueba con otro nombre.</p>';
+            return;
+        }
+        results.innerHTML = suggestions.map(p => `
+            <div class="team-poke-search-item" data-slot="${slotIdx}" data-name="${p.name}">
+                <img class="team-poke-search-sprite" src="${SPRITE_RAW}/${p.id}.png" alt="${p.name}" loading="lazy">
+                <span class="team-poke-search-name">${p.name}</span>
+                <span class="team-poke-search-num">#${String(p.id).padStart(4, '0')}</span>
+            </div>`).join('');
+    },
+
     setTeamSlotBusy(idx, busy) {
-        const input = document.querySelector(`.team-slot-input[data-slot="${idx}"]`);
-        if (input) input.disabled = busy;
-        const btn = document.querySelector(`.team-slot-search-btn[data-slot="${idx}"]`);
-        if (btn) { btn.disabled = busy; btn.textContent = busy ? '...' : '+'; }
+        const slot = document.querySelector(`.team-slot[data-slot="${idx}"]`);
+        if (slot) slot.style.opacity = busy ? '0.5' : '';
     },
 
     showTeamSlotError(idx) {
-        const input = document.querySelector(`.team-slot-input[data-slot="${idx}"]`);
+        const slot = document.querySelector(`.team-slot[data-slot="${idx}"]`);
+        if (slot) slot.style.opacity = '';
+        // Reabrir búsqueda con indicación de error
+        this.openTeamSearch(idx);
+        const input = this.el('teamPokeSearchInput');
         if (input) {
-            input.value = '';
-            input.placeholder = 'No encontrado';
-            setTimeout(() => { input.placeholder = `Pokémon ${idx + 1}`; }, 2000);
+            input.placeholder = '❌ No encontrado, intenta de nuevo';
+            setTimeout(() => { input.placeholder = 'Charizard, Garchomp, Rotom-W...'; }, 2500);
         }
     },
 
-    showTeamSuggestions(slotIdx, suggestions) {
-        this.hideAllTeamSuggestions();
-        const ac = document.getElementById(`teamAc${slotIdx}`);
-        if (!ac) return;
-        const slot = ac.closest('.team-slot');
-        if (slot) slot.classList.add('team-slot--ac-active');
-
-        const { SPRITE_RAW } = window.PokeAnalyzer.config;
-        ac.innerHTML = suggestions.map(p => `
-            <div class="team-ac-item" data-slot="${slotIdx}" data-name="${p.name}">
-                <img class="team-ac-sprite" src="${SPRITE_RAW}/${p.id}.png" alt="${p.name}" loading="lazy">
-                <span class="team-ac-name">${p.name}</span>
-                <span class="team-ac-num">#${String(p.id).padStart(4, '0')}</span>
-            </div>`).join('');
-        ac.classList.add('team-ac--open');
+    showTeamSuggestions() {
+        // Mantenido por compatibilidad (no usado en nueva UI)
     },
 
-    hideTeamSuggestions(slotIdx) {
-        const ac = document.getElementById(`teamAc${slotIdx}`);
-        if (!ac) return;
-        ac.classList.remove('team-ac--open');
-        ac.innerHTML = '';
-        const slot = ac.closest('.team-slot');
-        if (slot) slot.classList.remove('team-slot--ac-active');
+    hideTeamSuggestions() {
+        // Mantenido por compatibilidad (no usado en nueva UI)
     },
 
     hideAllTeamSuggestions() {
