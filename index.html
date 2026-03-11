@@ -23,6 +23,7 @@
             <button id="headerMenuBtn" class="icon-btn header-menu-btn" type="button" aria-haspopup="true" aria-expanded="false">☰</button>
             <div id="headerMenuPanel" class="header-menu-panel hidden">
                 <button id="menuVersusItem" class="header-menu-item" type="button" disabled>Comparar Pokémon (Versus)</button>
+                <button id="menuCoverageItem" class="header-menu-item" type="button">Calculadora de Cobertura</button>
             </div>
         </div>
     </div>
@@ -150,6 +151,32 @@
                 <p class="loading-text yellow">CALCULANDO DUELO...</p>
             </div>
             <div id="versusResult" class="versus-result hidden"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Calculadora de Cobertura -->
+<div id="coverageModal" class="modal hidden" aria-hidden="true">
+    <div class="modal-backdrop" data-close-cov="1"></div>
+    <div class="modal-sheet" role="dialog" aria-modal="true" aria-label="Calculadora de Cobertura de Tipos">
+        <div class="modal-topbar">
+            <div class="modal-title">CALCULADORA DE COBERTURA</div>
+            <button id="closeCoverageBtn" class="icon-btn" type="button" aria-label="Cerrar" data-close-cov="1">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="cov-tabs">
+                <button class="cov-tab active" data-mode="defensive" type="button">DEFENSIVO</button>
+                <button class="cov-tab" data-mode="offensive" type="button">OFENSIVO</button>
+            </div>
+            <div class="cov-gen-bar">
+                <span class="cov-gen-label">GENERACIÓN</span>
+                <div id="covGenGrid" class="cov-gen-grid"></div>
+            </div>
+            <p id="covInstruction" class="modal-sub">Selecciona hasta 2 tipos para ver debilidades y resistencias.</p>
+            <div id="covSelected" class="cov-selected"></div>
+            <div id="covTypeGrid" class="cov-type-grid"></div>
+            <button id="covClearBtn" class="cov-clear-btn" type="button">LIMPIAR SELECCIÓN</button>
+            <div id="covResults" class="cov-results hidden"></div>
         </div>
     </div>
 </div>

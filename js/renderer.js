@@ -599,6 +599,162 @@ window.PokeAnalyzer.renderer = {
         container.classList.remove('hidden');
     },
 
+    // ── Calculadora de Cobertura ─────────────────────────────────
+    openCoverageModal() {
+        const modal = this.el('coverageModal');
+        modal.classList.remove('hidden');
+        modal.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('modal-open');
+    },
+    closeCoverageModal() {
+        const modal = this.el('coverageModal');
+        modal.classList.add('hidden');
+        modal.setAttribute('aria-hidden', 'true');
+        document.body.classList.remove('modal-open');
+    },
+
+    renderCoverageGenGrid(genNum) {
+        const grid = this.el('covGenGrid');
+        if (!grid) return;
+        grid.innerHTML = '';
+        for (let i = 1; i <= 9; i++) {
+            const btn = document.createElement('button');
+            btn.className = `cov-gen-btn${i === genNum ? ' active' : ''}`;
+            btn.dataset.gen = i;
+            btn.type = 'button';
+            btn.textContent = i;
+            grid.appendChild(btn);
+        }
+    },
+
+    renderCoverageTypeGrid(genNum) {
+        const { TYPE_ES, TYPE_COLORS } = window.PokeAnalyzer.config;
+        const types = window.PokeAnalyzer.config.getTypesForGen(genNum);
+        const grid = this.el('covTypeGrid');
+        grid.innerHTML = types.map(t => {
+            const colors = TYPE_COLORS[t] || { bg: '#888', fg: '#111' };
+            const name = TYPE_ES[t] || t;
+            return `<button class="cov-type-btn" data-type="${t}" type="button" style="background:${colors.bg};color:${colors.fg}">${name}</button>`;
+        }).join('');
+    },
+
+    renderCoverageSelected(selectedTypes) {
+        const { TYPE_ES, TYPE_COLORS } = window.PokeAnalyzer.config;
+        const container = this.el('covSelected');
+        if (selectedTypes.length === 0) { container.innerHTML = ''; return; }
+        container.innerHTML = selectedTypes.map(t => {
+            const colors = TYPE_COLORS[t] || { bg: '#888', fg: '#111' };
+            const name = TYPE_ES[t] || t;
+            return `<span class="cov-sel-badge" data-type="${t}" style="background:${colors.bg};color:${colors.fg}">${name} ✕</span>`;
+        }).join('');
+    },
+
+    setCoverageInstruction(mode) {
+        this.el('covInstruction').textContent = mode === 'defensive'
+            ? 'Selecciona hasta 2 tipos para ver debilidades y resistencias.'
+            : 'Selecciona hasta 4 tipos de movimiento para analizar cobertura ofensiva.';
+    },
+
+    renderCoverageResults(selectedTypes, mode, genNum) {
+        const container = this.el('covResults');
+        if (selectedTypes.length === 0) { container.classList.add('hidden'); return; }
+        container.classList.remove('hidden');
+        if (mode === 'defensive') this._renderDefCoverage(selectedTypes, genNum, container);
+        else this._renderOffCoverage(selectedTypes, genNum, container);
+    },
+
+    _renderDefCoverage(defTypes, genNum, container) {
+        const config = window.PokeAnalyzer.config;
+        const { TYPE_ES, TYPE_COLORS } = config;
+        const allTypes = config.getTypesForGen(genNum);
+
+        const buckets = {
+            quad_weak: { label: 'DEBILIDADES DOBLES (4×)', items: [], accent: '#ff2222' },
+            weak:      { label: 'DEBILIDADES (2×)', items: [], accent: '#ff6b6b' },
+            neutral:   { label: 'NEUTRAL (1×)', items: [], accent: 'var(--muted)' },
+            resist:    { label: 'RESISTENCIAS (½×)', items: [], accent: '#4caf50' },
+            quad_res:  { label: 'RESISTENCIAS DOBLES (¼×)', items: [], accent: '#2e7d32' },
+            immune:    { label: 'INMUNIDADES (0×)', items: [], accent: '#7c5cfc' },
+        };
+
+        for (const atk of allTypes) {
+            const m = config.getEffectiveness(atk, defTypes, genNum);
+            if (m >= 4) buckets.quad_weak.items.push(atk);
+            else if (m >= 2) buckets.weak.items.push(atk);
+            else if (m === 1) buckets.neutral.items.push(atk);
+            else if (m === 0.5) buckets.resist.items.push(atk);
+            else if (m === 0.25) buckets.quad_res.items.push(atk);
+            else if (m === 0) buckets.immune.items.push(atk);
+        }
+
+        const badge = (t) => {
+            const c = TYPE_COLORS[t] || { bg: '#888', fg: '#111' };
+            return `<span class="cov-res-badge" style="background:${c.bg};color:${c.fg}">${TYPE_ES[t] || t}</span>`;
+        };
+
+        const order = ['quad_weak', 'weak', 'resist', 'quad_res', 'immune', 'neutral'];
+        container.innerHTML = order
+            .filter(k => buckets[k].items.length > 0)
+            .map(k => {
+                const b = buckets[k];
+                return `
+                <div class="cov-group">
+                    <p class="cov-group-label" style="color:${b.accent}">${b.label} <span class="cov-count">${b.items.length}</span></p>
+                    <div class="cov-badges">${b.items.map(badge).join('')}</div>
+                </div>`;
+            }).join('');
+    },
+
+    _renderOffCoverage(moveTypes, genNum, container) {
+        const config = window.PokeAnalyzer.config;
+        const { TYPE_ES, TYPE_COLORS } = config;
+        const allTypes = config.getTypesForGen(genNum);
+
+        const superEff = [], neutral = [], resist = [], immune = [];
+
+        for (const target of allTypes) {
+            let best = 0;
+            for (const atk of moveTypes) {
+                const m = config.getEffectiveness(atk, [target], genNum);
+                if (m > best) best = m;
+            }
+            if (best >= 2) superEff.push(target);
+            else if (best === 1) neutral.push(target);
+            else if (best > 0) resist.push(target);
+            else immune.push(target);
+        }
+
+        const pct = ((superEff.length / allTypes.length) * 100).toFixed(0);
+        const badge = (t) => {
+            const c = TYPE_COLORS[t] || { bg: '#888', fg: '#111' };
+            return `<span class="cov-res-badge" style="background:${c.bg};color:${c.fg}">${TYPE_ES[t] || t}</span>`;
+        };
+
+        const sections = [
+            { label: `SUPER EFECTIVO`, items: superEff, accent: '#4caf50' },
+            { label: `NEUTRAL`, items: neutral, accent: 'var(--muted)' },
+            { label: `POCO EFECTIVO`, items: resist, accent: '#ff6b6b' },
+            { label: `INMUNE`, items: immune, accent: '#7c5cfc' },
+        ];
+
+        container.innerHTML = `
+            <div class="cov-bar-wrap">
+                <div class="cov-bar-header">
+                    <span class="cov-bar-label">COBERTURA</span>
+                    <span class="cov-bar-pct">${pct}%</span>
+                </div>
+                <div class="cov-bar-bg"><div class="cov-bar-fill" style="width:${pct}%"></div></div>
+                <p class="cov-bar-detail">Cubres ${superEff.length} de ${allTypes.length} tipos con daño super efectivo.</p>
+            </div>
+            ${sections
+                .filter(s => s.items.length > 0)
+                .map(s => `
+                <div class="cov-group">
+                    <p class="cov-group-label" style="color:${s.accent}">${s.label} <span class="cov-count">${s.items.length}</span></p>
+                    <div class="cov-badges">${s.items.map(badge).join('')}</div>
+                </div>`).join('')}`;
+    },
+
     // ── Reset ─────────────────────────────────────────────────────
     resetResults() {
         this.hideMessage();

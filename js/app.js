@@ -10,8 +10,9 @@ window.PokeAnalyzer.app = {
 
     state: {
         selectedGen: 9,
-        cache: null,   // { pokemon, evoData, movesData, abilitiesEs, smogonData, smogonGen }
-        analysis: null, // { allSets, communityBuilds, hasSmogon, rol, formato, consejo_extra, genMechanics }
+        cache: null,
+        analysis: null,
+        coverage: { mode: 'defensive', genNum: 9, selected: [] },
     },
 
     init() {
@@ -98,14 +99,55 @@ window.PokeAnalyzer.app = {
             menuPanel.addEventListener('click', e => {
                 const item = e.target.closest('.header-menu-item');
                 if (!item) return;
+                menuPanel.classList.add('hidden');
+                menuBtn.setAttribute('aria-expanded', 'false');
+
                 if (item.id === 'menuVersusItem' && !item.disabled) {
-                    menuPanel.classList.add('hidden');
-                    menuBtn.setAttribute('aria-expanded', 'false');
                     window.PokeAnalyzer.renderer.openVersusModal();
                     document.getElementById('versusInput').focus();
                 }
+                if (item.id === 'menuCoverageItem') {
+                    this._openCoverage();
+                }
             });
         }
+
+        // Coverage calculator
+        document.getElementById('closeCoverageBtn').addEventListener('click', () => {
+            window.PokeAnalyzer.renderer.closeCoverageModal();
+        });
+        document.getElementById('coverageModal').addEventListener('click', e => {
+            if (e.target?.dataset?.closeCov) window.PokeAnalyzer.renderer.closeCoverageModal();
+        });
+
+        document.querySelector('.cov-tabs').addEventListener('click', e => {
+            const tab = e.target.closest('.cov-tab');
+            if (!tab) return;
+            this._setCoverageMode(tab.dataset.mode);
+        });
+
+        document.getElementById('covGenGrid').addEventListener('click', e => {
+            const btn = e.target.closest('.cov-gen-btn');
+            if (!btn) return;
+            this._setCoverageGen(Number(btn.dataset.gen));
+        });
+
+        document.getElementById('covTypeGrid').addEventListener('click', e => {
+            const btn = e.target.closest('.cov-type-btn');
+            if (!btn) return;
+            this._toggleCoverageType(btn.dataset.type);
+        });
+
+        document.getElementById('covSelected').addEventListener('click', e => {
+            const badge = e.target.closest('.cov-sel-badge');
+            if (!badge) return;
+            this._toggleCoverageType(badge.dataset.type);
+        });
+
+        document.getElementById('covClearBtn').addEventListener('click', () => {
+            this.state.coverage.selected = [];
+            this._refreshCoverage();
+        });
     },
 
     async run() {
@@ -201,6 +243,65 @@ window.PokeAnalyzer.app = {
         this.state.selectedGen = newGen;
         renderer.setActiveGenButton(this.state.selectedGen);
         if (this.state.cache) this._runAnalysis();
+    },
+
+    // ── Calculadora de Cobertura ─────────────────────────────────
+    _openCoverage() {
+        const { renderer } = window.PokeAnalyzer;
+        this.state.coverage.genNum = this.state.selectedGen;
+        this.state.coverage.selected = [];
+        renderer.openCoverageModal();
+        renderer.renderCoverageGenGrid(this.state.coverage.genNum);
+        renderer.renderCoverageTypeGrid(this.state.coverage.genNum);
+        renderer.setCoverageInstruction(this.state.coverage.mode);
+        this._refreshCoverage();
+    },
+
+    _setCoverageMode(mode) {
+        if (mode === this.state.coverage.mode) return;
+        this.state.coverage.mode = mode;
+        this.state.coverage.selected = [];
+        const { renderer } = window.PokeAnalyzer;
+        document.querySelectorAll('.cov-tab').forEach(t => {
+            t.classList.toggle('active', t.dataset.mode === mode);
+        });
+        renderer.setCoverageInstruction(mode);
+        this._refreshCoverage();
+    },
+
+    _setCoverageGen(genNum) {
+        if (genNum === this.state.coverage.genNum) return;
+        this.state.coverage.genNum = genNum;
+        const { renderer } = window.PokeAnalyzer;
+        const validTypes = window.PokeAnalyzer.config.getTypesForGen(genNum);
+        this.state.coverage.selected = this.state.coverage.selected.filter(t => validTypes.includes(t));
+        renderer.renderCoverageGenGrid(genNum);
+        renderer.renderCoverageTypeGrid(genNum);
+        this._refreshCoverage();
+    },
+
+    _toggleCoverageType(type) {
+        const { selected, mode } = this.state.coverage;
+        const idx = selected.indexOf(type);
+        if (idx >= 0) {
+            selected.splice(idx, 1);
+        } else {
+            const max = mode === 'defensive' ? 2 : 4;
+            if (selected.length >= max) return;
+            selected.push(type);
+        }
+        this._refreshCoverage();
+    },
+
+    _refreshCoverage() {
+        const { renderer } = window.PokeAnalyzer;
+        const { selected, mode, genNum } = this.state.coverage;
+        renderer.renderCoverageSelected(selected);
+        renderer.renderCoverageResults(selected, mode, genNum);
+
+        document.querySelectorAll('.cov-type-btn').forEach(btn => {
+            btn.classList.toggle('selected', selected.includes(btn.dataset.type));
+        });
     },
 
     async _runAnalysis() {

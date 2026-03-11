@@ -75,6 +75,51 @@ window.PokeAnalyzer.config = {
         fairy:    { fire: 0.5, fighting: 2, poison: 0.5, dragon: 2, dark: 2, steel: 0.5 },
     },
 
+    // Tipos disponibles por era generacional
+    TYPES_BY_ERA: {
+        1: ['normal','fire','water','electric','grass','ice','fighting','poison','ground','flying','psychic','bug','rock','ghost','dragon'],
+        2: ['normal','fire','water','electric','grass','ice','fighting','poison','ground','flying','psychic','bug','rock','ghost','dragon','dark','steel'],
+        6: ['normal','fire','water','electric','grass','ice','fighting','poison','ground','flying','psychic','bug','rock','ghost','dragon','dark','steel','fairy'],
+    },
+
+    // Correcciones por generación aplicadas sobre TYPE_CHART (base Gen 6+)
+    GEN_TYPE_FIXES: {
+        1: {
+            ghost:  { psychic: 0 },
+            bug:    { poison: 2 },
+            poison: { bug: 2 },
+        },
+        2: {
+            ghost: { steel: 0.5 },
+            dark:  { steel: 0.5 },
+        },
+    },
+
+    getTypesForGen(genNum) {
+        if (genNum <= 1) return this.TYPES_BY_ERA[1];
+        if (genNum <= 5) return this.TYPES_BY_ERA[2];
+        return this.TYPES_BY_ERA[6];
+    },
+
+    getEffectiveness(attackType, targetTypes, genNum) {
+        const validTypes = this.getTypesForGen(genNum);
+        if (!validTypes.includes(attackType)) return 1;
+
+        const baseRow = this.TYPE_CHART[attackType] || {};
+        let fixes = {};
+        if (genNum <= 1) fixes = this.GEN_TYPE_FIXES[1]?.[attackType] || {};
+        else if (genNum <= 5) fixes = this.GEN_TYPE_FIXES[2]?.[attackType] || {};
+
+        const row = { ...baseRow, ...fixes };
+
+        let mul = 1;
+        for (const dt of targetTypes) {
+            if (!validTypes.includes(dt)) continue;
+            mul *= (row[dt] ?? 1);
+        }
+        return mul;
+    },
+
     // Traducciones oficiales de naturalezas al castellano (nombres del juego)
     NATURE_ES: {
         'Hardy':   'Fuerte',    'Lonely':  'Huraña',    'Brave':   'Audaz',
