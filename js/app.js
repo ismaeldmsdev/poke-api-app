@@ -32,11 +32,28 @@ window.PokeAnalyzer.app = {
             const btn = e.target.closest('.gen-btn');
             if (!btn) return;
             const newGen = Number(btn.dataset.gen);
-            if (newGen === this.state.selectedGen) return;
-            this.state.selectedGen = newGen;
-            window.PokeAnalyzer.renderer.setActiveGenButton(this.state.selectedGen);
-            if (this.state.cache) this._runAnalysis();
+            this._setGeneration(newGen);
         });
+
+        // Desplegable de generación en el header
+        const genChip = document.getElementById('activeGenChip');
+        const genDropdown = document.getElementById('genDropdown');
+        if (genChip && genDropdown) {
+            genChip.addEventListener('click', () => {
+                const isOpen = !genDropdown.classList.contains('hidden');
+                genDropdown.classList.toggle('hidden', isOpen);
+                genChip.setAttribute('aria-expanded', String(!isOpen));
+            });
+
+            genDropdown.addEventListener('click', e => {
+                const btn = e.target.closest('.gen-option');
+                if (!btn) return;
+                const newGen = Number(btn.dataset.gen);
+                genDropdown.classList.add('hidden');
+                genChip.setAttribute('aria-expanded', 'false');
+                this._setGeneration(newGen);
+            });
+        }
 
         document.getElementById('evoChain').addEventListener('click', e => {
             const item = e.target.closest('.evo-item');
@@ -56,23 +73,39 @@ window.PokeAnalyzer.app = {
             }
         });
 
-        // Variación de naturaleza: recalcular efectos + actualizar stats dinámicamente
-        document.getElementById('natureDropdown').addEventListener('change', e => {
-            window.PokeAnalyzer.renderer.renderNatureEffect(e.target.value);
+        // Versus (modal) desde menú de header
+        document.getElementById('closeVersusBtn').addEventListener('click', () => {
+            window.PokeAnalyzer.renderer.closeVersusModal();
+        });
+        document.getElementById('versusModal').addEventListener('click', e => {
+            if (e.target?.dataset?.close) window.PokeAnalyzer.renderer.closeVersusModal();
+        });
+        document.getElementById('versusBtn').addEventListener('click', () => this.runVersus());
+        document.getElementById('versusInput').addEventListener('keydown', e => {
+            if (e.key === 'Enter') this.runVersus();
         });
 
-        // Tabs: Sets Oficiales | Sugerencias Alternativas
-        document.getElementById('setTabs').addEventListener('click', e => {
-            const btn = e.target.closest('.tab-btn');
-            if (!btn || btn.disabled) return;
-            window.PokeAnalyzer.renderer.switchTab(btn.dataset.tab);
-        });
+        const menuBtn = document.getElementById('headerMenuBtn');
+        const menuPanel = document.getElementById('headerMenuPanel');
+        const menuVersus = document.getElementById('menuVersusItem');
+        if (menuBtn && menuPanel) {
+            menuBtn.addEventListener('click', () => {
+                const isOpen = !menuPanel.classList.contains('hidden');
+                menuPanel.classList.toggle('hidden', isOpen);
+                menuBtn.setAttribute('aria-expanded', String(!isOpen));
+            });
 
-        // Comparador
-        document.getElementById('compareBtn').addEventListener('click', () => this.runCompare());
-        document.getElementById('compareInput').addEventListener('keydown', e => {
-            if (e.key === 'Enter') this.runCompare();
-        });
+            menuPanel.addEventListener('click', e => {
+                const item = e.target.closest('.header-menu-item');
+                if (!item) return;
+                if (item.id === 'menuVersusItem' && !item.disabled) {
+                    menuPanel.classList.add('hidden');
+                    menuBtn.setAttribute('aria-expanded', 'false');
+                    window.PokeAnalyzer.renderer.openVersusModal();
+                    document.getElementById('versusInput').focus();
+                }
+            });
+        }
     },
 
     async run() {
@@ -86,7 +119,7 @@ window.PokeAnalyzer.app = {
         }
 
         renderer.resetResults();
-        renderer.hideCompareSection();
+        renderer.hideVersusCta();
         renderer.setSearchBusy(true);
 
         // ── Fase 1: datos del Pokémon ────────────────────────────
@@ -103,7 +136,7 @@ window.PokeAnalyzer.app = {
         }
 
         renderer.hidePokeLoading();
-        renderer.showCompareSection();
+        renderer.showVersusCta();
 
         // ── Fase 2: movimientos + habilidades + Smogon en paralelo ──
         renderer.showAILoading();
@@ -129,34 +162,45 @@ window.PokeAnalyzer.app = {
         renderer.setSearchBusy(false);
     },
 
-    async runCompare() {
+    async runVersus() {
         const { pokeAPI, renderer } = window.PokeAnalyzer;
 
         if (!this.state.cache?.pokemon) {
-            renderer.showMessage('PRIMERO BUSCA UN POKEMON PARA COMPARAR', 'error');
+            renderer.showMessage('PRIMERO ANALIZA UN POKÉMON PARA USAR VERSUS', 'error');
             return;
         }
 
-        const query = document.getElementById('compareInput').value.trim();
+        const query = document.getElementById('versusInput').value.trim();
         if (!query) {
-            renderer.showMessage('INGRESA EL NOMBRE DEL POKEMON A COMPARAR', 'error');
+            renderer.showMessage('INGRESA EL NOMBRE DEL RIVAL', 'error');
             return;
         }
 
-        const btn = document.getElementById('compareBtn');
-        btn.disabled = true;
-        btn.textContent = '...';
+        renderer.setVersusBusy(true);
         renderer.hideMessage();
 
         try {
             const pokemon2 = await pokeAPI._fetchPokemon(query);
-            renderer.renderComparison(this.state.cache.pokemon, pokemon2);
+            renderer.renderVersus(
+                this.state.cache.pokemon,
+                pokemon2,
+                this.state.selectedGen,
+                this.state.analysis?.allSets?.[Number(document.getElementById('setDropdown')?.value) || 0] || null
+            );
         } catch (err) {
             renderer.showMessage(err.message, 'error');
         }
 
-        btn.disabled = false;
-        btn.textContent = 'VS';
+        renderer.setVersusBusy(false);
+    },
+
+    _setGeneration(newGen) {
+        const { config, renderer } = window.PokeAnalyzer;
+        const exists = config.GENERATIONS.some(g => g.num === newGen);
+        if (!exists || newGen === this.state.selectedGen) return;
+        this.state.selectedGen = newGen;
+        renderer.setActiveGenButton(this.state.selectedGen);
+        if (this.state.cache) this._runAnalysis();
     },
 
     async _runAnalysis() {

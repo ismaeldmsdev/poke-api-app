@@ -63,14 +63,14 @@ const SUPPORT_MOVES = new Set([
 const COMMUNITY_BUILDS_DB = {
     'charizard': [
         {
-            setName: 'Belly Drum Zard',
-            description: 'Set clásico de Belly Drum + Salac Berry para barrer tras setup.',
+            setName: 'Tambor + Baya Ziena',
+            description: 'Clásico: Tambor + Baya Ziena para barrer tras potenciarse.',
             natureEn: 'Jolly', item: 'Salac Berry',
             evs: '4 PS / 252 Atq / 252 Vel',
             moves: ['belly-drum', 'fire-punch', 'earthquake', 'thunder-punch'],
         },
         {
-            setName: 'Solar Power Especial',
+            setName: 'Poder Solar (Especial)',
             description: 'Aprovecha Solar Power bajo sol para daño especial devastador.',
             natureEn: 'Timid', item: 'Choice Specs',
             evs: '252 At.Esp / 4 PS / 252 Vel',
@@ -79,15 +79,15 @@ const COMMUNITY_BUILDS_DB = {
     ],
     'gengar': [
         {
-            setName: 'SubDisable',
-            description: 'Substitute + Disable para bloquear al rival y forzar cambios.',
+            setName: 'Sustituto + Anulación',
+            description: 'Sustituto + Anulación para bloquear al rival y forzar cambios.',
             natureEn: 'Timid', item: 'Leftovers',
             evs: '4 PS / 252 At.Esp / 252 Vel',
             moves: ['substitute', 'disable', 'shadow-ball', 'focus-blast'],
         },
         {
-            setName: 'Perish Trapper',
-            description: 'Perish Song + Mean Look para eliminar amenazas clave.',
+            setName: 'Canto Mortal (Trampa)',
+            description: 'Canto Mortal + Mal de Ojo para eliminar amenazas clave.',
             natureEn: 'Timid', item: 'Leftovers',
             evs: '252 PS / 4 At.Esp / 252 Vel',
             moves: ['perish-song', 'mean-look', 'substitute', 'protect'],
@@ -96,14 +96,14 @@ const COMMUNITY_BUILDS_DB = {
     'blissey': [
         {
             setName: 'Toxic Stall',
-            description: 'Set clásico de stall con Toxic + Soft-Boiled para agotar al rival.',
+            description: 'Set clásico de agotamiento con Tóxico + Amortiguador para desgastar al rival.',
             natureEn: 'Bold', item: 'Leftovers',
             evs: '252 PS / 252 Def / 4 Def.Esp',
             moves: ['toxic', 'soft-boiled', 'seismic-toss', 'stealth-rock'],
         },
         {
-            setName: 'Teleport Pivot',
-            description: 'Teleport para generar momentum y mantener al equipo sano con Wish.',
+            setName: 'Teletransporte (Pivote)',
+            description: 'Teletransporte para generar momentum y mantener al equipo sano con Deseo.',
             natureEn: 'Bold', item: 'Heavy-Duty Boots',
             evs: '252 PS / 252 Def / 4 Def.Esp',
             moves: ['teleport', 'wish', 'seismic-toss', 'toxic'],
@@ -111,15 +111,15 @@ const COMMUNITY_BUILDS_DB = {
     ],
     'snorlax': [
         {
-            setName: 'CurseLax',
-            description: 'Curse + Rest para volverse un muro imparable que golpea fuerte.',
+            setName: 'MaldiciónLax',
+            description: 'Maldición + Descanso para volverse un muro imparable que golpea fuerte.',
             natureEn: 'Careful', item: 'Leftovers',
             evs: '252 PS / 4 Atq / 252 Def.Esp',
             moves: ['curse', 'rest', 'sleep-talk', 'body-slam'],
         },
         {
-            setName: 'Choice Band Tank',
-            description: 'Snorlax ofensivo con Choice Band — sorprende con daño físico bruto.',
+            setName: 'Tanque con Cinta Elegida',
+            description: 'Snorlax ofensivo con Cinta Elegida: sorprende con daño físico bruto.',
             natureEn: 'Adamant', item: 'Choice Band',
             evs: '252 Atq / 4 PS / 252 Def.Esp',
             moves: ['body-slam', 'earthquake', 'fire-punch', 'crunch'],
@@ -127,15 +127,15 @@ const COMMUNITY_BUILDS_DB = {
     ],
     'garchomp': [
         {
-            setName: 'SubSalac Sweeper',
-            description: 'Substitute hasta activar Salac Berry y barrer con Swords Dance.',
+            setName: 'Sustituto + Baya Ziena',
+            description: 'Sustituto hasta activar Baya Ziena y barrer con Danza Espada.',
             natureEn: 'Jolly', item: 'Salac Berry',
             evs: '4 PS / 252 Atq / 252 Vel',
             moves: ['substitute', 'swords-dance', 'earthquake', 'dragon-claw'],
         },
         {
-            setName: 'Mixed Attacker',
-            description: 'Garchomp mixto con Fire Blast para sorprender a muros físicos.',
+            setName: 'Atacante Mixto',
+            description: 'Garchomp mixto con Llamarada para sorprender a muros físicos.',
             natureEn: 'Naive', item: 'Life Orb',
             evs: '252 Atq / 4 At.Esp / 252 Vel',
             moves: ['earthquake', 'outrage', 'fire-blast', 'stone-edge'],
@@ -144,14 +144,14 @@ const COMMUNITY_BUILDS_DB = {
     'dragonite': [
         {
             setName: 'Dragon Dance + Multiscale',
-            description: 'Aprovecha Multiscale para hacer setup seguro y barrer.',
+            description: 'Aprovecha Multiescamas para potenciarte con seguridad y barrer.',
             natureEn: 'Adamant', item: 'Lum Berry',
             evs: '252 Atq / 4 PS / 252 Vel',
             moves: ['dragon-dance', 'outrage', 'extreme-speed', 'earthquake'],
         },
         {
-            setName: 'Mixed Band',
-            description: 'Choice Band con cobertura mixta para romper cualquier core.',
+            setName: 'Cinta Elegida Mixta',
+            description: 'Cinta Elegida con cobertura mixta para romper cualquier núcleo defensivo.',
             natureEn: 'Lonely', item: 'Choice Band',
             evs: '252 Atq / 4 At.Esp / 252 Vel',
             moves: ['outrage', 'extreme-speed', 'fire-blast', 'superpower'],
@@ -159,15 +159,15 @@ const COMMUNITY_BUILDS_DB = {
     ],
     'tyranitar': [
         {
-            setName: 'Dragon Dance Sweeper',
-            description: 'Dragon Dance + Sand Stream para barrer con cobertura perfecta.',
+            setName: 'Danza Dragón (Barredor)',
+            description: 'Danza Dragón + Chorro Arena para barrer con cobertura sólida.',
             natureEn: 'Jolly', item: 'Life Orb',
             evs: '252 Atq / 4 PS / 252 Vel',
             moves: ['dragon-dance', 'stone-edge', 'crunch', 'earthquake'],
         },
         {
-            setName: 'Specially Defensive Tank',
-            description: 'TTar como muro especial aprovechando el boost de SpDef en arena.',
+            setName: 'Tanque de Defensa Esp.',
+            description: 'TTar como muro especial aprovechando el aumento de Defensa Esp. en arena.',
             natureEn: 'Careful', item: 'Leftovers',
             evs: '252 PS / 4 Atq / 252 Def.Esp',
             moves: ['stealth-rock', 'crunch', 'earthquake', 'thunder-wave'],
@@ -175,15 +175,15 @@ const COMMUNITY_BUILDS_DB = {
     ],
     'salamence': [
         {
-            setName: 'MixMence',
-            description: 'Set mixto clásico de Gen IV — impredecible contra cualquier switch-in.',
+            setName: 'MixMence (Clásico)',
+            description: 'Set mixto clásico de Gen IV: impredecible contra cualquier cambio rival.',
             natureEn: 'Naive', item: 'Life Orb',
             evs: '252 Atq / 4 At.Esp / 252 Vel',
             moves: ['outrage', 'fire-blast', 'earthquake', 'draco-meteor'],
         },
         {
             setName: 'Dragon Dance + Moxie',
-            description: 'DD + Moxie para snowball tras cada KO consecutivo.',
+            description: 'DD + Autoestima para escalar tras cada KO consecutivo.',
             natureEn: 'Jolly', item: 'Lum Berry',
             evs: '252 Atq / 4 PS / 252 Vel',
             moves: ['dragon-dance', 'outrage', 'earthquake', 'fire-fang'],
@@ -191,15 +191,15 @@ const COMMUNITY_BUILDS_DB = {
     ],
     'metagross': [
         {
-            setName: 'Agility Sweeper',
-            description: 'Agility + Clear Body para barrer equipos lentos tras un solo setup.',
+            setName: 'Agilidad (Barredor)',
+            description: 'Agilidad + Cuerpo Puro para barrer equipos lentos tras potenciarte una vez.',
             natureEn: 'Adamant', item: 'Life Orb',
             evs: '252 Atq / 4 PS / 252 Vel',
             moves: ['agility', 'meteor-mash', 'earthquake', 'ice-punch'],
         },
         {
-            setName: 'Choice Band Tank',
-            description: 'CB Metagross — power bruto con Bullet Punch para priority.',
+            setName: 'Tanque con Cinta Elegida',
+            description: 'Metagross con Cinta Elegida: poder bruto con Puño Bala como prioridad.',
             natureEn: 'Adamant', item: 'Choice Band',
             evs: '252 Atq / 4 PS / 252 Vel',
             moves: ['meteor-mash', 'bullet-punch', 'earthquake', 'ice-punch'],
@@ -208,14 +208,14 @@ const COMMUNITY_BUILDS_DB = {
     'lucario': [
         {
             setName: 'Nasty Plot Especial',
-            description: 'Nasty Plot + Vacuum Wave para barrer con priority especial.',
+            description: 'Maquinación + Onda Vacío para barrer con prioridad especial.',
             natureEn: 'Timid', item: 'Life Orb',
             evs: '252 At.Esp / 4 PS / 252 Vel',
             moves: ['nasty-plot', 'aura-sphere', 'vacuum-wave', 'flash-cannon'],
         },
         {
             setName: 'Swords Dance Físico',
-            description: 'SD + Extreme Speed para priority física devastadora.',
+            description: 'SD + Velocidad Extrema para prioridad física devastadora.',
             natureEn: 'Adamant', item: 'Life Orb',
             evs: '252 Atq / 4 PS / 252 Vel',
             moves: ['swords-dance', 'close-combat', 'extreme-speed', 'crunch'],
@@ -231,7 +231,7 @@ const COMMUNITY_BUILDS_DB = {
         },
         {
             setName: 'SubDD',
-            description: 'Substitute + Dragon Dance para setup seguro contra status.',
+            description: 'Sustituto + Danza Dragón para potenciarte con seguridad contra estados.',
             natureEn: 'Jolly', item: 'Leftovers',
             evs: '252 Atq / 4 PS / 252 Vel',
             moves: ['substitute', 'dragon-dance', 'waterfall', 'earthquake'],
@@ -240,14 +240,14 @@ const COMMUNITY_BUILDS_DB = {
     'scizor': [
         {
             setName: 'Swords Dance + Roost',
-            description: 'Bulky SD set que aprovecha Technician + Bullet Punch.',
+            description: 'Variante bulky que aprovecha Técnico + Puño Bala.',
             natureEn: 'Adamant', item: 'Leftovers',
             evs: '252 PS / 252 Atq / 4 Def',
             moves: ['swords-dance', 'bullet-punch', 'roost', 'u-turn'],
         },
         {
-            setName: 'Choice Band Pivot',
-            description: 'CB + U-Turn para momentum constante — STAB priority letal.',
+            setName: 'Pivote con Cinta Elegida',
+            description: 'Cinta Elegida + Ida y Vuelta para momentum constante; prioridad con STAB letal.',
             natureEn: 'Adamant', item: 'Choice Band',
             evs: '248 PS / 252 Atq / 8 Def',
             moves: ['u-turn', 'bullet-punch', 'superpower', 'knock-off'],
@@ -255,15 +255,15 @@ const COMMUNITY_BUILDS_DB = {
     ],
     'alakazam': [
         {
-            setName: 'Focus Sash Lead',
-            description: 'Lead clásico con Focus Sash para garantizar al menos un KO.',
+            setName: 'Líder con Banda Focus',
+            description: 'Líder clásico con Banda Focus para garantizar al menos un KO.',
             natureEn: 'Timid', item: 'Focus Sash',
             evs: '252 At.Esp / 4 PS / 252 Vel',
             moves: ['psychic', 'shadow-ball', 'focus-blast', 'energy-ball'],
         },
         {
-            setName: 'Calm Mind Sweeper',
-            description: 'Calm Mind para potenciar AT.ESP y barrer equipos debilitados.',
+            setName: 'Paz Mental (Barredor)',
+            description: 'Paz Mental para potenciar At.Esp y barrer equipos debilitados.',
             natureEn: 'Timid', item: 'Life Orb',
             evs: '252 At.Esp / 4 PS / 252 Vel',
             moves: ['calm-mind', 'psychic', 'shadow-ball', 'focus-blast'],
@@ -271,31 +271,31 @@ const COMMUNITY_BUILDS_DB = {
     ],
     'starmie': [
         {
-            setName: 'Rapid Spin Utility',
-            description: 'Set de utilidad clásico — spinner rápido con cobertura especial.',
+            setName: 'Giro Rápido (Utilidad)',
+            description: 'Utilidad clásica: Giro Rápido para controlar trampas de entrada con cobertura especial.',
             natureEn: 'Timid', item: 'Leftovers',
             evs: '252 At.Esp / 4 PS / 252 Vel',
-            moves: ['rapid-spin', 'hydro-pump', 'thunderbolt', 'recover'],
+            moves: ['rapid-spin', 'surf', 'thunderbolt', 'recover'],
         },
         {
             setName: 'Life Orb Attacker',
-            description: 'Starmie ofensivo con cobertura amplia — genio de Gen IV.',
+            description: 'Starmie ofensivo con cobertura amplia: clásico de Gen IV.',
             natureEn: 'Timid', item: 'Life Orb',
             evs: '252 At.Esp / 4 PS / 252 Vel',
-            moves: ['hydro-pump', 'thunderbolt', 'ice-beam', 'psychic'],
+            moves: ['surf', 'thunderbolt', 'ice-beam', 'psychic'],
         },
     ],
     'ferrothorn': [
         {
             setName: 'Hazard Setter',
-            description: 'Set de hazards estándar con Leech Seed para presión pasiva.',
+            description: 'Set estándar de trampas de entrada con Drenadoras para presión pasiva.',
             natureEn: 'Relaxed', item: 'Leftovers',
             evs: '252 PS / 252 Def / 4 Def.Esp',
             moves: ['stealth-rock', 'spikes', 'leech-seed', 'power-whip'],
         },
         {
-            setName: 'Body Press Tank',
-            description: 'Body Press para sorprender a Pokémon de tipo Acero y Siniestro.',
+            setName: 'Tanque con Plancha Corporal',
+            description: 'Plancha Corporal para sorprender a Pokémon de tipo Acero y Siniestro.',
             natureEn: 'Relaxed', item: 'Rocky Helmet',
             evs: '252 PS / 252 Def / 4 Def.Esp',
             moves: ['body-press', 'leech-seed', 'knock-off', 'stealth-rock'],
@@ -319,15 +319,15 @@ const COMMUNITY_BUILDS_DB = {
     ],
     'landorus-therian': [
         {
-            setName: 'Offensive Pivot',
-            description: 'U-Turn + Intimidate para ciclos de momentum.',
+            setName: 'Pivote Ofensivo',
+            description: 'Ida y Vuelta + Intimidación para ciclos de momentum.',
             natureEn: 'Jolly', item: 'Choice Scarf',
             evs: '252 Atq / 4 PS / 252 Vel',
             moves: ['u-turn', 'earthquake', 'stone-edge', 'knock-off'],
         },
         {
-            setName: 'Suicide Lead',
-            description: 'Lead con Stealth Rock + Explosion para presión inmediata.',
+            setName: 'Líder Suicida',
+            description: 'Líder con Trampa Rocas + Explosión para presión inmediata.',
             natureEn: 'Jolly', item: 'Focus Sash',
             evs: '252 Atq / 4 PS / 252 Vel',
             moves: ['stealth-rock', 'earthquake', 'explosion', 'u-turn'],
@@ -343,7 +343,7 @@ const COMMUNITY_BUILDS_DB = {
         },
         {
             setName: 'Swords Dance',
-            description: 'SD + Poison Heal para setup seguro y barrida.',
+            description: 'SD + Antídoto para potenciarte con seguridad y barrer.',
             natureEn: 'Jolly', item: 'Toxic Orb',
             evs: '252 Atq / 4 PS / 252 Vel',
             moves: ['swords-dance', 'earthquake', 'ice-fang', 'facade'],
@@ -351,15 +351,15 @@ const COMMUNITY_BUILDS_DB = {
     ],
     'volcarona': [
         {
-            setName: 'Quiver Dance Sweeper',
-            description: 'QD clásico — uno de los setup sweepers más potentes.',
+            setName: 'Danza Aleteo (Barredor)',
+            description: 'QD clásico: uno de los barredores de potenciación más potentes.',
             natureEn: 'Timid', item: 'Heavy-Duty Boots',
             evs: '252 At.Esp / 4 PS / 252 Vel',
             moves: ['quiver-dance', 'fire-blast', 'bug-buzz', 'giga-drain'],
         },
         {
             setName: 'Bulky QD',
-            description: 'Variante bulky con Roost para más oportunidades de setup.',
+            description: 'Variante bulky con Respiro para más oportunidades de potenciarse.',
             natureEn: 'Modest', item: 'Heavy-Duty Boots',
             evs: '252 PS / 252 At.Esp / 4 Vel',
             moves: ['quiver-dance', 'flamethrower', 'bug-buzz', 'roost'],
@@ -367,14 +367,14 @@ const COMMUNITY_BUILDS_DB = {
     ],
     'blaziken': [
         {
-            setName: 'Speed Boost Sweeper',
-            description: 'Protect + Speed Boost para superar todo el meta tras un turno.',
+            setName: 'Impulso (Barredor)',
+            description: 'Protección + Impulso para superar el meta tras un turno.',
             natureEn: 'Adamant', item: 'Life Orb',
             evs: '252 Atq / 4 PS / 252 Vel',
             moves: ['protect', 'flare-blitz', 'close-combat', 'swords-dance'],
         },
         {
-            setName: 'Mixed Attacker',
+            setName: 'Atacante Mixto',
             description: 'Blaziken mixto que destruye tanto muros físicos como especiales.',
             natureEn: 'Naive', item: 'Life Orb',
             evs: '252 Atq / 4 At.Esp / 252 Vel',
@@ -383,15 +383,15 @@ const COMMUNITY_BUILDS_DB = {
     ],
     'togekiss': [
         {
-            setName: 'Serene Grace ParaFlinch',
-            description: 'Air Slash + Thunder Wave — infame combo de flinch del 60%.',
+            setName: 'Dicha (Paraflinch)',
+            description: 'Tajo Aéreo + Onda Trueno — infame combo de retroceso del 60%.',
             natureEn: 'Timid', item: 'Leftovers',
             evs: '252 At.Esp / 4 PS / 252 Vel',
             moves: ['air-slash', 'thunder-wave', 'roost', 'nasty-plot'],
         },
         {
-            setName: 'Nasty Plot Sweeper',
-            description: 'NP + cobertura para barrer tras un solo boost.',
+            setName: 'Maquinación (Barredor)',
+            description: 'Maquinación + cobertura para barrer tras un solo aumento.',
             natureEn: 'Timid', item: 'Life Orb',
             evs: '252 At.Esp / 4 PS / 252 Vel',
             moves: ['nasty-plot', 'air-slash', 'dazzling-gleam', 'flamethrower'],
@@ -399,15 +399,15 @@ const COMMUNITY_BUILDS_DB = {
     ],
     'swampert': [
         {
-            setName: 'Stealth Rock Lead',
-            description: 'Lead defensivo con hazards y Roar para phaze.',
+            setName: 'Líder con Trampa Rocas',
+            description: 'Líder defensivo con trampas de entrada y Rugido para forzar cambios.',
             natureEn: 'Relaxed', item: 'Leftovers',
             evs: '252 PS / 252 Def / 4 Atq',
             moves: ['stealth-rock', 'earthquake', 'scald', 'roar'],
         },
         {
-            setName: 'Rain Dance Sweeper',
-            description: 'Swift Swim + Rain Dance para velocidad duplicada.',
+            setName: 'Danza Lluvia (Barredor)',
+            description: 'Nado Rápido + Danza Lluvia para velocidad duplicada.',
             natureEn: 'Adamant', item: 'Life Orb',
             evs: '252 Atq / 4 PS / 252 Vel',
             moves: ['rain-dance', 'waterfall', 'earthquake', 'ice-punch'],
@@ -416,14 +416,14 @@ const COMMUNITY_BUILDS_DB = {
     'pikachu': [
         {
             setName: 'Light Ball Attacker',
-            description: 'Light Ball duplica ATK/SPATK — el set emblema de Pikachu.',
+            description: 'Bola Luz duplica ATQ/AT.ESP — el set emblema de Pikachu.',
             natureEn: 'Hasty', item: 'Light Ball',
             evs: '252 At.Esp / 4 Atq / 252 Vel',
             moves: ['volt-switch', 'thunderbolt', 'grass-knot', 'fake-out'],
         },
         {
-            setName: 'Nasty Plot Sweeper',
-            description: 'NP + Light Ball para un Pikachu sorprendentemente letal.',
+            setName: 'Maquinación (Barredor)',
+            description: 'Maquinación + Bola Luz para un Pikachu sorprendentemente letal.',
             natureEn: 'Timid', item: 'Light Ball',
             evs: '252 At.Esp / 4 PS / 252 Vel',
             moves: ['nasty-plot', 'thunderbolt', 'surf', 'grass-knot'],
@@ -513,6 +513,7 @@ window.PokeAnalyzer.analyzer = {
     async getCommunityBuilds(pokemonName, generation, movesData, abilitiesEs) {
         const { translator } = window.PokeAnalyzer;
         const { NATURE_ES } = window.PokeAnalyzer.config;
+        const genNum = generation.num;
         const slug = pokemonName.toLowerCase().replace(/ /g, '-');
         const builds = COMMUNITY_BUILDS_DB[slug];
 
@@ -520,6 +521,8 @@ window.PokeAnalyzer.analyzer = {
             return this._generateGenericCommunityBuilds(pokemonName, generation, movesData, abilitiesEs);
         }
 
+        // Índice solo con movimientos realmente aprendibles por este Pokémon
+        // en la generación seleccionada (movesData ya viene filtrado por gen).
         const moveIndex = new Map();
         if (movesData) movesData.forEach(m => moveIndex.set(m.name, m));
 
@@ -531,7 +534,14 @@ window.PokeAnalyzer.analyzer = {
             const firstAb = abilitiesEs?.entries?.().next?.()?.value;
             const abilityEs = firstAb ? firstAb[1] : '—';
 
-            const moveset = await this._translateCommunityMoves(build.moves, moveIndex);
+            // Movimientos:
+            // 1) Si están en moveIndex (movesData) → seguro que el Pokémon los aprende en esta gen.
+            // 2) Si no, consultamos PokeAPI y solo los aceptamos si su generación de origen
+            //    es <= gen actual (aprox. legalidad por gen).
+            const moveset = await this._translateCommunityMoves(build.moves, moveIndex, genNum);
+
+            // Si no queda ningún movimiento válido, omitimos este build.
+            if (!moveset || moveset.length === 0) continue;
 
             parsed.push({
                 setName: build.setName,
@@ -547,22 +557,37 @@ window.PokeAnalyzer.analyzer = {
             });
         }
 
+        // Si todos los builds predefinidos quedaron vacíos, caemos al generador genérico.
+        if (parsed.length === 0) {
+            return this._generateGenericCommunityBuilds(pokemonName, generation, movesData, abilitiesEs);
+        }
+
         return parsed;
     },
 
-    async _translateCommunityMoves(moveSlugs, moveIndex) {
+    async _translateCommunityMoves(moveSlugs, moveIndex, genNum) {
         const { pokeAPI } = window.PokeAnalyzer;
-        return await Promise.all(moveSlugs.map(async (slug) => {
-            const cached = moveIndex.get(slug);
-            if (cached) {
-                return { movimiento: cached.nameEs, tipo: cached.type, razon: '' };
+        const result = [];
+
+        for (const slug of moveSlugs) {
+            let move = moveIndex.get(slug);
+
+            // Si el movimiento no está en movesData, intentamos buscarlo en PokeAPI
+            // y lo aceptamos solo si pertenece a esta generación o anteriores.
+            if (!move) {
+                const fetched = await pokeAPI._fetchMove(slug);
+                if (!fetched || fetched.generationNum > genNum) continue;
+                move = fetched;
             }
-            const fetched = await pokeAPI.fetchMoveSpanish(slug);
-            if (fetched) {
-                return { movimiento: fetched.nameEs, tipo: fetched.type, razon: '' };
-            }
-            return { movimiento: slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()), tipo: 'normal', razon: '' };
-        }));
+
+            result.push({
+                movimiento: move.nameEs,
+                tipo: move.type,
+                razon: '',
+            });
+        }
+
+        return result;
     },
 
     _generateGenericCommunityBuilds(pokemonName, generation, movesData, abilitiesEs) {
@@ -574,10 +599,22 @@ window.PokeAnalyzer.analyzer = {
 
         const builds = [];
 
+        // Heurística de puntuación potencia/precisión para aventura.
+        function mAccScore(m) {
+            const power = m.power || 0;
+            const acc   = (m.accuracy || 100) / 100; // si no hay precisión, asumimos 100%
+            return power * acc;
+        }
+
         // Build 1: Set de aventura / ingame optimizado
+        // Priorizamos daño + precisión (mejor Surf que Hidrobomba para aventura).
         const strongMoves = available
             .filter(m => m.power && m.power >= 60)
-            .sort((a, b) => (b.power || 0) - (a.power || 0));
+            .sort((a, b) => {
+                const accA = mAccScore(a);
+                const accB = mAccScore(b);
+                return accB - accA;
+            });
 
         if (strongMoves.length >= 2) {
             const usedTypes = new Set();
@@ -709,12 +746,32 @@ window.PokeAnalyzer.analyzer = {
 
     async _translateSmogonMoves(moveSlots, moveIndex) {
         const { pokeAPI } = window.PokeAnalyzer;
+        const { TYPE_ES } = window.PokeAnalyzer.config;
 
         return await Promise.all(moveSlots.map(async ({ slug, displayName }) => {
             const cached = moveIndex.get(slug);
             if (cached) {
                 return { movimiento: cached.nameEs, tipo: cached.type, razon: '' };
             }
+
+            // Movimientos con variante de tipo (Hidden Power Fire, etc.):
+            // PokeAPI solo conoce el slug base (hidden-power), no hidden-power-fire.
+            const variantMatch = slug.match(/^(hidden-power|natural-gift|judgment|multi-attack|techno-blast|weather-ball)-(.+)$/);
+            if (variantMatch) {
+                const baseSlug = variantMatch[1];
+                const variantType = variantMatch[2];
+                const baseCached = moveIndex.get(baseSlug);
+                const baseMove = baseCached || await pokeAPI.fetchMoveSpanish(baseSlug);
+                if (baseMove) {
+                    const typeEs = TYPE_ES[variantType] || variantType;
+                    return {
+                        movimiento: `${baseMove.nameEs} [${typeEs}]`,
+                        tipo: variantType,
+                        razon: '',
+                    };
+                }
+            }
+
             const fetched = await pokeAPI.fetchMoveSpanish(slug);
             if (fetched) {
                 return { movimiento: fetched.nameEs, tipo: fetched.type, razon: '' };
@@ -1002,8 +1059,8 @@ window.PokeAnalyzer.analyzer = {
         const isTank  = hp > 75 && (def > 85 || spdef > 85);
         const isMixed = !isPhys && !isSpec && atk > 80 && spatk > 80;
 
-        if (isPhys && isFast)       return { type: 'physical-sweeper',  description: 'Sweeper Físico — alto daño y velocidad para vencer antes de recibir golpes.' };
-        if (isSpec && isFast)       return { type: 'special-sweeper',   description: 'Sweeper Especial — ataque especial y velocidad para dominar el campo.' };
+        if (isPhys && isFast)       return { type: 'physical-sweeper',  description: 'Barredor Físico — alto daño y velocidad para vencer antes de recibir golpes.' };
+        if (isSpec && isFast)       return { type: 'special-sweeper',   description: 'Barredor Especial — ataque especial y velocidad para dominar el campo.' };
         if (isPhys)                 return { type: 'physical-attacker', description: 'Atacante Físico — alto poder de ataque, ideal para romper defensas.' };
         if (isSpec)                 return { type: 'special-attacker',  description: 'Atacante Especial — fuerte en SP.ATK, domina a largo plazo.' };
         if (isMixed)                return { type: 'mixed-attacker',    description: 'Atacante Mixto — reparte entre ATK y SP.ATK para ser impredecible.' };
@@ -1039,30 +1096,30 @@ window.PokeAnalyzer.analyzer = {
 
         if (stats.spe > 110) tips.push(`Su Velocidad de ${stats.spe} le permite superar a casi todo el meta sin naturaleza de Velocidad.`);
         if (stats.hp  > 100) tips.push(`Con ${stats.hp} de HP es muy difícil de eliminar de un solo golpe — maximiza EVs de HP.`);
-        if (stats.bst >= 580) tips.push(`Con ${stats.bst} de BST está en la élite — diseña el equipo alrededor de él.`);
-        if (stats.atk > 130 || stats.spatk > 130) tips.push(`Stat ofensivo excepcional — incluso sin setup ejerce una presión enorme.`);
-        if (role.type.includes('wall') || role.type === 'support') tips.push(`Rol defensivo/soporte — prioriza recuperación y hazards para maximizar la presión pasiva.`);
+        if (stats.bst >= 580) tips.push(`Con ${stats.bst} de total de stats base está en la élite — diseña el equipo alrededor de él.`);
+        if (stats.atk > 130 || stats.spatk > 130) tips.push(`Atributo ofensivo excepcional — incluso sin potenciarte ejerce una presión enorme.`);
+        if (role.type.includes('wall') || role.type === 'support') tips.push(`Rol defensivo/soporte — prioriza recuperación y trampas de entrada para maximizar la presión pasiva.`);
 
         // Mecánicas por generación
-        if (!mechanics.hasAbilities) tips.push(`En Gen ${genNum} no existen habilidades — la estrategia depende solo de tipos, movimientos y stats.`);
+        if (!mechanics.hasAbilities) tips.push(`En Gen ${genNum} no existen habilidades — la estrategia depende solo de tipos, movimientos y stats base.`);
         if (!mechanics.hasPhysSpecSplit) tips.push(`En Gen ${genNum} el split físico/especial es por TIPO de movimiento, no por movimiento individual.`);
         if (!mechanics.hasFairyType && genNum < 6) tips.push(`En Gen ${genNum} no existe el tipo Hada — Dragón solo es débil a Hielo y Dragón.`);
 
         const genTips = {
-            1: 'En Gen I no hay objetos ni habilidades. El stat Especial es único (SP.ATK = SP.DEF). Prioriza cobertura de tipos y control de PP.',
+            1: 'En Gen I no hay objetos ni habilidades. El atributo Especial es único (At.Esp = Def.Esp). Prioriza cobertura de tipos y control de PP.',
             2: 'En Gen II los Restos son el objeto más valioso. El split físico/especial sigue siendo por tipo de movimiento.',
             3: 'En Gen III el split es por TIPO del movimiento. Elige coberturas teniendo esto en cuenta.',
             4: 'En Gen IV el split ya es por movimiento individual — revisa bien la categoría de cada ataque.',
             5: 'En Gen V el meta de clima es dominante. Considera respuesta para sol, lluvia y arena.',
             6: 'En Gen VI el tipo Hada cambia matchups clave. Evalúa si necesitas cobertura de Acero o Veneno.',
-            7: 'En Gen VII aprovecha el Z-Move para potenciar tu STAB principal o para hacer un setup devastador.',
-            8: 'En Gen VIII el Dynamax permite convertir cualquier ataque en un boost. Úsalo en el turno más impactante.',
-            9: 'En Gen IX elige el Tera Type para potenciar tu STAB ofensivamente o tapar debilidades defensivas.',
+            7: 'En Gen VII aprovecha el Z-Move para potenciar tu STAB principal o para una potenciación devastadora.',
+            8: 'En Gen VIII el Dynamax permite convertir cualquier ataque en un aumento. Úsalo en el turno más impactante.',
+            9: 'En Gen IX elige el Tipo Tera para potenciar tu STAB ofensivamente o tapar debilidades defensivas.',
         };
 
         if (genTips[genNum]) tips.push(genTips[genNum]);
 
         return tips.join(' ') ||
-            `Pokémon de tipo ${types} con ${stats.bst} de BST. Adapta cada set según las amenazas del meta de Gen ${genNum}.`;
+            `Pokémon de tipo ${types} con ${stats.bst} de total de stats base. Adapta cada set según las amenazas del meta de Gen ${genNum}.`;
     },
 };

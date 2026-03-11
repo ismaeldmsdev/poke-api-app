@@ -166,7 +166,7 @@ window.PokeAnalyzer.translator = {
         pivot:    'Pivote — genera momentum saliendo tras atacar.',
         recovery: 'Recuperación — mantiene la presencia en el campo.',
         hazard:   'Hazard — daño pasivo en cada cambio del rival.',
-        setup:    'Setup — potencia el daño para barrer al equipo rival.',
+        setup:    'Potenciación — aumenta el daño para barrer al equipo rival.',
         utility:  'Utilidad — control o soporte al equipo.',
     },
 

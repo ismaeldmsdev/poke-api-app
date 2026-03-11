@@ -50,6 +50,31 @@ window.PokeAnalyzer.config = {
         fairy:    { bg: '#EE99AC', fg: '#111' },
     },
 
+    /**
+     * Type chart (Gen 6+) — multiplicadores de daño por tipo.
+     * Nota: para Gen < 6, el renderer trata Fairy como Normal (aprox).
+     */
+    TYPE_CHART: {
+        normal:   { rock: 0.5, ghost: 0, steel: 0.5 },
+        fire:     { fire: 0.5, water: 0.5, grass: 2, ice: 2, bug: 2, rock: 0.5, dragon: 0.5, steel: 2 },
+        water:    { fire: 2, water: 0.5, grass: 0.5, ground: 2, rock: 2, dragon: 0.5 },
+        electric: { water: 2, electric: 0.5, grass: 0.5, ground: 0, flying: 2, dragon: 0.5 },
+        grass:    { fire: 0.5, water: 2, grass: 0.5, poison: 0.5, ground: 2, flying: 0.5, bug: 0.5, rock: 2, dragon: 0.5, steel: 0.5 },
+        ice:      { fire: 0.5, water: 0.5, grass: 2, ice: 0.5, ground: 2, flying: 2, dragon: 2, steel: 0.5 },
+        fighting: { normal: 2, ice: 2, rock: 2, dark: 2, steel: 2, poison: 0.5, flying: 0.5, psychic: 0.5, bug: 0.5, fairy: 0.5, ghost: 0 },
+        poison:   { grass: 2, fairy: 2, poison: 0.5, ground: 0.5, rock: 0.5, ghost: 0.5, steel: 0 },
+        ground:   { fire: 2, electric: 2, grass: 0.5, poison: 2, flying: 0, bug: 0.5, rock: 2, steel: 2 },
+        flying:   { electric: 0.5, grass: 2, fighting: 2, bug: 2, rock: 0.5, steel: 0.5 },
+        psychic:  { fighting: 2, poison: 2, psychic: 0.5, steel: 0.5, dark: 0 },
+        bug:      { fire: 0.5, grass: 2, fighting: 0.5, poison: 0.5, flying: 0.5, psychic: 2, ghost: 0.5, dark: 2, steel: 0.5, fairy: 0.5 },
+        rock:     { fire: 2, ice: 2, flying: 2, bug: 2, fighting: 0.5, ground: 0.5, steel: 0.5 },
+        ghost:    { normal: 0, psychic: 2, ghost: 2, dark: 0.5 },
+        dragon:   { dragon: 2, steel: 0.5, fairy: 0 },
+        dark:     { fighting: 0.5, psychic: 2, ghost: 2, dark: 0.5, fairy: 0.5 },
+        steel:    { fire: 0.5, water: 0.5, electric: 0.5, ice: 2, rock: 2, fairy: 2, steel: 0.5 },
+        fairy:    { fire: 0.5, fighting: 2, poison: 0.5, dragon: 2, dark: 2, steel: 0.5 },
+    },
+
     // Traducciones oficiales de naturalezas al castellano (nombres del juego)
     NATURE_ES: {
         'Hardy':   'Fuerte',    'Lonely':  'Huraña',    'Brave':   'Audaz',
@@ -102,39 +127,48 @@ window.PokeAnalyzer.config = {
 
     GENERATIONS: [
         {
-            num: 1, label: 'GEN I', years: '1996–1999', games: 'Rojo / Azul / Amarillo',
+            num: 1, label: 'GEN I', years: '1996–1999',
+            games: 'Rojo / Azul / Amarillo', gamesShort: 'RBY',
             mechanics: `Sin habilidades ni naturalezas. Split físico/especial por TIPO. Sin objetos. Solo 151 Pokémon.`,
         },
         {
-            num: 2, label: 'GEN II', years: '1999–2002', games: 'Oro / Plata / Cristal',
+            num: 2, label: 'GEN II', years: '1999–2002',
+            games: 'Oro / Plata / Cristal', gamesShort: 'GSC',
             mechanics: `Sin habilidades. Naturalezas existen (IVs de 4 bits). Objetos equipables introducidos. Tipos Acero y Siniestro.`,
         },
         {
-            num: 3, label: 'GEN III', years: '2002–2006', games: 'Rubí / Zafiro / Esmeralda / FR / HV',
+            num: 3, label: 'GEN III', years: '2002–2006',
+            games: 'Rubí / Zafiro / Esmeralda / FR / HV', gamesShort: 'RSE',
             mechanics: `Habilidades normales (sin ocultas). Naturalezas (+10%/-10%). IVs/EVs modernos. Split por TIPO todavía.`,
         },
         {
-            num: 4, label: 'GEN IV', years: '2006–2010', games: 'Diamante / Perla / Platino / HG / SS',
+            num: 4, label: 'GEN IV', years: '2006–2010',
+            games: 'Diamante / Perla / Platino / HG / SS', gamesShort: 'DPPt',
             mechanics: `Split físico/especial por MOVIMIENTO. VGC oficial. Stealth Rock fundamental. Sin habilidades ocultas.`,
         },
         {
-            num: 5, label: 'GEN V', years: '2010–2013', games: 'Negro / Blanco / N2 / B2',
+            num: 5, label: 'GEN V', years: '2010–2013',
+            games: 'Negro / Blanco / N2 / B2', gamesShort: 'BW',
             mechanics: `Habilidades ocultas (Dream World). Meta de clima automático dominante. Eviolite introducida.`,
         },
         {
-            num: 6, label: 'GEN VI', years: '2013–2016', games: 'X / Y / ORAS',
+            num: 6, label: 'GEN VI', years: '2013–2016',
+            games: 'X / Y / ORAS', gamesShort: 'XY',
             mechanics: `Tipo Hada introducido. Megaevoluciones disponibles. Clima nerfado (5 turnos).`,
         },
         {
-            num: 7, label: 'GEN VII', years: '2016–2019', games: 'Sol / Luna / US / UM',
+            num: 7, label: 'GEN VII', years: '2016–2019',
+            games: 'Sol / Luna / US / UM', gamesShort: 'SM',
             mechanics: `Z-Moves disponibles (uno por combate). Formas de Alola. Terrenos clave en el meta.`,
         },
         {
-            num: 8, label: 'GEN VIII', years: '2019–2022', games: 'Espada / Escudo / BDSP',
+            num: 8, label: 'GEN VIII', years: '2019–2022',
+            games: 'Espada / Escudo / BDSP', gamesShort: 'SwSh',
             mechanics: `Dynamax/Gigantamax (3 turnos). Movepool recortado. Sin Z-moves en línea principal.`,
         },
         {
-            num: 9, label: 'GEN IX', years: '2022–hoy', games: 'Escarlata / Púrpura',
+            num: 9, label: 'GEN IX', years: '2022–hoy',
+            games: 'Escarlata / Púrpura', gamesShort: 'SV',
             mechanics: `Terastal (cambio de tipo en combate). Tera Blast. Pokémon Paradox. Meta VGC actual.`,
         },
     ],
