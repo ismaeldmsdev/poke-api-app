@@ -90,22 +90,37 @@
     <div id="aiSection" class="ai-section hidden">
         <h3 id="aiHeading" class="ai-heading"></h3>
 
-        <div id="setSelector" class="set-selector hidden">
-            <label class="set-label" for="setDropdown">Set Smogon</label>
-            <select id="setDropdown" class="set-dropdown"></select>
-        </div>
+        <!-- Gen mechanics banner -->
+        <div id="genMechanicsBox" class="gen-mechanics-box hidden"></div>
 
-        <div id="natureSelector" class="set-selector hidden">
-            <label class="set-label" for="natureDropdown">Naturaleza</label>
-            <select id="natureDropdown" class="set-dropdown nature-dd"></select>
-        </div>
-        <div id="natureEffectBox" class="nature-effect-box hidden"></div>
+        <!-- Tabs: Sets Oficiales | Sugerencias Alternativas -->
+        <div id="setTabs" class="set-tabs hidden"></div>
 
-        <div class="ai-grid">
-            <div id="cardBuild1" class="ai-card full">
-                <p class="ai-card-title">SET — <span id="buildLabel1"></span></p>
-                <div id="buildContent1"></div>
+        <!-- Panel Smogon (default) -->
+        <div id="smogonPanel">
+            <div id="setSelector" class="set-selector hidden">
+                <label class="set-label" for="setDropdown">Set Smogon</label>
+                <select id="setDropdown" class="set-dropdown"></select>
             </div>
+
+            <div id="natureSelector" class="set-selector hidden">
+                <label class="set-label" for="natureDropdown">Naturaleza</label>
+                <select id="natureDropdown" class="set-dropdown nature-dd"></select>
+            </div>
+            <div id="natureEffectBox" class="nature-effect-box hidden"></div>
+
+            <div class="ai-grid">
+                <div id="cardBuild1" class="ai-card full">
+                    <p class="ai-card-title">SET — <span id="buildLabel1"></span></p>
+                    <div id="buildContent1"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel Comunidad (oculto por defecto) -->
+        <div id="communityPanel" class="community-panel hidden"></div>
+
+        <div class="ai-grid ai-grid-bottom">
             <div id="cardRol" class="ai-card">
                 <p class="ai-card-title">ROL Y FORMATO</p>
                 <div id="rolContent"></div>
@@ -120,11 +135,12 @@
 </main>
 
 <footer>
-    BuildDex &copy; 2026 &middot; Datos: PokeAPI.co<br>
+    BuildDex &copy; 2026 &middot; Datos: PokeAPI.co &amp; Smogon<br>
     Pokémon es marca registrada de Nintendo / Game Freak / Creatures Inc.
 </footer>
 
 <script src="js/config.js"></script>
+<script src="js/translator.js"></script>
 <script src="js/pokeapi.js"></script>
 <script src="js/analyzer.js"></script>
 <script src="js/renderer.js"></script>

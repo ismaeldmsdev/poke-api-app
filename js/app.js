@@ -11,7 +11,7 @@ window.PokeAnalyzer.app = {
     state: {
         selectedGen: 9,
         cache: null,   // { pokemon, evoData, movesData, abilitiesEs, smogonData, smogonGen }
-        analysis: null, // { allSets, hasSmogon, rol, formato, consejo_extra }
+        analysis: null, // { allSets, communityBuilds, hasSmogon, rol, formato, consejo_extra, genMechanics }
     },
 
     init() {
@@ -27,10 +27,13 @@ window.PokeAnalyzer.app = {
             if (e.key === 'Enter') this.run();
         });
 
+        // Generación como eje central: al cambiar, re-analiza TODO
         document.getElementById('genGrid').addEventListener('click', e => {
             const btn = e.target.closest('.gen-btn');
             if (!btn) return;
-            this.state.selectedGen = Number(btn.dataset.gen);
+            const newGen = Number(btn.dataset.gen);
+            if (newGen === this.state.selectedGen) return;
+            this.state.selectedGen = newGen;
             window.PokeAnalyzer.renderer.setActiveGenButton(this.state.selectedGen);
             if (this.state.cache) this._runAnalysis();
         });
@@ -42,7 +45,7 @@ window.PokeAnalyzer.app = {
             this.run();
         });
 
-        // Selector de sets: cambiar set al seleccionar
+        // Selector de sets
         document.getElementById('setDropdown').addEventListener('change', e => {
             const idx = Number(e.target.value);
             if (this.state.analysis && this.state.analysis.allSets[idx]) {
@@ -53,9 +56,16 @@ window.PokeAnalyzer.app = {
             }
         });
 
-        // Variación de naturaleza: recalcular efectos visuales
+        // Variación de naturaleza: recalcular efectos + actualizar stats dinámicamente
         document.getElementById('natureDropdown').addEventListener('change', e => {
             window.PokeAnalyzer.renderer.renderNatureEffect(e.target.value);
+        });
+
+        // Tabs: Sets Oficiales | Sugerencias Alternativas
+        document.getElementById('setTabs').addEventListener('click', e => {
+            const btn = e.target.closest('.tab-btn');
+            if (!btn || btn.disabled) return;
+            window.PokeAnalyzer.renderer.switchTab(btn.dataset.tab);
         });
 
         // Comparador

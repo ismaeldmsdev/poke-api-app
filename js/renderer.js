@@ -34,7 +34,7 @@ window.PokeAnalyzer.renderer = {
             btn.className   = `gen-btn${gen.num === activeNum ? ' active' : ''}`;
             btn.dataset.gen = gen.num;
             btn.textContent = gen.label;
-            btn.title       = `${gen.games} (${gen.years})`;
+            btn.title       = `${gen.games} (${gen.years})\n${gen.mechanics}`;
             grid.appendChild(btn);
         });
     },
@@ -43,6 +43,16 @@ window.PokeAnalyzer.renderer = {
         document.querySelectorAll('.gen-btn').forEach(btn => {
             btn.classList.toggle('active', Number(btn.dataset.gen) === num);
         });
+    },
+
+    // ── Gen Mechanics Info Banner ──────────────────────────────────
+    renderGenMechanics(generation) {
+        const box = this.el('genMechanicsBox');
+        if (!box) return;
+        box.innerHTML = `
+            <span class="gen-mech-label">${generation.label}</span>
+            <span class="gen-mech-text">${generation.mechanics}</span>`;
+        this.show('genMechanicsBox');
     },
 
     // ── Pokémon card ──────────────────────────────────────────────
@@ -78,30 +88,53 @@ window.PokeAnalyzer.renderer = {
             }).join('');
     },
 
-    _renderStats(pokemon) {
-        const { STAT_META } = window.PokeAnalyzer.config;
+    _renderStats(pokemon, natureEn = null) {
+        const { STAT_META, NATURE_EFFECTS } = window.PokeAnalyzer.config;
         const container = this.el('statsRows');
         container.innerHTML = '';
         let bst = 0;
+
+        const effect = natureEn ? NATURE_EFFECTS[natureEn] : null;
+
         pokemon.stats.forEach(s => {
-            bst += s.base_stat;
+            const baseStat = s.base_stat;
+            let displayStat = baseStat;
+            let modifier = '';
+            let modClass = '';
+
+            if (effect) {
+                if (effect.up === s.stat.name) {
+                    displayStat = Math.floor(baseStat * 1.1);
+                    modifier = ' (\u2191)';
+                    modClass = ' stat-up';
+                } else if (effect.down === s.stat.name) {
+                    displayStat = Math.floor(baseStat * 0.9);
+                    modifier = ' (\u2193)';
+                    modClass = ' stat-down';
+                }
+            }
+
+            bst += displayStat;
             const meta = STAT_META[s.stat.name] ?? { label: s.stat.name, cls: '' };
-            const pct  = ((s.base_stat / 255) * 100).toFixed(1);
+            const pct  = ((displayStat / 255) * 100).toFixed(1);
             container.insertAdjacentHTML('beforeend', `
                 <div class="stat-row">
                     <span class="stat-lbl">${meta.label}</span>
-                    <span class="stat-num">${s.base_stat}</span>
+                    <span class="stat-num${modClass}">${displayStat}${modifier}</span>
                     <div class="stat-bg">
-                        <div class="stat-bar ${meta.cls}" data-w="${pct}"></div>
+                        <div class="stat-bar ${meta.cls}${modClass}" data-w="${pct}"></div>
                     </div>
                 </div>`);
         });
         this.el('bstNum').textContent = bst;
+        this._animateStatBars();
     },
 
     _animateStatBars() {
-        document.querySelectorAll('.stat-bar').forEach(bar => {
-            bar.style.width = bar.dataset.w + '%';
+        requestAnimationFrame(() => {
+            document.querySelectorAll('.stat-bar').forEach(bar => {
+                bar.style.width = bar.dataset.w + '%';
+            });
         });
     },
 
@@ -136,11 +169,42 @@ window.PokeAnalyzer.renderer = {
         });
     },
 
+    // ── Tabs: Sets Oficiales | Sugerencias Alternativas ─────────
+
+    _activeTab: 'smogon',
+
+    renderTabs(hasSmogon, hasCommunity) {
+        const tabsEl = this.el('setTabs');
+        if (!tabsEl) return;
+
+        const smogonLabel = hasSmogon ? 'Sets Oficiales Smogon' : 'Sets Estimados';
+        const communityLabel = 'Sugerencias Alternativas';
+
+        tabsEl.innerHTML = `
+            <button class="tab-btn active" data-tab="smogon">${smogonLabel}</button>
+            <button class="tab-btn${hasCommunity ? '' : ' disabled'}" data-tab="community" ${hasCommunity ? '' : 'disabled'}>${communityLabel}</button>`;
+
+        this._activeTab = 'smogon';
+        this.show('setTabs');
+    },
+
+    switchTab(tabName) {
+        this._activeTab = tabName;
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.tab === tabName);
+        });
+
+        if (tabName === 'smogon') {
+            this.show('smogonPanel');
+            this.hide('communityPanel');
+        } else {
+            this.hide('smogonPanel');
+            this.show('communityPanel');
+        }
+    },
+
     // ── Selector de Sets ──────────────────────────────────────────
 
-    /**
-     * Rellena el dropdown con todos los sets disponibles.
-     */
     renderSetSelector(allSets, hasSmogon) {
         const dropdown = this.el('setDropdown');
         dropdown.innerHTML = '';
@@ -152,18 +216,13 @@ window.PokeAnalyzer.renderer = {
             dropdown.appendChild(option);
         });
 
-        if (hasSmogon && allSets.length > 1) {
+        if (allSets.length > 1) {
             this.show('setSelector');
         } else {
             this.hide('setSelector');
         }
     },
 
-    /**
-     * Renderiza un set individual en la tarjeta de build.
-     * Marca la naturaleza con ★ (recomendada por Smogon).
-     * Rellena el dropdown de variación de naturaleza.
-     */
     renderSelectedSet(set, hasSmogon) {
         this.el('buildLabel1').textContent = set.tierLabel;
         this._renderBuildCard('buildContent1', set, hasSmogon);
@@ -172,17 +231,64 @@ window.PokeAnalyzer.renderer = {
             this.el('cardBuild1').classList.add('show');
         });
 
-        // Rellenar dropdown de variación de naturaleza
         this._renderNatureDropdown(set.natureEn);
         this.renderNatureEffect(set.natureEn);
     },
 
+    // ── Community Sets Panel ─────────────────────────────────────
+
+    renderCommunityBuilds(communityBuilds) {
+        const panel = this.el('communityPanel');
+        if (!panel) return;
+
+        if (!communityBuilds || communityBuilds.length === 0) {
+            panel.innerHTML = '<p class="no-community">No hay sugerencias alternativas para este Pokémon.</p>';
+            return;
+        }
+
+        panel.innerHTML = communityBuilds.map((build, i) => {
+            return this._renderCommunityCard(build, i);
+        }).join('');
+    },
+
+    _renderCommunityCard(build, index) {
+        const { TYPE_COLORS, TYPE_ES } = window.PokeAnalyzer.config;
+        const { translator } = window.PokeAnalyzer;
+
+        const movesHtml = (build.moveset ?? []).map(m => {
+            const typeKey = (m.tipo ?? '').toLowerCase();
+            const colors  = TYPE_COLORS[typeKey] ?? { bg: '#888', fg: '#111' };
+            const typeEs  = (TYPE_ES[typeKey] || m.tipo || '').toUpperCase();
+            const catEs   = translator.translateMoveCategory(m.category || '');
+            return `
+                <div class="move-item">
+                    <div class="move-type-bar" style="background:${colors.bg}"></div>
+                    <div class="move-body">
+                        <div class="move-header">
+                            <span class="move-name">${m.movimiento ?? ''}</span>
+                            <span class="move-type" style="background:${colors.bg};color:${colors.fg}">${typeEs}</span>
+                        </div>
+                        <p class="move-why">${m.razon ?? ''}</p>
+                    </div>
+                </div>`;
+        }).join('');
+
+        return `
+            <div class="ai-card community-card full show">
+                <p class="ai-card-title community-title">${build.tierLabel}</p>
+                ${build.description ? `<p class="community-desc">${build.description}</p>` : ''}
+                <div class="build-meta">
+                    <span class="build-nature">${(build.nature ?? '').toUpperCase()}</span>
+                    <span class="build-item">${build.item ?? ''}</span>
+                    <span class="build-ability">${build.ability ?? ''}</span>
+                    <span class="build-evs">EVs: ${build.evs ?? ''}</span>
+                </div>
+                <div class="move-inner">${movesHtml}</div>
+            </div>`;
+    },
+
     // ── Selector de Variación de Naturaleza ───────────────────────
 
-    /**
-     * Rellena el dropdown de naturaleza con las 25 naturalezas.
-     * La recomendada por Smogon aparece marcada con ★.
-     */
     _renderNatureDropdown(recommendedNatureEn) {
         const { NATURE_ES } = window.PokeAnalyzer.config;
         const dropdown = this.el('natureDropdown');
@@ -191,7 +297,7 @@ window.PokeAnalyzer.renderer = {
         Object.entries(NATURE_ES).forEach(([en, es]) => {
             const option = document.createElement('option');
             option.value = en;
-            const star = (en === recommendedNatureEn) ? '★ ' : '';
+            const star = (en === recommendedNatureEn) ? '\u2605 ' : '';
             option.textContent = `${star}${es} (${en})`;
             if (en === recommendedNatureEn) option.selected = true;
             dropdown.appendChild(option);
@@ -201,8 +307,8 @@ window.PokeAnalyzer.renderer = {
     },
 
     /**
-     * Muestra los efectos de la naturaleza seleccionada sobre los stats.
-     * +10% en verde, -10% en rojo, neutras sin indicador.
+     * Muestra los efectos de la naturaleza con stats finales calculados.
+     * Indicadores (↑) rojo / (↓) azul con alto contraste.
      */
     renderNatureEffect(natureEn) {
         const { NATURE_EFFECTS, NATURE_ES, STAT_META } = window.PokeAnalyzer.config;
@@ -210,10 +316,16 @@ window.PokeAnalyzer.renderer = {
         const effect = NATURE_EFFECTS[natureEn];
         const natureEs = NATURE_ES[natureEn] ?? natureEn;
 
+        // Update stat bars dynamically if pokemon is cached
+        const app = window.PokeAnalyzer.app;
+        if (app?.state?.cache?.pokemon) {
+            this._renderStats(app.state.cache.pokemon, natureEn);
+        }
+
         if (!effect) {
             box.innerHTML = `
                 <span class="nature-eff-title">${natureEs}</span>
-                <span class="nature-eff-neutral">Naturaleza neutra — sin modificadores de estadísticas.</span>`;
+                <span class="nature-eff-neutral">Naturaleza neutra — sin modificadores de estad\u00edsticas.</span>`;
             this.show('natureEffectBox');
             return;
         }
@@ -221,29 +333,59 @@ window.PokeAnalyzer.renderer = {
         const upMeta   = STAT_META[effect.up]   ?? { label: effect.up };
         const downMeta = STAT_META[effect.down]  ?? { label: effect.down };
 
+        // Calcular stats finales si tenemos datos del pokemon
+        let upStatText = '';
+        let downStatText = '';
+        if (app?.state?.cache?.pokemon) {
+            const pokemon = app.state.cache.pokemon;
+            const upStat = pokemon.stats.find(s => s.stat.name === effect.up);
+            const downStat = pokemon.stats.find(s => s.stat.name === effect.down);
+            if (upStat) {
+                const base = upStat.base_stat;
+                const modified = Math.floor(base * 1.1);
+                upStatText = ` (${base} \u2192 ${modified})`;
+            }
+            if (downStat) {
+                const base = downStat.base_stat;
+                const modified = Math.floor(base * 0.9);
+                downStatText = ` (${base} \u2192 ${modified})`;
+            }
+        }
+
         box.innerHTML = `
             <span class="nature-eff-title">${natureEs}</span>
-            <span class="nature-eff-up">▲ ${upMeta.label} (+10%)</span>
-            <span class="nature-eff-down">▼ ${downMeta.label} (-10%)</span>`;
+            <span class="nature-eff-up">\u2191 ${upMeta.label} (+10%)${upStatText}</span>
+            <span class="nature-eff-down">\u2193 ${downMeta.label} (-10%)${downStatText}</span>`;
         this.show('natureEffectBox');
     },
 
     // ── AI Analysis ───────────────────────────────────────────────
     renderAnalysis(analysis, generation) {
         this.el('aiHeading').textContent =
-            `Análisis Gen ${generation.num} — ${generation.games}`;
+            `An\u00e1lisis Gen ${generation.num} — ${generation.games}`;
+
+        // Render gen mechanics banner
+        this.renderGenMechanics(generation);
 
         const allSets = analysis.allSets ?? [];
+        const communityBuilds = analysis.communityBuilds ?? [];
 
-        // Renderizar selector de sets
+        // Render tabs
+        this.renderTabs(analysis.hasSmogon, communityBuilds.length > 0);
+
+        // Smogon panel: set selector + build card
         this.renderSetSelector(allSets, analysis.hasSmogon);
-
-        // Mostrar el primer set por defecto
         if (allSets.length > 0) {
             this.renderSelectedSet(allSets[0], analysis.hasSmogon);
         } else {
             this.el('cardBuild1').classList.add('hidden');
         }
+
+        // Community panel
+        this.renderCommunityBuilds(communityBuilds);
+
+        // Default to smogon tab
+        this.switchTab('smogon');
 
         this._renderRol(analysis.rol, analysis.formato);
         this._renderExtra(analysis.consejo_extra ?? '');
@@ -254,10 +396,10 @@ window.PokeAnalyzer.renderer = {
 
     _renderBuildCard(contentId, build, hasSmogon = false) {
         const { TYPE_COLORS, TYPE_ES } = window.PokeAnalyzer.config;
+        const { translator } = window.PokeAnalyzer;
 
-        // Naturaleza con ★ si es recomendación de Smogon
         const natureDisplay = hasSmogon
-            ? `★ ${(build.nature ?? '').toUpperCase()}`
+            ? `\u2605 ${(build.nature ?? '').toUpperCase()}`
             : (build.nature ?? '').toUpperCase();
 
         const movesHtml = (build.moveset ?? []).map((m, i) => {
@@ -390,7 +532,6 @@ window.PokeAnalyzer.renderer = {
 
         container.classList.remove('hidden');
 
-        // Animar barras
         requestAnimationFrame(() => requestAnimationFrame(() => {
             container.querySelectorAll('.compare-bar-fill').forEach(bar => {
                 bar.style.width = bar.dataset.w + '%';
@@ -406,6 +547,8 @@ window.PokeAnalyzer.renderer = {
         this.hide('setSelector');
         this.hide('natureSelector');
         this.hide('natureEffectBox');
+        this.hide('setTabs');
+        this.hide('genMechanicsBox');
         const card = this.el('pokeCard');
         card.classList.add('hidden');
         card.classList.remove('show');
@@ -421,6 +564,8 @@ window.PokeAnalyzer.renderer = {
         this.hide('setSelector');
         this.hide('natureSelector');
         this.hide('natureEffectBox');
+        this.hide('setTabs');
+        this.hide('genMechanicsBox');
         ['cardBuild1','cardRol','cardExtra'].forEach(id => {
             const el = document.getElementById(id);
             if (el) el.classList.remove('show');
