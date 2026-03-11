@@ -70,9 +70,11 @@ window.PokeAnalyzer.pokeAPI = {
         const map = new Map();
         results.forEach((r, i) => {
             const eng = pokemon.abilities[i].ability.name;
-            map.set(eng, r.status === 'fulfilled' && r.value
-                ? r.value
-                : _capitalize(eng.replace(/-/g, ' ')));
+            if (r.status === 'fulfilled' && r.value) {
+                map.set(eng, r.value);
+            } else {
+                map.set(eng, { nameEs: _capitalize(eng.replace(/-/g, ' ')), genNum: 3 });
+            }
         });
         return map;
     },
@@ -247,10 +249,13 @@ window.PokeAnalyzer.pokeAPI = {
     },
 
     async _fetchAbility(name) {
+        const { GEN_NUM_MAP } = window.PokeAnalyzer.config;
         const res = await fetch(`${window.PokeAnalyzer.config.POKEAPI_BASE}/ability/${name}`);
         if (!res.ok) return null;
         const data = await res.json();
-        return data.names?.find(n => n.language.name === 'es')?.name ?? null;
+        const nameEs = data.names?.find(n => n.language.name === 'es')?.name ?? null;
+        const genNum = GEN_NUM_MAP[data.generation?.name] ?? 3;
+        return nameEs ? { nameEs, genNum } : null;
     },
 };
 

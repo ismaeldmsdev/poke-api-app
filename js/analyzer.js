@@ -510,6 +510,29 @@ window.PokeAnalyzer.analyzer = {
     // COMMUNITY BUILDS — Sets alternativos populares
     // ================================================================
 
+    _getValidAbility(abilitiesEs, genNum) {
+        const mechanics = GEN_MECHANICS[genNum] || GEN_MECHANICS[9];
+        if (!mechanics.hasAbilities) return '—';
+        for (const [, entry] of abilitiesEs) {
+            if (entry.genNum <= genNum) return entry.nameEs;
+        }
+        const first = abilitiesEs?.values?.().next?.()?.value;
+        return first?.nameEs ?? '—';
+    },
+
+    _isItemAvailable(itemEn, genNum) {
+        const { ITEM_INTRO_GEN } = window.PokeAnalyzer.config;
+        const mechanics = GEN_MECHANICS[genNum] || GEN_MECHANICS[9];
+        if (!mechanics.hasItems) return false;
+        const introGen = ITEM_INTRO_GEN[itemEn];
+        return introGen == null || introGen <= genNum;
+    },
+
+    _fallbackItem(genNum) {
+        if (genNum < 2) return '—';
+        return 'Leftovers';
+    },
+
     async getCommunityBuilds(pokemonName, generation, movesData, abilitiesEs) {
         const { translator } = window.PokeAnalyzer;
         const { NATURE_ES } = window.PokeAnalyzer.config;
@@ -521,26 +544,21 @@ window.PokeAnalyzer.analyzer = {
             return this._generateGenericCommunityBuilds(pokemonName, generation, movesData, abilitiesEs);
         }
 
-        // Índice solo con movimientos realmente aprendibles por este Pokémon
-        // en la generación seleccionada (movesData ya viene filtrado por gen).
         const moveIndex = new Map();
         if (movesData) movesData.forEach(m => moveIndex.set(m.name, m));
 
         const parsed = [];
         for (const build of builds) {
             const natureEs = NATURE_ES[build.natureEn] ?? build.natureEn;
-            const itemEs = translator.translateItem(build.item);
 
-            const firstAb = abilitiesEs?.entries?.().next?.()?.value;
-            const abilityEs = firstAb ? firstAb[1] : '—';
+            const itemEn = build.item;
+            const itemEs = this._isItemAvailable(itemEn, genNum)
+                ? translator.translateItem(itemEn)
+                : translator.translateItem(this._fallbackItem(genNum));
 
-            // Movimientos:
-            // 1) Si están en moveIndex (movesData) → seguro que el Pokémon los aprende en esta gen.
-            // 2) Si no, consultamos PokeAPI y solo los aceptamos si su generación de origen
-            //    es <= gen actual (aprox. legalidad por gen).
+            const abilityEs = this._getValidAbility(abilitiesEs, genNum);
+
             const moveset = await this._translateCommunityMoves(build.moves, moveIndex, genNum);
-
-            // Si no queda ningún movimiento válido, omitimos este build.
             if (!moveset || moveset.length === 0) continue;
 
             parsed.push({
@@ -557,7 +575,6 @@ window.PokeAnalyzer.analyzer = {
             });
         }
 
-        // Si todos los builds predefinidos quedaron vacíos, caemos al generador genérico.
         if (parsed.length === 0) {
             return this._generateGenericCommunityBuilds(pokemonName, generation, movesData, abilitiesEs);
         }
@@ -632,8 +649,8 @@ window.PokeAnalyzer.analyzer = {
                 else break;
             }
 
-            const firstAb = abilitiesEs?.entries?.().next?.()?.value;
-            const abilityEs = firstAb ? firstAb[1] : '—';
+            const abilityEs = this._getValidAbility(abilitiesEs, genNum);
+            const advItemEn = this._isItemAvailable('Life Orb', genNum) ? 'Life Orb' : this._fallbackItem(genNum);
 
             builds.push({
                 setName: 'Set de Aventura',
@@ -642,7 +659,7 @@ window.PokeAnalyzer.analyzer = {
                 natureEn: 'Adamant',
                 nature: NATURE_ES['Adamant'],
                 ability: abilityEs,
-                item: translator.translateItem('Life Orb'),
+                item: translator.translateItem(advItemEn),
                 evs: '252 Atq / 4 PS / 252 Vel',
                 moveset: adventureMoves.slice(0, 4).map(m => ({
                     movimiento: m.nameEs, tipo: m.type, razon: 'Cobertura de tipo.',
@@ -656,8 +673,8 @@ window.PokeAnalyzer.analyzer = {
         const attackMoves = available.filter(m => m.power && m.power > 0);
         if (statusMoves.length >= 2 && attackMoves.length >= 1) {
             const gimmickMoves = [...statusMoves.slice(0, 2), ...attackMoves.slice(0, 2)];
-            const firstAb = abilitiesEs?.entries?.().next?.()?.value;
-            const abilityEs = firstAb ? firstAb[1] : '—';
+            const abilityEs2 = this._getValidAbility(abilitiesEs, genNum);
+            const gimItemEn = this._isItemAvailable('Leftovers', genNum) ? 'Leftovers' : this._fallbackItem(genNum);
 
             builds.push({
                 setName: 'Set Creativo',
@@ -665,8 +682,8 @@ window.PokeAnalyzer.analyzer = {
                 description: 'Set no convencional con movimientos de estado — ideal para sorprender.',
                 natureEn: 'Bold',
                 nature: NATURE_ES['Bold'],
-                ability: abilityEs,
-                item: translator.translateItem('Leftovers'),
+                ability: abilityEs2,
+                item: translator.translateItem(gimItemEn),
                 evs: '252 PS / 128 Def / 128 Def.Esp',
                 moveset: gimmickMoves.slice(0, 4).map(m => ({
                     movimiento: m.nameEs, tipo: m.type,
@@ -701,15 +718,15 @@ window.PokeAnalyzer.analyzer = {
             const natureEn = Array.isArray(s.nature) ? s.nature[0] : (s.nature ?? 'Hardy');
             const natureEs = NATURE_ES[natureEn] ?? natureEn;
 
-            // Habilidad
+            // Habilidad (Smogon ya filtra por gen, confiamos en el set)
             let abilityEs = '—';
             if (s.ability) {
                 const abilityEn  = Array.isArray(s.ability) ? s.ability[0] : s.ability;
                 const abilityKey = abilityEn.toLowerCase().replace(/ /g, '-').replace(/[.']/g, '');
-                abilityEs = abilitiesEs.get(abilityKey) ?? abilityEn;
+                abilityEs = abilitiesEs.get(abilityKey)?.nameEs ?? abilityEn;
             } else {
                 const firstAb = pokemon.abilities?.[0]?.ability?.name;
-                if (firstAb) abilityEs = abilitiesEs.get(firstAb) ?? firstAb;
+                if (firstAb) abilityEs = abilitiesEs.get(firstAb)?.nameEs ?? firstAb;
             }
 
             // Objeto (usa translator)
@@ -801,8 +818,7 @@ window.PokeAnalyzer.analyzer = {
         const isPhysical = stats.atk > stats.spatk;
         const isMixed    = role.type === 'mixed-attacker';
 
-        const firstAb = pokemon.abilities?.[0]?.ability?.name;
-        const abilityEs = firstAb ? (abilitiesEs.get(firstAb) ?? firstAb) : '—';
+        const abilityEs = this._getValidAbility(abilitiesEs, genNum);
 
         const allSets = [];
 
@@ -836,7 +852,7 @@ window.PokeAnalyzer.analyzer = {
         const selectedMoves = this._selectCoherentMoves(moves, types, allowedCategory, isMixed);
         if (selectedMoves.length === 0) return null;
 
-        const item = this._pickOffensiveItem(role, isPhysical, selectedMoves);
+        const item = this._pickOffensiveItem(role, isPhysical, selectedMoves, genNum);
         const finalMoves = this._enforceChoiceRule(selectedMoves, moves, allowedCategory, item, types);
 
         return {
@@ -857,9 +873,11 @@ window.PokeAnalyzer.analyzer = {
 
     _buildDefensiveSet(moves, types, stats, isPhysical, abilityEs, genNum) {
         const { NATURE_ES } = window.PokeAnalyzer.config;
+        const { translator } = window.PokeAnalyzer;
         const defMoves = this._selectDefensiveMoves(moves, types);
         if (defMoves.length < 3) return null;
 
+        const defItemEn = this._isItemAvailable('Leftovers', genNum) ? 'Leftovers' : this._fallbackItem(genNum);
         const natureEn = isPhysical ? 'Impish' : 'Calm';
         return {
             setName: 'Soporte Defensivo',
@@ -867,7 +885,7 @@ window.PokeAnalyzer.analyzer = {
             natureEn,
             nature: NATURE_ES[natureEn] ?? natureEn,
             ability: abilityEs,
-            item: 'Restos',
+            item: translator.translateItem(defItemEn),
             evs: '252 PS / 252 Def / 4 Def.Esp',
             moveset: defMoves.slice(0, 4).map(m => ({
                 movimiento: m.nameEs,
@@ -1004,13 +1022,26 @@ window.PokeAnalyzer.analyzer = {
         return '252 At.Esp / 4 PS / 252 Vel';
     },
 
-    _pickOffensiveItem(role, isPhysical, moves) {
+    _pickOffensiveItem(role, isPhysical, moves, genNum) {
+        const { translator } = window.PokeAnalyzer;
         const hasSetup = moves.some(m => m.effectiveCategory === 'status' &&
             (PREMIUM_PHYSICAL.has(m.name) || PREMIUM_SPECIAL.has(m.name)));
-        if (role.type.includes('wall')) return 'Restos';
-        if (hasSetup) return 'Orbe Vital';
-        if (isPhysical) return 'Cinta Elegida';
-        return 'Lentes Elegidas';
+
+        let itemEn;
+        if (role.type.includes('wall')) {
+            itemEn = 'Leftovers';
+        } else if (hasSetup) {
+            itemEn = 'Life Orb';
+        } else if (isPhysical) {
+            itemEn = 'Choice Band';
+        } else {
+            itemEn = 'Choice Specs';
+        }
+
+        if (!this._isItemAvailable(itemEn, genNum)) {
+            itemEn = this._fallbackItem(genNum);
+        }
+        return translator.translateItem(itemEn);
     },
 
     _moveReason(move, types, genNum) {

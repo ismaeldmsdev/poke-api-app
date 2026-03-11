@@ -191,8 +191,8 @@ window.PokeAnalyzer.renderer = {
     _renderAbilities(pokemon, abilitiesEs = null) {
         this.el('abilitiesRow').innerHTML = pokemon.abilities.map(a => {
             const key  = a.ability.name;
-            const name = (abilitiesEs && abilitiesEs.get(key))
-                || key.replace(/-/g, ' ');
+            const entry = abilitiesEs && abilitiesEs.get(key);
+            const name = entry?.nameEs || key.replace(/-/g, ' ');
             const cls  = a.is_hidden ? 'pill hidden-ab' : 'pill';
             return `<span class="${cls}">${name}${a.is_hidden ? ' [H]' : ''}</span>`;
         }).join('');
