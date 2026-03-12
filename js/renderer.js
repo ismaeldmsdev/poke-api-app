@@ -1245,4 +1245,78 @@ window.PokeAnalyzer.renderer = {
             ac.innerHTML = '';
         }
     },
+
+    // ── Calculadora de Captura ───────────────────────────────────
+    openCaptureModal() {
+        this._openModal('captureModal');
+    },
+    closeCaptureModal() {
+        this._closeModal('captureModal');
+    },
+    renderCaptureHp(value) {
+        const lbl = this.el('captureHpValue');
+        if (lbl) lbl.textContent = `${Number(value || 0)}%`;
+    },
+    renderCaptureSelected(info) {
+        const node = this.el('captureSelectedInfo');
+        if (!node) return;
+        if (!info || !info.name) {
+            node.classList.add('hidden');
+            node.textContent = '';
+            return;
+        }
+        const cr = typeof info.captureRate === 'number' && !Number.isNaN(info.captureRate)
+            ? info.captureRate
+            : null;
+        const niceName = info.name.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join('-');
+        node.classList.remove('hidden');
+        node.textContent = cr !== null
+            ? `${niceName} — ratio de captura base: ${cr}`
+            : `${niceName} — no se pudo obtener el ratio de captura`;
+    },
+    renderCaptureResult(result) {
+        const box = this.el('captureResult');
+        const txt = this.el('captureResultText');
+        if (!box || !txt) return;
+
+        box.classList.remove('capture-result--low', 'capture-result--mid', 'capture-result--high');
+
+        if (!result) {
+            box.classList.add('hidden');
+            txt.textContent = '';
+            return;
+        }
+
+        if (result.error) {
+            box.classList.remove('hidden');
+            txt.textContent = result.error;
+            box.classList.add('capture-result--low');
+            return;
+        }
+
+        const p = Number(result.probability || 0);
+        const clamped = Math.max(0, Math.min(100, p));
+
+        if (clamped < 15) {
+            box.classList.add('capture-result--low');
+        } else if (clamped <= 50) {
+            box.classList.add('capture-result--mid');
+        } else {
+            box.classList.add('capture-result--high');
+        }
+
+        const baseText = result.name
+            ? `Probabilidad de captura para ${result.name}: `
+            : 'Probabilidad de captura estimada: ';
+
+        let displayText;
+        if (clamped > 0 && clamped < 1) {
+            displayText = '< 1%';
+        } else {
+            displayText = `${clamped.toFixed(1)}%`;
+        }
+
+        txt.textContent = `${baseText}${displayText}`;
+        box.classList.remove('hidden');
+    },
 };

@@ -198,6 +198,7 @@ window.PokeAnalyzer.pokeAPI = {
                 hatchCounter: data.hatch_counter ?? 20,
                 genderRate: data.gender_rate ?? -1,
                 isBaby: data.is_baby ?? false,
+                captureRate: Number.parseInt(String(data.capture_rate ?? 0), 10),
             };
             this._speciesCache[key] = result;
             return result;

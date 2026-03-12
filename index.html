@@ -27,6 +27,7 @@
                 <button id="menuTmItem" class="header-menu-item" type="button">Localizador de MT</button>
                 <button id="menuTeamItem" class="header-menu-item" type="button">Analizador de Equipo</button>
                 <button id="menuBreedingItem" class="header-menu-item" type="button">Simulador de Crianza</button>
+                <button id="menuCaptureItem" class="header-menu-item" type="button">Calculadora de Captura</button>
             </div>
         </div>
     </div>
@@ -167,6 +168,73 @@
                 <p class="loading-text yellow">CALCULANDO...</p>
             </div>
             <div id="versusResult" class="versus-result hidden"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Calculadora de Captura -->
+<div id="captureModal" class="modal hidden" aria-hidden="true">
+    <div class="modal-backdrop" data-close-capture="1"></div>
+    <div class="modal-sheet" role="dialog" aria-modal="true" aria-label="Calculadora de Captura">
+        <div class="modal-topbar">
+            <div class="modal-title capture-title">
+                <span>CALCULADORA DE CAPTURA</span>
+                <button class="capture-info-icon" type="button" aria-label="Cómo funciona la calculadora">
+                    i
+                </button>
+                <div class="capture-info-tooltip" role="status">
+                    La probabilidad se calcula según la fórmula oficial (Gen 6+).
+                    El estado Dormido/Congelado es el más efectivo (2.5×), seguido de
+                    Parálisis/Quemado/Veneno (1.5×). Recuerda que la vida baja y mejores
+                    Poké Balls aumentan drásticamente tus opciones.
+                </div>
+            </div>
+            <button id="closeCaptureBtn" class="icon-btn" type="button" aria-label="Cerrar" data-close-capture="1">✕</button>
+        </div>
+        <div class="modal-body">
+            <p class="modal-sub">Elige un Pokémon y ajusta la vida, estado y tipo de Poké Ball para estimar la probabilidad de captura (fórmula Gen 6+).</p>
+
+            <div class="capture-field">
+                <label class="capture-label" for="captureInput">POKÉMON</label>
+                <div class="capture-search-wrap">
+                    <input id="captureInput" type="text" class="search-input" placeholder="Ej: Gengar, Dragonite..." autocomplete="off" spellcheck="false">
+                    <div id="captureAc" class="search-ac"></div>
+                </div>
+                <p id="captureSelectedInfo" class="capture-selected-info hidden"></p>
+            </div>
+
+            <div class="capture-field">
+                <label class="capture-label" for="captureHpSlider">VIDA ACTUAL</label>
+                <div class="capture-hp-row">
+                    <input id="captureHpSlider" type="range" min="1" max="100" value="100">
+                    <span id="captureHpValue" class="capture-hp-value">100%</span>
+                </div>
+            </div>
+
+            <div class="capture-grid">
+                <div class="capture-field">
+                    <label class="capture-label" for="captureStatusSelect">ESTADO</label>
+                    <select id="captureStatusSelect" class="capture-select">
+                        <option value="1">Ninguno</option>
+                        <option value="1.5">Parálisis / Veneno / Quemado</option>
+                        <option value="2.5">Sueño / Congelación</option>
+                    </select>
+                </div>
+                <div class="capture-field">
+                    <label class="capture-label" for="captureBallSelect">POKÉ BALL</label>
+                    <select id="captureBallSelect" class="capture-select">
+                        <option value="1">Poké Ball (x1)</option>
+                        <option value="1.5">Super Ball (x1.5)</option>
+                        <option value="2">Ultra Ball (x2)</option>
+                    </select>
+                </div>
+            </div>
+
+            <button id="captureCalcBtn" class="ghost-btn" type="button">CALCULAR PROBABILIDAD</button>
+
+            <div id="captureResult" class="capture-result hidden">
+                <p id="captureResultText" class="capture-result-text"></p>
+            </div>
         </div>
     </div>
 </div>

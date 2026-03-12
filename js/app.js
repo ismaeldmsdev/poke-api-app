@@ -17,6 +17,7 @@ window.PokeAnalyzer.app = {
         team: { genNum: 9, slots: [null, null, null, null, null, null], searchingSlot: -1 },
         breeding: { parent1: null, parent2: null, destinyKnot: false, everstone: false },
         pokemonList: null,
+        capture: { name: '', captureRate: null },
     },
 
     _togglePanel(panel, btn) {
@@ -164,6 +165,7 @@ window.PokeAnalyzer.app = {
             menuTmItem:       () => this._openTmLocator(),
             menuTeamItem:     () => this._openTeamAnalyzer(),
             menuBreedingItem: () => this._openBreeding(),
+            menuCaptureItem:  () => this._openCapture(),
         };
 
         if (menuBtn && menuPanel) {
@@ -356,6 +358,59 @@ window.PokeAnalyzer.app = {
             if (!cb) return;
             this._toggleBreedingItem(cb.dataset.item, cb.checked);
         });
+
+        // Capture calculator modal
+        const closeCaptureBtn = document.getElementById('closeCaptureBtn');
+        const captureModal = document.getElementById('captureModal');
+        if (closeCaptureBtn && captureModal) {
+            closeCaptureBtn.addEventListener('click', () => {
+                window.PokeAnalyzer.renderer.closeCaptureModal();
+            });
+            captureModal.addEventListener('click', e => {
+                if (e.target?.dataset?.closeCapture) window.PokeAnalyzer.renderer.closeCaptureModal();
+            });
+        }
+
+        const captureInput = document.getElementById('captureInput');
+        const captureAc = document.getElementById('captureAc');
+        if (captureInput && captureAc) {
+            captureInput.addEventListener('input', this._debounce(e => {
+                this._filterPokemonSuggestions(e.target.value.trim().toLowerCase(), 'captureAc');
+            }, 120));
+            captureInput.addEventListener('keydown', e => {
+                if (e.key === 'Enter') {
+                    const first = captureAc.querySelector('.search-ac-item');
+                    if (first) {
+                        captureInput.value = first.dataset.name;
+                        this._onCapturePokemonSelected(first.dataset.name);
+                        window.PokeAnalyzer.renderer.hideSearchAc('captureAc');
+                    }
+                }
+                if (e.key === 'Escape') {
+                    this._hideAllAc();
+                }
+            });
+            captureAc.addEventListener('click', e => {
+                const item = e.target.closest('.search-ac-item');
+                if (!item) return;
+                captureInput.value = item.dataset.name;
+                this._onCapturePokemonSelected(item.dataset.name);
+                window.PokeAnalyzer.renderer.hideSearchAc('captureAc');
+            });
+        }
+
+        const hpSlider = document.getElementById('captureHpSlider');
+        if (hpSlider) {
+            hpSlider.addEventListener('input', e => {
+                const v = Number(e.target.value || 100);
+                window.PokeAnalyzer.renderer.renderCaptureHp(v);
+            });
+        }
+
+        const calcBtn = document.getElementById('captureCalcBtn');
+        if (calcBtn) {
+            calcBtn.addEventListener('click', () => this._runCaptureCalc());
+        }
     },
 
     async run() {
@@ -770,6 +825,88 @@ window.PokeAnalyzer.app = {
         };
 
         renderer.renderBreedingResult(resultData);
+    },
+
+    // ── Calculadora de Captura ───────────────────────────────────
+    _openCapture() {
+        const { renderer } = window.PokeAnalyzer;
+        this.state.capture = { name: '', captureRate: null };
+        renderer.openCaptureModal();
+        renderer.renderCaptureHp(100);
+        renderer.renderCaptureSelected(null);
+        renderer.renderCaptureResult(null);
+        const input = document.getElementById('captureInput');
+        if (input) {
+            input.value = '';
+            setTimeout(() => input.focus(), 60);
+        }
+    },
+
+    async _onCapturePokemonSelected(name) {
+        if (!name) return;
+        const { pokeAPI, renderer } = window.PokeAnalyzer;
+        try {
+            const species = await pokeAPI.fetchSpeciesBreeding(name);
+            if (!species || typeof species.captureRate !== 'number' || Number.isNaN(species.captureRate)) {
+                renderer.renderCaptureSelected({ name, captureRate: null });
+                this.state.capture = { name, captureRate: null };
+                return;
+            }
+            this.state.capture = {
+                name: species.name,
+                captureRate: species.captureRate,
+            };
+            renderer.renderCaptureSelected({
+                name: species.name,
+                captureRate: species.captureRate,
+            });
+        } catch {
+            renderer.renderCaptureSelected({ name, captureRate: null });
+            this.state.capture = { name, captureRate: null };
+        }
+    },
+
+    _calculateCaptureProbability(captureRate, hpPercent, ballBonus, statusBonus) {
+        // hpPercent debe ser el valor entero del slider (1–100)
+        const hp = Math.min(100, Math.max(1, Math.floor(Number(hpPercent) || 1)));
+        const cr = Math.max(0, Math.floor(Number(captureRate) || 0));
+        const ball = Number(ballBonus) || 1;
+        const status = Number(statusBonus) || 1;
+
+        // Atajo práctico: ratios de captura máximos (255) se tratan como 100%
+        // en esta calculadora simplificada.
+        if (cr >= 255) {
+            return 100;
+        }
+
+        // Paso 1: calcular a con la fórmula indicada
+        const a = ((3 * 100 - 2 * hp) * cr * ball * status) / 300;
+
+        // Corte de seguridad
+        if (a >= 255) return 100;
+
+        // Paso 2: probabilidad final
+        if (a <= 0) return 0;
+        const p = Math.pow(a / 255, 0.75) * 100;
+        return Math.max(0, Math.min(100, p));
+    },
+
+    _runCaptureCalc() {
+        const { renderer } = window.PokeAnalyzer;
+        const { captureRate, name } = this.state.capture;
+        if (!name || !captureRate) {
+            renderer.renderCaptureResult({ error: 'Primero selecciona un Pokémon válido del buscador.' });
+            return;
+        }
+        const hp = Number(document.getElementById('captureHpSlider')?.value || 100);
+        const ball = Number(document.getElementById('captureBallSelect')?.value || 1);
+        const status = Number(document.getElementById('captureStatusSelect')?.value || 1);
+
+        const prob = this._calculateCaptureProbability(captureRate, hp, ball, status);
+        renderer.renderCaptureResult({
+            name,
+            probability: prob,
+        });
     },
 
     // ── Calculadora de Cobertura ─────────────────────────────────

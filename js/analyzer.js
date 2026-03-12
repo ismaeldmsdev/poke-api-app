@@ -604,7 +604,9 @@ window.PokeAnalyzer.analyzer = {
             });
         }
 
-        return result;
+        // Si no se han podido mapear TODOS los movimientos (por gen u otra razón),
+        // consideramos que este build no es válido para esta generación.
+        return result.length === moveSlugs.length ? result : [];
     },
 
     _generateGenericCommunityBuilds(pokemonName, generation, movesData, abilitiesEs) {

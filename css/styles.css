@@ -829,6 +829,57 @@ body.modal-open { overflow: hidden; }
     letter-spacing: 2px;
     color: var(--accent);
 }
+.capture-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+}
+.capture-info-icon {
+    width: 22px;
+    height: 22px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.18);
+    background: rgba(255,255,255,0.04);
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+}
+.capture-info-icon:hover,
+.capture-info-icon:focus-visible {
+    border-color: rgba(124, 92, 252, 0.6);
+    color: var(--accent);
+}
+.capture-info-tooltip {
+    position: absolute;
+    left: 0;
+    top: calc(100% + 8px);
+    max-width: 280px;
+    padding: 10px 12px;
+    font-size: 11px;
+    line-height: 1.5;
+    color: var(--muted);
+    background: rgba(18,18,20,0.98);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.6);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(4px);
+    transition: opacity .15s ease, transform .15s ease;
+    z-index: 10;
+}
+.capture-title:hover .capture-info-tooltip,
+.capture-info-icon:focus + .capture-info-tooltip {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+}
 .icon-btn {
     min-width: var(--touch-min);
     min-height: var(--touch-min);
@@ -2194,6 +2245,100 @@ footer {
 .search-ac-sprite { width: 36px; height: 36px; image-rendering: pixelated; }
 .search-ac-name { font-size: 14px; text-transform: capitalize; flex: 1; font-weight: 600; }
 .search-ac-num  { font-size: 11px; color: rgba(255,255,255,.4); font-weight: 500; }
+
+/* ═══════════════════════════════════════════════════════════════
+   CALCULADORA DE CAPTURA
+   ═══════════════════════════════════════════════════════════════ */
+
+.capture-field {
+    margin-bottom: 16px;
+}
+.capture-label {
+    display: block;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.55);
+    margin-bottom: 6px;
+}
+.capture-search-wrap {
+    position: relative;
+}
+.capture-selected-info {
+    margin-top: 6px;
+    font-size: 12px;
+    color: var(--muted);
+}
+.capture-hp-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+#captureHpSlider {
+    flex: 1;
+}
+.capture-hp-value {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent);
+    min-width: 48px;
+    text-align: right;
+}
+.capture-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+.capture-select {
+    width: 100%;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    background: var(--card);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    min-height: var(--touch-min);
+    outline: none;
+}
+.capture-select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 12px var(--accent-glow);
+}
+.capture-result {
+    margin-top: 16px;
+    padding: 14px 16px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.03);
+}
+.capture-result-text {
+    font-size: 14px;
+    font-weight: 600;
+}
+.capture-result--low {
+    border-color: #ff4c4c;
+    background: rgba(255,76,76,0.12);
+    color: #ff9b9b;
+}
+.capture-result--mid {
+    border-color: #f0ad4e;
+    background: rgba(240,173,78,0.12);
+    color: #ffd28a;
+}
+.capture-result--high {
+    border-color: #4caf50;
+    background: rgba(76,175,80,0.12);
+    color: #b2f3b5;
+}
+
+@media (max-width: 520px) {
+    .capture-grid {
+        grid-template-columns: 1fr;
+    }
+}
 
 /* ═══════════════════════════════════════════════════════════════
    VERSUS REDISEÑADO (2 campos independientes)
