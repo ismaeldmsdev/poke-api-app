@@ -22,7 +22,7 @@
         <div class="header-menu-wrap">
             <button id="headerMenuBtn" class="icon-btn header-menu-btn" type="button" aria-haspopup="true" aria-expanded="false">☰</button>
             <div id="headerMenuPanel" class="header-menu-panel hidden">
-                <button id="menuVersusItem" class="header-menu-item" type="button" disabled>Comparar Pokémon (Versus)</button>
+                <button id="menuVersusItem" class="header-menu-item" type="button">Comparar Pokémon (Versus)</button>
                 <button id="menuCoverageItem" class="header-menu-item" type="button">Calculadora de Cobertura</button>
                 <button id="menuTmItem" class="header-menu-item" type="button">Localizador de MT</button>
                 <button id="menuTeamItem" class="header-menu-item" type="button">Analizador de Equipo</button>
@@ -36,16 +36,19 @@
 
     <section class="search-section">
         <p class="search-hint">NOMBRE O NÚMERO DE POKÉMON</p>
-        <div class="search-bar">
-            <input
-                id="searchInput"
-                type="text"
-                class="search-input"
-                placeholder="Charizard, Gengar, Mew..."
-                autocomplete="off"
-                spellcheck="false"
-            >
-            <button id="searchBtn" class="search-btn">ANALIZAR</button>
+        <div class="search-bar-wrap">
+            <div class="search-bar">
+                <input
+                    id="searchInput"
+                    type="text"
+                    class="search-input"
+                    placeholder="Charizard, Gengar, Mew..."
+                    autocomplete="off"
+                    spellcheck="false"
+                >
+                <button id="searchBtn" class="search-btn">ANALIZAR</button>
+            </div>
+            <div id="searchAc" class="search-ac"></div>
         </div>
         <p class="gen-label">GENERACIÓN COMPETITIVA</p>
         <div id="genGrid" class="gen-grid"></div>
@@ -144,11 +147,21 @@
             <button id="closeVersusBtn" class="icon-btn" type="button" aria-label="Cerrar" data-close="1">✕</button>
         </div>
         <div class="modal-body">
-            <p class="modal-sub">Busca un segundo Pokémon para enfrentarlo al actual.</p>
-            <div class="search-bar modal-search">
-                <input id="versusInput" type="text" class="search-input" placeholder="Ej: Rotom, Excadrill..." autocomplete="off" spellcheck="false">
-                <button id="versusBtn" class="search-btn" type="button">ENFRENTAR</button>
+            <p class="modal-sub">Elige dos Pokémon para compararlos.</p>
+            <div class="versus-inputs">
+                <div class="versus-input-wrap">
+                    <label class="versus-input-label">POKÉMON 1</label>
+                    <input id="versusInput1" type="text" class="search-input" placeholder="Ej: Garchomp..." autocomplete="off" spellcheck="false">
+                    <div id="versusAc1" class="search-ac"></div>
+                </div>
+                <span class="versus-vs-badge">VS</span>
+                <div class="versus-input-wrap">
+                    <label class="versus-input-label">POKÉMON 2</label>
+                    <input id="versusInput2" type="text" class="search-input" placeholder="Ej: Rotom-Wash..." autocomplete="off" spellcheck="false">
+                    <div id="versusAc2" class="search-ac"></div>
+                </div>
             </div>
+            <button id="versusBtn" class="search-btn versus-go-btn" type="button">ENFRENTAR</button>
             <div id="versusLoading" class="loading-wrap hidden">
                 <div class="spinner ai-spin"></div>
                 <p class="loading-text yellow">CALCULANDO DUELO...</p>

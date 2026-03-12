@@ -14,8 +14,9 @@ window.PokeAnalyzer.app = {
         analysis: null,
         coverage: { mode: 'defensive', genNum: 9, selected: [] },
         tm: { gameId: '', search: '', typeFilter: 'all', checklists: {} },
-        team: { genNum: 9, slots: [null, null, null, null, null, null], pokemonList: null, searchingSlot: -1 },
-        breeding: { parent1: null, parent2: null, destinyKnot: false, everstone: false, pokemonList: null },
+        team: { genNum: 9, slots: [null, null, null, null, null, null], searchingSlot: -1 },
+        breeding: { parent1: null, parent2: null, destinyKnot: false, everstone: false },
+        pokemonList: null,
     },
 
     _togglePanel(panel, btn) {
@@ -30,16 +31,47 @@ window.PokeAnalyzer.app = {
     },
 
     init() {
-        const { config, renderer } = window.PokeAnalyzer;
+        const { config, renderer, pokeAPI } = window.PokeAnalyzer;
         renderer.buildGenButtons(config.GENERATIONS, this.state.selectedGen);
         this._bindEvents();
+        pokeAPI.fetchPokemonList().then(list => { this.state.pokemonList = list; }).catch(() => {});
+    },
+
+    _hideAllAc() {
+        const { renderer } = window.PokeAnalyzer;
+        ['searchAc', 'versusAc1', 'versusAc2'].forEach(id => renderer.hideSearchAc(id));
+    },
+
+    _filterPokemonSuggestions(query, targetId) {
+        const { renderer } = window.PokeAnalyzer;
+        if (query.length < 2 || !this.state.pokemonList) {
+            renderer.hideSearchAc(targetId);
+            return;
+        }
+        const list = this.state.pokemonList;
+        const startsWith = list.filter(p => p.name.startsWith(query));
+        const includes = list.filter(p => !p.name.startsWith(query) && p.name.includes(query));
+        renderer.showSearchAc(targetId, [...startsWith, ...includes].slice(0, 12));
     },
 
     _bindEvents() {
-        document.getElementById('searchBtn').addEventListener('click', () => this.run());
+        document.getElementById('searchBtn').addEventListener('click', () => { this._hideAllAc(); this.run(); });
 
         document.getElementById('searchInput').addEventListener('keydown', e => {
-            if (e.key === 'Enter') this.run();
+            if (e.key === 'Enter') { this._hideAllAc(); this.run(); }
+            if (e.key === 'Escape') this._hideAllAc();
+        });
+
+        document.getElementById('searchInput').addEventListener('input', this._debounce(e => {
+            this._filterPokemonSuggestions(e.target.value.trim().toLowerCase(), 'searchAc');
+        }, 120));
+
+        document.getElementById('searchAc').addEventListener('click', e => {
+            const item = e.target.closest('.search-ac-item');
+            if (!item) return;
+            document.getElementById('searchInput').value = item.dataset.name;
+            this._hideAllAc();
+            this.run();
         });
 
         // Generación como eje central: al cambiar, re-analiza TODO
@@ -86,7 +118,7 @@ window.PokeAnalyzer.app = {
             }
         });
 
-        // Versus (modal) desde menú de header
+        // Versus (modal) - 2 campos independientes
         document.getElementById('closeVersusBtn').addEventListener('click', () => {
             window.PokeAnalyzer.renderer.closeVersusModal();
         });
@@ -94,15 +126,34 @@ window.PokeAnalyzer.app = {
             if (e.target?.dataset?.close) window.PokeAnalyzer.renderer.closeVersusModal();
         });
         document.getElementById('versusBtn').addEventListener('click', () => this.runVersus());
-        document.getElementById('versusInput').addEventListener('keydown', e => {
-            if (e.key === 'Enter') this.runVersus();
+
+        document.getElementById('versusInput1').addEventListener('input', this._debounce(e => {
+            this._filterPokemonSuggestions(e.target.value.trim().toLowerCase(), 'versusAc1');
+        }, 120));
+        document.getElementById('versusInput2').addEventListener('input', this._debounce(e => {
+            this._filterPokemonSuggestions(e.target.value.trim().toLowerCase(), 'versusAc2');
+        }, 120));
+
+        document.getElementById('versusAc1').addEventListener('click', e => {
+            const item = e.target.closest('.search-ac-item');
+            if (item) { document.getElementById('versusInput1').value = item.dataset.name; window.PokeAnalyzer.renderer.hideSearchAc('versusAc1'); }
+        });
+        document.getElementById('versusAc2').addEventListener('click', e => {
+            const item = e.target.closest('.search-ac-item');
+            if (item) { document.getElementById('versusInput2').value = item.dataset.name; window.PokeAnalyzer.renderer.hideSearchAc('versusAc2'); }
+        });
+
+        ['versusInput1', 'versusInput2'].forEach(id => {
+            document.getElementById(id).addEventListener('keydown', e => {
+                if (e.key === 'Enter') this.runVersus();
+                if (e.key === 'Escape') this._hideAllAc();
+            });
         });
 
         const menuBtn = document.getElementById('headerMenuBtn');
         const menuPanel = document.getElementById('headerMenuPanel');
-        const menuVersus = document.getElementById('menuVersusItem');
         const menuHandlers = {
-            menuVersusItem:   () => { if (!document.getElementById('menuVersusItem').disabled) { window.PokeAnalyzer.renderer.openVersusModal(); document.getElementById('versusInput').focus(); } },
+            menuVersusItem:   () => { window.PokeAnalyzer.renderer.openVersusModal(); document.getElementById('versusInput1').focus(); },
             menuCoverageItem: () => this._openCoverage(),
             menuTmItem:       () => this._openTmLocator(),
             menuTeamItem:     () => this._openTeamAnalyzer(),
@@ -318,7 +369,6 @@ window.PokeAnalyzer.app = {
         }
 
         renderer.resetResults();
-        renderer.hideVersusCta();
         renderer.setSearchBusy(true);
 
         // ── Fase 1: datos del Pokémon ────────────────────────────
@@ -335,7 +385,6 @@ window.PokeAnalyzer.app = {
         }
 
         renderer.hidePokeLoading();
-        renderer.showVersusCta();
 
         // ── Fase 2: movimientos + habilidades + Smogon en paralelo ──
         renderer.showAILoading();
@@ -364,28 +413,23 @@ window.PokeAnalyzer.app = {
     async runVersus() {
         const { pokeAPI, renderer } = window.PokeAnalyzer;
 
-        if (!this.state.cache?.pokemon) {
-            renderer.showMessage('PRIMERO ANALIZA UN POKÉMON PARA USAR VERSUS', 'error');
+        const q1 = document.getElementById('versusInput1').value.trim();
+        const q2 = document.getElementById('versusInput2').value.trim();
+        if (!q1 || !q2) {
+            renderer.showMessage('INGRESA LOS DOS POKÉMON PARA COMPARAR', 'error');
             return;
         }
 
-        const query = document.getElementById('versusInput').value.trim();
-        if (!query) {
-            renderer.showMessage('INGRESA EL NOMBRE DEL RIVAL', 'error');
-            return;
-        }
-
+        this._hideAllAc();
         renderer.setVersusBusy(true);
         renderer.hideMessage();
 
         try {
-            const pokemon2 = await pokeAPI._fetchPokemon(query);
-            renderer.renderVersus(
-                this.state.cache.pokemon,
-                pokemon2,
-                this.state.selectedGen,
-                this.state.analysis?.allSets?.[Number(document.getElementById('setDropdown')?.value) || 0] || null
-            );
+            const [pokemon1, pokemon2] = await Promise.all([
+                pokeAPI._fetchPokemon(q1),
+                pokeAPI._fetchPokemon(q2),
+            ]);
+            renderer.renderVersus(pokemon1, pokemon2, this.state.selectedGen, null);
         } catch (err) {
             renderer.showMessage(err.message, 'error');
         }
@@ -478,30 +522,24 @@ window.PokeAnalyzer.app = {
 
     // ── Analizador de Equipo ────────────────────────────────────
     _openTeamAnalyzer() {
-        const { renderer, pokeAPI } = window.PokeAnalyzer;
+        const { renderer } = window.PokeAnalyzer;
         this.state.team.genNum = this.state.selectedGen;
         this.state.team.slots = [null, null, null, null, null, null];
         renderer.openTeamModal();
         renderer.renderTeamGenGrid(this.state.team.genNum);
         renderer.renderTeamSlots(this.state.team.slots);
         renderer.hide('teamResults');
-
-        if (!this.state.team.pokemonList) {
-            pokeAPI.fetchPokemonList().then(list => {
-                this.state.team.pokemonList = list;
-            });
-        }
     },
 
     _filterTeamPokeSearch(query) {
         const { renderer } = window.PokeAnalyzer;
         const slot = this.state.team.searchingSlot;
         const results = document.getElementById('teamPokeSearchResults');
-        if (query.length < 2 || !this.state.team.pokemonList) {
+        if (query.length < 2 || !this.state.pokemonList) {
             if (results) results.innerHTML = '<p class="team-poke-search-hint">Escribe 2+ letras para buscar.</p>';
             return;
         }
-        const list = this.state.team.pokemonList;
+        const list = this.state.pokemonList;
         const startsWith = list.filter(p => p.name.startsWith(query));
         const includes = list.filter(p => !p.name.startsWith(query) && p.name.includes(query));
         const matches = [...startsWith, ...includes].slice(0, 20);
@@ -604,28 +642,22 @@ window.PokeAnalyzer.app = {
 
     // ── Simulador de Crianza ───────────────────────────────────
     _openBreeding() {
-        const { renderer, pokeAPI } = window.PokeAnalyzer;
-        this.state.breeding = { parent1: null, parent2: null, destinyKnot: false, everstone: false, pokemonList: this.state.breeding.pokemonList };
+        const { renderer } = window.PokeAnalyzer;
+        this.state.breeding = { parent1: null, parent2: null, destinyKnot: false, everstone: false };
         renderer.openBreedingModal();
         renderer.renderBreedingParents(null, null);
         renderer.renderBreedingItems(false, false);
         renderer.hide('breedResult');
         renderer.hide('breedError');
-
-        if (!this.state.breeding.pokemonList) {
-            pokeAPI.fetchPokemonList().then(list => {
-                this.state.breeding.pokemonList = list;
-            }).catch(() => {});
-        }
     },
 
     _filterBreedSuggestions(slot, query) {
         const { renderer } = window.PokeAnalyzer;
-        if (query.length < 2 || !this.state.breeding.pokemonList) {
+        if (query.length < 2 || !this.state.pokemonList) {
             renderer.hideBreedingSuggestions(slot);
             return;
         }
-        const list = this.state.breeding.pokemonList;
+        const list = this.state.pokemonList;
         const startsWith = list.filter(p => p.name.startsWith(query));
         const includes = list.filter(p => !p.name.startsWith(query) && p.name.includes(query));
         const matches = [...startsWith, ...includes].slice(0, 15);

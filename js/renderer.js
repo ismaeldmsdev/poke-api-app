@@ -25,6 +25,30 @@ window.PokeAnalyzer.renderer = {
         btn.textContent = busy ? '...' : 'ANALIZAR';
     },
 
+    // ── Autocompletado genérico ──────────────────────────────────
+    showSearchAc(containerId, matches) {
+        const { SPRITE_RAW } = window.PokeAnalyzer.config;
+        const ac = this.el(containerId);
+        if (!ac) return;
+        if (!matches || matches.length === 0) {
+            ac.innerHTML = '';
+            ac.classList.remove('search-ac--open');
+            return;
+        }
+        ac.innerHTML = matches.map(p => `
+            <div class="search-ac-item" data-name="${p.name}">
+                <img class="search-ac-sprite" src="${SPRITE_RAW}/${p.id}.png" alt="${p.name}" loading="lazy">
+                <span class="search-ac-name">${p.name}</span>
+                <span class="search-ac-num">#${String(p.id).padStart(4, '0')}</span>
+            </div>`).join('');
+        ac.classList.add('search-ac--open');
+    },
+
+    hideSearchAc(containerId) {
+        const ac = this.el(containerId);
+        if (ac) { ac.classList.remove('search-ac--open'); ac.innerHTML = ''; }
+    },
+
     // ── Selector de generación ────────────────────────────────────
     buildGenButtons(generations, activeNum) {
         const grid = this.el('genGrid');
@@ -397,15 +421,6 @@ window.PokeAnalyzer.renderer = {
     },
 
     // ── Comparador ────────────────────────────────────────────────
-    showVersusCta() {
-        const item = this.el('menuVersusItem');
-        if (item) item.disabled = false;
-    },
-    hideVersusCta() {
-        const item = this.el('menuVersusItem');
-        if (item) item.disabled = true;
-    },
-
     openVersusModal() {
         const modal = this.el('versusModal');
         modal.classList.remove('hidden');
@@ -413,6 +428,12 @@ window.PokeAnalyzer.renderer = {
         document.body.classList.add('modal-open');
         this.el('versusResult').classList.add('hidden');
         this.el('versusLoading').classList.add('hidden');
+        const i1 = this.el('versusInput1');
+        const i2 = this.el('versusInput2');
+        if (i1) i1.value = '';
+        if (i2) i2.value = '';
+        this.hideSearchAc('versusAc1');
+        this.hideSearchAc('versusAc2');
     },
     closeVersusModal() {
         const modal = this.el('versusModal');
@@ -964,7 +985,6 @@ window.PokeAnalyzer.renderer = {
         this.hide('setSelector');
         this.hide('communitySuggestions');
         this.hide('genMechanicsBox');
-        this.hideVersusCta();
         const card = this.el('pokeCard');
         card.classList.add('hidden');
         card.classList.remove('show');
