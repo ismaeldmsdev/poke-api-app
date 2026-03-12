@@ -254,6 +254,13 @@ window.PokeAnalyzer.config = {
         },
     ],
 
+    UI: {
+        AC_MAIN_MAX:      12,   // sugerencias autocomplete principal y versus
+        AC_TEAM_MAX:      20,   // sugerencias búsqueda en equipo
+        AC_BREED_MAX:     15,   // sugerencias búsqueda en crianza
+        MOVES_FETCH_LIMIT: 20,  // movimientos máximos a descargar de PokeAPI
+    },
+
     BREEDING: {
         STEPS_PER_CYCLE: 128,
         IV_MAX: 31,

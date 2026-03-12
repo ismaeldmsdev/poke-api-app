@@ -11,6 +11,19 @@ window.PokeAnalyzer.renderer = {
     show: id => document.getElementById(id).classList.remove('hidden'),
     hide: id => document.getElementById(id).classList.add('hidden'),
 
+    _openModal(id) {
+        const modal = this.el(id);
+        modal.classList.remove('hidden');
+        modal.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('modal-open');
+    },
+    _closeModal(id) {
+        const modal = this.el(id);
+        modal.classList.add('hidden');
+        modal.setAttribute('aria-hidden', 'true');
+        document.body.classList.remove('modal-open');
+    },
+
     showMessage(text, type = 'error') {
         const node = this.el('msgBox');
         node.className   = `msg msg-${type}`;
@@ -238,7 +251,7 @@ window.PokeAnalyzer.renderer = {
             item.className    = 'evo-item';
             item.dataset.name = evo.name;
             item.innerHTML    = `
-                <img src="${pokeAPI.staticSpriteUrl(id)}" alt="${evo.name}" loading="lazy">
+                <img src="${pokeAPI.staticSpriteUrl(id)}" alt="Sprite de ${evo.name}" loading="lazy">
                 <p class="evo-name">${evo.name}</p>`;
             container.appendChild(item);
             if (i < chain.length - 1) {
@@ -249,7 +262,7 @@ window.PokeAnalyzer.renderer = {
 
     // ── Selector de Sets ──────────────────────────────────────────
 
-    renderSetSelector(allSets, hasSmogon) {
+    renderSetSelector(allSets) {
         const dropdown = this.el('setDropdown');
         dropdown.innerHTML = '';
 
@@ -293,21 +306,19 @@ window.PokeAnalyzer.renderer = {
             <div class="ai-card full community-suggestions-card show">
                 <p class="ai-card-title community-title">SUGERENCIAS DE LA COMUNIDAD</p>
                 <div class="community-panel">
-                    ${top2.map((b, i) => this._renderCommunityCard(b, i)).join('')}
+                    ${top2.map(b => this._renderCommunityCard(b)).join('')}
                 </div>
             </div>`;
         this.show('communitySuggestions');
     },
 
-    _renderCommunityCard(build, index) {
+    _renderCommunityCard(build) {
         const { TYPE_COLORS, TYPE_ES } = window.PokeAnalyzer.config;
-        const { translator } = window.PokeAnalyzer;
 
         const movesHtml = (build.moveset ?? []).map(m => {
             const typeKey = (m.tipo ?? '').toLowerCase();
             const colors  = TYPE_COLORS[typeKey] ?? { bg: '#888', fg: '#111' };
             const typeEs  = (TYPE_ES[typeKey] || m.tipo || '').toUpperCase();
-            const catEs   = translator.translateMoveCategory(m.category || '');
             return `
                 <div class="move-item">
                     <div class="move-type-bar" style="background:${colors.bg}"></div>
@@ -347,7 +358,7 @@ window.PokeAnalyzer.renderer = {
         const communityBuilds = analysis.communityBuilds ?? [];
 
         // Smogon panel: set selector + build card
-        this.renderSetSelector(allSets, analysis.hasSmogon);
+        this.renderSetSelector(allSets);
         if (allSets.length > 0) {
             this.renderSelectedSet(allSets[0], analysis.hasSmogon);
         } else {
@@ -366,13 +377,12 @@ window.PokeAnalyzer.renderer = {
 
     _renderBuildCard(contentId, build, hasSmogon = false) {
         const { TYPE_COLORS, TYPE_ES } = window.PokeAnalyzer.config;
-        const { translator } = window.PokeAnalyzer;
 
         const natureDisplay = hasSmogon
             ? `\u2605 ${(build.nature ?? '').toUpperCase()}`
             : (build.nature ?? '').toUpperCase();
 
-        const movesHtml = (build.moveset ?? []).map((m, i) => {
+        const movesHtml = (build.moveset ?? []).map(m => {
             const typeKey = (m.tipo ?? '').toLowerCase();
             const colors  = TYPE_COLORS[typeKey] ?? { bg: '#888', fg: '#111' };
             const typeEs  = (TYPE_ES[typeKey] || m.tipo || '').toUpperCase();
@@ -422,10 +432,7 @@ window.PokeAnalyzer.renderer = {
 
     // ── Comparador ────────────────────────────────────────────────
     openVersusModal() {
-        const modal = this.el('versusModal');
-        modal.classList.remove('hidden');
-        modal.setAttribute('aria-hidden', 'false');
-        document.body.classList.add('modal-open');
+        this._openModal('versusModal');
         this.el('versusResult').classList.add('hidden');
         this.el('versusLoading').classList.add('hidden');
         const i1 = this.el('versusInput1');
@@ -435,12 +442,7 @@ window.PokeAnalyzer.renderer = {
         this.hideSearchAc('versusAc1');
         this.hideSearchAc('versusAc2');
     },
-    closeVersusModal() {
-        const modal = this.el('versusModal');
-        modal.classList.add('hidden');
-        modal.setAttribute('aria-hidden', 'true');
-        document.body.classList.remove('modal-open');
-    },
+    closeVersusModal() { this._closeModal('versusModal'); },
     setVersusBusy(busy) {
         const btn = this.el('versusBtn');
         btn.disabled = busy;
@@ -604,18 +606,8 @@ window.PokeAnalyzer.renderer = {
     },
 
     // ── Calculadora de Cobertura ─────────────────────────────────
-    openCoverageModal() {
-        const modal = this.el('coverageModal');
-        modal.classList.remove('hidden');
-        modal.setAttribute('aria-hidden', 'false');
-        document.body.classList.add('modal-open');
-    },
-    closeCoverageModal() {
-        const modal = this.el('coverageModal');
-        modal.classList.add('hidden');
-        modal.setAttribute('aria-hidden', 'true');
-        document.body.classList.remove('modal-open');
-    },
+    openCoverageModal()  { this._openModal('coverageModal');  },
+    closeCoverageModal() { this._closeModal('coverageModal'); },
 
     renderCoverageGenGrid(genNum) {
         const grid = this.el('covGenGrid');
@@ -760,18 +752,8 @@ window.PokeAnalyzer.renderer = {
     },
 
     // ── Analizador de Equipo ────────────────────────────────────
-    openTeamModal() {
-        const modal = this.el('teamModal');
-        modal.classList.remove('hidden');
-        modal.setAttribute('aria-hidden', 'false');
-        document.body.classList.add('modal-open');
-    },
-    closeTeamModal() {
-        const modal = this.el('teamModal');
-        modal.classList.add('hidden');
-        modal.setAttribute('aria-hidden', 'true');
-        document.body.classList.remove('modal-open');
-    },
+    openTeamModal()  { this._openModal('teamModal');  },
+    closeTeamModal() { this._closeModal('teamModal'); },
 
     renderTeamGenGrid(genNum) {
         const grid = this.el('teamGenGrid');
@@ -885,7 +867,7 @@ window.PokeAnalyzer.renderer = {
         }).join('');
     },
 
-    renderTeamMatrix(matrix, slots, genNum) {
+    renderTeamMatrix(matrix, slots) {
         const { TYPE_ES, TYPE_COLORS } = window.PokeAnalyzer.config;
         const filled = slots.map((s, i) => s ? { ...s, idx: i } : null).filter(Boolean);
 
@@ -1012,18 +994,8 @@ window.PokeAnalyzer.renderer = {
     hideAILoading()   { this.hide('aiLoading');   },
 
     // ── Localizador de MT ─────────────────────────────────────────
-    openTmModal() {
-        const modal = this.el('tmModal');
-        modal.classList.remove('hidden');
-        modal.setAttribute('aria-hidden', 'false');
-        document.body.classList.add('modal-open');
-    },
-    closeTmModal() {
-        const modal = this.el('tmModal');
-        modal.classList.add('hidden');
-        modal.setAttribute('aria-hidden', 'true');
-        document.body.classList.remove('modal-open');
-    },
+    openTmModal()  { this._openModal('tmModal');  },
+    closeTmModal() { this._closeModal('tmModal'); },
 
     renderTmGameSelector(games) {
         const select = this.el('tmGameSelect');
@@ -1041,7 +1013,7 @@ window.PokeAnalyzer.renderer = {
             }).join('');
     },
 
-    renderTmList(tms, checklist, gameId) {
+    renderTmList(tms, gameId) {
         const { TYPE_COLORS, TYPE_ES } = window.PokeAnalyzer.config;
         const { METHOD_LABELS } = window.PokeAnalyzer.tmData;
         const list = this.el('tmList');
@@ -1058,16 +1030,10 @@ window.PokeAnalyzer.renderer = {
             const c = TYPE_COLORS[tm.type] || { bg: '#888', fg: '#111' };
             const typeEs = TYPE_ES[tm.type] || tm.type;
             const m = METHOD_LABELS[tm.method] || { icon: '❓', label: 'Otro' };
-            const checked = checklist[tm.num] ? 'checked' : '';
-            const doneClass = checklist[tm.num] ? ' tm-card--done' : '';
             const isHm = tm.num.startsWith('MO');
 
             return `
-            <div class="tm-card${doneClass}" data-num="${tm.num}">
-                <label class="tm-check-wrap">
-                    <input type="checkbox" class="tm-check" data-game="${gameId}" data-num="${tm.num}" ${checked}>
-                    <span class="tm-check-custom"></span>
-                </label>
+            <div class="tm-card" data-num="${tm.num}">
                 <div class="tm-num ${isHm ? 'tm-num--hm' : ''}">${tm.num}</div>
                 <div class="tm-info">
                     <div class="tm-move-row">
@@ -1081,31 +1047,12 @@ window.PokeAnalyzer.renderer = {
         }).join('');
     },
 
-    renderTmProgress(checked, total) {
-        const pct = total > 0 ? ((checked / total) * 100).toFixed(0) : 0;
-        this.el('tmProgressText').textContent = `${checked} / ${total}`;
-        this.el('tmProgressFill').style.width = `${pct}%`;
-        if (total > 0) this.el('tmProgress').classList.remove('hidden');
-        else this.el('tmProgress').classList.add('hidden');
-    },
-
     // ── Simulador de Crianza ───────────────────────────────────
-    openBreedingModal() {
-        const modal = this.el('breedingModal');
-        modal.classList.remove('hidden');
-        modal.setAttribute('aria-hidden', 'false');
-        document.body.classList.add('modal-open');
-    },
-
-    closeBreedingModal() {
-        const modal = this.el('breedingModal');
-        modal.classList.add('hidden');
-        modal.setAttribute('aria-hidden', 'true');
-        document.body.classList.remove('modal-open');
-    },
+    openBreedingModal()  { this._openModal('breedingModal');  },
+    closeBreedingModal() { this._closeModal('breedingModal'); },
 
     renderBreedingParents(parent1, parent2) {
-        const { TYPE_ES, TYPE_COLORS, EGG_GROUPS_ES, SPRITE_RAW } = window.PokeAnalyzer.config;
+        const { TYPE_ES, TYPE_COLORS, EGG_GROUPS_ES } = window.PokeAnalyzer.config;
         const container = this.el('breedParents');
 
         const renderParent = (parent, slot, label) => {
@@ -1153,7 +1100,7 @@ window.PokeAnalyzer.renderer = {
                     <p class="breed-parent-label">${label}</p>
                     <button class="breed-parent-remove" data-slot="${slot}" type="button" title="Quitar">✕</button>
                 </div>
-                <img class="breed-parent-sprite" src="${parent.sprite}" alt="${parent.name}">
+                <img class="breed-parent-sprite" src="${parent.sprite}" alt="Sprite de ${parent.name}">
                 <p class="breed-parent-name">${parent.name}</p>
                 <div class="breed-parent-types">${badges}</div>
                 <div class="breed-parent-eggs">${eggBadges}</div>
@@ -1181,7 +1128,7 @@ window.PokeAnalyzer.renderer = {
     },
 
     renderBreedingResult(data) {
-        const { TYPE_ES, TYPE_COLORS, SPRITE_RAW } = window.PokeAnalyzer.config;
+        const { TYPE_ES, TYPE_COLORS } = window.PokeAnalyzer.config;
         const container = this.el('breedResult');
         container.classList.remove('hidden');
 
@@ -1214,7 +1161,7 @@ window.PokeAnalyzer.renderer = {
         container.innerHTML = `
         <div class="breed-result-top">
             <div class="breed-offspring-card">
-                <img class="breed-offspring-sprite" src="${data.offspring.sprite}" alt="${data.offspring.name}">
+                <img class="breed-offspring-sprite" src="${data.offspring.sprite}" alt="Sprite de ${data.offspring.name}">
                 <p class="breed-offspring-name">${data.offspring.name}</p>
                 <div class="breed-offspring-types">${badges}</div>
             </div>

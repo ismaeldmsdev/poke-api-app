@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "WebSearch"
+      "WebSearch",
+      "Bash(xargs wc:*)",
+      "Read(//c/Users/77190035B/.claude/projects/c--Users-77190035B-Desktop-Ismael-dev-pruebas-poke-api/2777889d-ea93-4802-808c-6034279f704a/tool-results/**)"
     ]
   }
 }

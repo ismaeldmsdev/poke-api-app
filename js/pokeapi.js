@@ -46,8 +46,8 @@ window.PokeAnalyzer.pokeAPI = {
             ...byMethod.other,
         ];
 
-        // Eliminar duplicados y limitar a 20 (evita timeouts con 60+ fetches)
-        const unique = [...new Set(prioritized)].slice(0, 20);
+        // Eliminar duplicados y limitar (evita timeouts con 60+ fetches)
+        const unique = [...new Set(prioritized)].slice(0, window.PokeAnalyzer.config.UI.MOVES_FETCH_LIMIT);
 
         const results = await Promise.allSettled(
             unique.map(name => this._fetchMove(name))
@@ -73,7 +73,7 @@ window.PokeAnalyzer.pokeAPI = {
             if (r.status === 'fulfilled' && r.value) {
                 map.set(eng, r.value);
             } else {
-                map.set(eng, { nameEs: _capitalize(eng.replace(/-/g, ' ')), genNum: 3 });
+                map.set(eng, { nameEs: this._capitalize(eng.replace(/-/g, ' ')), genNum: 3 });
             }
         });
         return map;
@@ -238,6 +238,7 @@ window.PokeAnalyzer.pokeAPI = {
 
     speciesUrlToId(url)  { return url.split('/').filter(Boolean).pop(); },
     staticSpriteUrl(id)  { return `${window.PokeAnalyzer.config.SPRITE_RAW}/${id}.png`; },
+    _capitalize(str)     { return str.charAt(0).toUpperCase() + str.slice(1); },
 
     // ── Privados ─────────────────────────────────────────────────
 
@@ -270,7 +271,7 @@ window.PokeAnalyzer.pokeAPI = {
 
         const { GEN_NUM_MAP } = window.PokeAnalyzer.config;
         const esName = data.names?.find(n => n.language.name === 'es')?.name
-            || _capitalize(data.name.replace(/-/g, ' '));
+            || this._capitalize(data.name.replace(/-/g, ' '));
 
         return {
             name:          data.name,
@@ -293,7 +294,3 @@ window.PokeAnalyzer.pokeAPI = {
         return nameEs ? { nameEs, genNum } : null;
     },
 };
-
-function _capitalize(str) {
-    return str.charAt(0).toUpperCase() + str.slice(1);
-}

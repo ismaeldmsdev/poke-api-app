@@ -13,7 +13,7 @@ window.PokeAnalyzer.app = {
         cache: null,
         analysis: null,
         coverage: { mode: 'defensive', genNum: 9, selected: [] },
-        tm: { gameId: '', search: '', typeFilter: 'all', checklists: {} },
+        tm: { gameId: '', search: '', typeFilter: 'all' },
         team: { genNum: 9, slots: [null, null, null, null, null, null], searchingSlot: -1 },
         breeding: { parent1: null, parent2: null, destinyKnot: false, everstone: false },
         pokemonList: null,
@@ -34,7 +34,9 @@ window.PokeAnalyzer.app = {
         const { config, renderer, pokeAPI } = window.PokeAnalyzer;
         renderer.buildGenButtons(config.GENERATIONS, this.state.selectedGen);
         this._bindEvents();
-        pokeAPI.fetchPokemonList().then(list => { this.state.pokemonList = list; }).catch(() => {});
+        pokeAPI.fetchPokemonList()
+            .then(list => { this.state.pokemonList = list; })
+            .catch(err => console.warn('[BuildDex] No se pudo cargar la lista de Pokémon:', err));
     },
 
     _hideAllAc() {
@@ -42,16 +44,20 @@ window.PokeAnalyzer.app = {
         ['searchAc', 'versusAc1', 'versusAc2'].forEach(id => renderer.hideSearchAc(id));
     },
 
+    _getSuggestions(query, limit) {
+        if (!this.state.pokemonList) return [];
+        const list = this.state.pokemonList;
+        const { UI } = window.PokeAnalyzer.config;
+        const max = limit ?? UI.AC_MAIN_MAX;
+        const startsWith = list.filter(p => p.name.startsWith(query));
+        const includes   = list.filter(p => !p.name.startsWith(query) && p.name.includes(query));
+        return [...startsWith, ...includes].slice(0, max);
+    },
+
     _filterPokemonSuggestions(query, targetId) {
         const { renderer } = window.PokeAnalyzer;
-        if (query.length < 2 || !this.state.pokemonList) {
-            renderer.hideSearchAc(targetId);
-            return;
-        }
-        const list = this.state.pokemonList;
-        const startsWith = list.filter(p => p.name.startsWith(query));
-        const includes = list.filter(p => !p.name.startsWith(query) && p.name.includes(query));
-        renderer.showSearchAc(targetId, [...startsWith, ...includes].slice(0, 12));
+        if (query.length < 2) { renderer.hideSearchAc(targetId); return; }
+        renderer.showSearchAc(targetId, this._getSuggestions(query));
     },
 
     _bindEvents() {
@@ -237,12 +243,6 @@ window.PokeAnalyzer.app = {
             this.state.tm.typeFilter = btn.dataset.type;
             document.querySelectorAll('.tm-type-btn').forEach(b => b.classList.toggle('active', b.dataset.type === this.state.tm.typeFilter));
             this._refreshTm();
-        });
-
-        document.getElementById('tmList').addEventListener('change', e => {
-            if (!e.target.classList.contains('tm-check')) return;
-            const { game, num } = e.target.dataset;
-            this._toggleTmCheck(game, num, e.target.checked);
         });
 
         // Team Analyzer
@@ -448,11 +448,21 @@ window.PokeAnalyzer.app = {
 
     // ── Localizador de MT ───────────────────────────────────────
     _openTmLocator() {
-        const { renderer, tmData } = window.PokeAnalyzer;
-        this.state.tm.checklists = this._loadTmChecklists();
-        renderer.openTmModal();
-        renderer.renderTmGameSelector(tmData.GAMES.filter(g => tmData[g.id]));
-        this._refreshTm();
+        const doOpen = () => {
+            const { renderer, tmData } = window.PokeAnalyzer;
+            renderer.openTmModal();
+            renderer.renderTmGameSelector(tmData.GAMES.filter(g => tmData[g.id]));
+            this._refreshTm();
+        };
+        if (window.PokeAnalyzer.tmData) {
+            doOpen();
+        } else {
+            const script = document.createElement('script');
+            script.src = 'js/tm-data.js';
+            script.onload = doOpen;
+            script.onerror = () => console.warn('[BuildDex] No se pudo cargar tm-data.js');
+            document.head.appendChild(script);
+        }
     },
 
     _refreshTm() {
@@ -461,8 +471,7 @@ window.PokeAnalyzer.app = {
 
         if (!gameId || !tmData[gameId]) {
             renderer.renderTmTypeFilter([]);
-            renderer.renderTmList([], {}, '');
-            renderer.renderTmProgress(0, 0);
+            renderer.renderTmList([], gameId);
             return;
         }
 
@@ -486,38 +495,7 @@ window.PokeAnalyzer.app = {
             );
         }
 
-        const checklist = this.state.tm.checklists[gameId] || {};
-        renderer.renderTmList(filtered, checklist, gameId);
-
-        const totalChecked = Object.values(this.state.tm.checklists[gameId] || {}).filter(Boolean).length;
-        renderer.renderTmProgress(totalChecked, allTms.length);
-    },
-
-    _toggleTmCheck(gameId, num, checked) {
-        if (!this.state.tm.checklists[gameId]) this.state.tm.checklists[gameId] = {};
-        this.state.tm.checklists[gameId][num] = checked;
-        if (!checked) delete this.state.tm.checklists[gameId][num];
-        this._saveTmChecklists();
-
-        const card = document.querySelector(`.tm-card[data-num="${num}"]`);
-        if (card) card.classList.toggle('tm-card--done', checked);
-
-        const { tmData } = window.PokeAnalyzer;
-        const allTms = tmData[gameId] || [];
-        const totalChecked = Object.values(this.state.tm.checklists[gameId] || {}).filter(Boolean).length;
-        window.PokeAnalyzer.renderer.renderTmProgress(totalChecked, allTms.length);
-    },
-
-    _loadTmChecklists() {
-        try {
-            return JSON.parse(localStorage.getItem('builddex-tm-checklists')) || {};
-        } catch { return {}; }
-    },
-
-    _saveTmChecklists() {
-        try {
-            localStorage.setItem('builddex-tm-checklists', JSON.stringify(this.state.tm.checklists));
-        } catch { /* storage full */ }
+        renderer.renderTmList(filtered, gameId);
     },
 
     // ── Analizador de Equipo ────────────────────────────────────
@@ -532,18 +510,14 @@ window.PokeAnalyzer.app = {
     },
 
     _filterTeamPokeSearch(query) {
-        const { renderer } = window.PokeAnalyzer;
+        const { renderer, config } = window.PokeAnalyzer;
         const slot = this.state.team.searchingSlot;
-        const results = document.getElementById('teamPokeSearchResults');
-        if (query.length < 2 || !this.state.pokemonList) {
+        if (query.length < 2) {
+            const results = document.getElementById('teamPokeSearchResults');
             if (results) results.innerHTML = '<p class="team-poke-search-hint">Escribe 2+ letras para buscar.</p>';
             return;
         }
-        const list = this.state.pokemonList;
-        const startsWith = list.filter(p => p.name.startsWith(query));
-        const includes = list.filter(p => !p.name.startsWith(query) && p.name.includes(query));
-        const matches = [...startsWith, ...includes].slice(0, 20);
-        renderer.renderTeamPokeSearchResults(matches, slot);
+        renderer.renderTeamPokeSearchResults(this._getSuggestions(query, config.UI.AC_TEAM_MAX), slot);
     },
 
     async _addTeamPokemon(slotIdx, query) {
@@ -636,7 +610,7 @@ window.PokeAnalyzer.app = {
         }
 
         renderer.renderTeamWarnings(warnings);
-        renderer.renderTeamMatrix(matrix, slots, genNum);
+        renderer.renderTeamMatrix(matrix, slots);
         renderer.renderTeamOffensive(superEff, notCovered, allTypes.length);
     },
 
@@ -652,16 +626,9 @@ window.PokeAnalyzer.app = {
     },
 
     _filterBreedSuggestions(slot, query) {
-        const { renderer } = window.PokeAnalyzer;
-        if (query.length < 2 || !this.state.pokemonList) {
-            renderer.hideBreedingSuggestions(slot);
-            return;
-        }
-        const list = this.state.pokemonList;
-        const startsWith = list.filter(p => p.name.startsWith(query));
-        const includes = list.filter(p => !p.name.startsWith(query) && p.name.includes(query));
-        const matches = [...startsWith, ...includes].slice(0, 15);
-        renderer.showBreedingSuggestions(slot, matches);
+        const { renderer, config } = window.PokeAnalyzer;
+        if (query.length < 2) { renderer.hideBreedingSuggestions(slot); return; }
+        renderer.showBreedingSuggestions(slot, this._getSuggestions(query, config.UI.AC_BREED_MAX));
     },
 
     async _setBreedingParent(slot, name) {
