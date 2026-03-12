@@ -61,6 +61,78 @@ const SUPPORT_MOVES = new Set([
 // Builds "gimmick" o de aventura conocidos por la comunidad.
 // ================================================================
 const COMMUNITY_BUILDS_DB = {
+    'dragapult': [
+        {
+            setName: 'Meta — Special Attacker',
+            description: 'Dragapult especial con Choice Specs para presionar desde el turno 1. Ideal como lead ofensivo o cleaner con su gran Velocidad base.',
+            natureEn: 'Timid', item: 'Choice Specs',
+            evs: '252 At.Esp / 4 PS / 252 Vel',
+            moves: ['draco-meteor', 'shadow-ball', 'flamethrower', 'thunderbolt'],
+        },
+    ],
+    'amoonguss': [
+        {
+            setName: 'Meta — VGC Tank',
+            description: 'Amoonguss bulky para VGC: controla el ritmo con Espora y Polvo Ira mientras se recupera con Regeneración.',
+            natureEn: 'Sassy', item: 'Rocky Helmet',
+            evs: '252 PS / 188 Def / 68 Def.Esp',
+            moves: ['spore', 'rage-powder', 'pollen-puff', 'earth-power'],
+        },
+    ],
+    'meowscarada': [
+        {
+            setName: 'Meta — Physical Cleaner',
+            description: 'Meowscarada con Choice Band y Mutatipo: Truco Floral como STAB brutal y gran utilidad con Desarme e Ida y Vuelta.',
+            natureEn: 'Jolly', item: 'Choice Band',
+            evs: '252 Atq / 4 PS / 252 Vel',
+            moves: ['flower-trick', 'knock-off', 'u-turn', 'play-rough'],
+        },
+    ],
+    'flutter-mane': [
+        {
+            setName: 'Meta — CM Booster',
+            description: 'Flutter Mane con Paleosíntesis: Paz Mental + Booster Energy para barrer equipos enteros desde el mid game.',
+            natureEn: 'Timid', item: 'Booster Energy',
+            evs: '252 At.Esp / 4 PS / 252 Vel',
+            moves: ['calm-mind', 'shadow-ball', 'dazzling-gleam', 'moonblast'],
+        },
+    ],
+    'miraidon': [
+        {
+            setName: 'Meta — Specs Electric',
+            description: 'Miraidon con Choice Specs y Motor Hadrónico: uno de los mejores atacantes especiales eléctricos de la historia.',
+            natureEn: 'Timid', item: 'Choice Specs',
+            evs: '252 At.Esp / 4 PS / 252 Vel',
+            moves: ['electro-drift', 'draco-meteor', 'volt-switch', 'dazzling-gleam'],
+        },
+    ],
+    'koraidon': [
+        {
+            setName: 'Meta — Scarf Sun Breaker',
+            description: 'Koraidon con Pañuelo Elegido y Latido Oricalco: pone sol y mantiene presión constante con Nitrochoque e Ida y Vuelta.',
+            natureEn: 'Jolly', item: 'Choice Scarf',
+            evs: '252 Atq / 4 PS / 252 Vel',
+            moves: ['collision-course', 'flare-blitz', 'outrage', 'u-turn'],
+        },
+    ],
+    'urshifu-rapid-strike': [
+        {
+            setName: 'Meta — Surging Strikes',
+            description: 'Urshifu Fluido con Choice Band: Azote Torrencial ignora Protección y rompe incluso walls físicos.',
+            natureEn: 'Jolly', item: 'Choice Band',
+            evs: '252 Atq / 4 PS / 252 Vel',
+            moves: ['surging-strikes', 'close-combat', 'aqua-jet', 'u-turn'],
+        },
+    ],
+    'kingambit': [
+        {
+            setName: 'Meta — Supreme Closer',
+            description: 'Kingambit con General Supremo como limpiador de late game: potencia sus golpes a medida que caen sus compañeros.',
+            natureEn: 'Adamant', item: 'Black Glasses',
+            evs: '252 PS / 252 Atq / 4 Def',
+            moves: ['sucker-punch', 'kowtow-cleave', 'iron-head', 'swords-dance'],
+        },
+    ],
     'charizard': [
         {
             setName: 'Tambor + Baya Ziena',
@@ -75,6 +147,13 @@ const COMMUNITY_BUILDS_DB = {
             natureEn: 'Timid', item: 'Choice Specs',
             evs: '252 At.Esp / 4 PS / 252 Vel',
             moves: ['fire-blast', 'air-slash', 'focus-blast', 'dragon-pulse'],
+        },
+        {
+            setName: 'Meta — Special Sweeper',
+            description: 'Charizard special sweeper con naturaleza Modesta y Solar Power, pensado para equipos de sol como wallbreaker puro.',
+            natureEn: 'Modest', item: 'Choice Specs',
+            evs: '252 At.Esp / 4 PS / 252 Vel',
+            moves: ['flamethrower', 'fire-blast', 'air-slash', 'dragon-pulse'],
         },
     ],
     'gengar': [
@@ -140,6 +219,13 @@ const COMMUNITY_BUILDS_DB = {
             evs: '252 Atq / 4 At.Esp / 252 Vel',
             moves: ['earthquake', 'outrage', 'fire-blast', 'stone-edge'],
         },
+        {
+            setName: 'Meta — SR + SD',
+            description: 'Garchomp físico con Trampa Rocas y Danza Espada: pone presión desde el inicio y puede barrer equipos debilitados.',
+            natureEn: 'Jolly', item: 'Rocky Helmet',
+            evs: '252 Atq / 4 PS / 252 Vel',
+            moves: ['earthquake', 'stealth-rock', 'outrage', 'swords-dance'],
+        },
     ],
     'dragonite': [
         {
@@ -155,6 +241,13 @@ const COMMUNITY_BUILDS_DB = {
             natureEn: 'Lonely', item: 'Choice Band',
             evs: '252 Atq / 4 At.Esp / 252 Vel',
             moves: ['outrage', 'extreme-speed', 'fire-blast', 'superpower'],
+        },
+        {
+            setName: 'Meta — Dragon Dance',
+            description: 'Dragonite físico con Danza Dragón y Velocidad Extrema como prioridad. Ideal como win condition de late game.',
+            natureEn: 'Adamant', item: 'Lum Berry',
+            evs: '252 Atq / 4 PS / 252 Vel',
+            moves: ['dragon-dance', 'extreme-speed', 'earthquake', 'fire-punch'],
         },
     ],
     'tyranitar': [
@@ -572,6 +665,7 @@ window.PokeAnalyzer.analyzer = {
                 evs: build.evs,
                 moveset,
                 isCommunity: true,
+                tag: build.setName.startsWith('Meta') ? 'Meta' : undefined,
             });
         }
 

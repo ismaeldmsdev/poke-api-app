@@ -301,7 +301,7 @@ window.PokeAnalyzer.renderer = {
             return;
         }
 
-        const top2 = communityBuilds.slice(0, 2);
+        const top2 = communityBuilds.slice(0, 3);
         panel.innerHTML = `
             <div class="ai-card full community-suggestions-card show">
                 <p class="ai-card-title community-title">SUGERENCIAS DE LA COMUNIDAD</p>
@@ -332,9 +332,14 @@ window.PokeAnalyzer.renderer = {
                 </div>`;
         }).join('');
 
+        const tagHtml = build.tag ? `<span class="build-tag">${build.tag}</span>` : '';
+
         return `
             <div class="ai-card community-card full show">
-                <p class="ai-card-title community-title">${build.setName || build.tierLabel}</p>
+                <p class="ai-card-title community-title">
+                    ${build.setName || build.tierLabel}
+                    ${tagHtml}
+                </p>
                 ${build.description ? `<p class="community-desc">${build.description}</p>` : ''}
                 <div class="build-meta">
                     <span class="build-nature">${(build.nature ?? '').toUpperCase()}</span>

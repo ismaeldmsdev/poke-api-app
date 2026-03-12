@@ -553,6 +553,19 @@ main {
     border-radius: 0 var(--radius-xs) var(--radius-xs) 0;
     line-height: 1.5;
 }
+.build-tag {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    background: rgba(124, 92, 252, 0.18);
+    border: 1px solid rgba(124, 92, 252, 0.5);
+    color: var(--accent-hi);
+}
 .no-community {
     text-align: center;
     font-size: 13px;

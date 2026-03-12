@@ -359,6 +359,7 @@ window.PokeAnalyzer.app = {
             this._toggleBreedingItem(cb.dataset.item, cb.checked);
         });
 
+
         // Capture calculator modal
         const closeCaptureBtn = document.getElementById('closeCaptureBtn');
         const captureModal = document.getElementById('captureModal');
@@ -826,6 +827,7 @@ window.PokeAnalyzer.app = {
 
         renderer.renderBreedingResult(resultData);
     },
+
 
     // ── Calculadora de Captura ───────────────────────────────────
     _openCapture() {
